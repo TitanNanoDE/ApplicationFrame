@@ -9,7 +9,7 @@ Application Frame will be compatible with:
 
 - latest Google Chrome
 - latest Opera
-- [1] latest Geko Engine
+- [1] latest Gecko Engine
 - [X] latest Mozilla Add-on SDK
 - [X] latest Google Addon API
 - latest WebRT from Mozilla
