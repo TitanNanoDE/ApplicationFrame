@@ -217,6 +217,7 @@ var handleEvents= function(scope, key){
 var scopeSelector = function(name){
 	var prepare= function(item){
 		if(item.name == name){
+//          return a application scope
             if(item.type == 'application'){
                 var scope= item;
                 var x= function(thread){
@@ -238,6 +239,7 @@ var scopeSelector = function(name){
                         }
                     };
                 x.override= scope.override;
+//          return a addon scope (at the moment only mozilla)
             }else if(item.type == 'addon'){
                 var scope= item;
                 return {
@@ -253,9 +255,11 @@ var scopeSelector = function(name){
             return x;
 			}
 		};
+//  special handling for the application key
 	if(name == 'application'){
         name= engine.mainApplication.name;
 		return prepare(engine.mainApplication);
+//  special handling for the eninge key
 	}else if(name == 'engine'){
 		return {
 			override : function(newSettings){
@@ -269,6 +273,7 @@ var scopeSelector = function(name){
 				self.location.replace(settings.crashPage);
 				}
 			};
+//  default handling for all other keys
 	}else{
 		for (var i=0; i < scopes.length; i++){
 			return prepare(scopes[i]);
@@ -312,11 +317,13 @@ var engine = {
 			},
 		isRunning : false 
 		},
-    launchQueue : []
+    launchQueue : [],
+    exit : function(){}
 	};
 
-//getPlatform
-//check if current platform is a comon JavaScript engine
+// get the current Platform
+    
+// check if current platform is a common JavaScript engine
 var platform= null;    
 
 if(self.navigator)
@@ -337,17 +344,19 @@ if (platform != 'notDefault'){
     platform= platform.split(' ');
     platform.push('Web');
 
-//check if current platform is the Mozilla Add-on runtime
+// check if current platform is the Mozilla Add-on runtime
 }else if(self.require && self.exports && self.Components){
     let system= self.require('sdk/system');
     platform= [system.name, system.version, 'MozillaAddonSDK'];
     }
 
-//platform tests
-//various tests for the different platform
-//preform tests for the selected platform
+// various platform tests for the different platforms
+
+/* 
+Tests for Web platforms.
+If any test fails Application Frame will quit but at the moment only a notification in the console will be shown
+*/
 if(platform[2] == 'Web'){
-// tests for Web platforms
     var platformTests= {
         storrage : (self.sessionStorage && self.localStorage),
         indexedDB : (self.indexedDB),
@@ -370,17 +379,20 @@ if(platform[2] == 'Web'){
         pageVisibility : ((typeof self.document.hidden != "undefined") && self.document.visibilityState),
         serverSentEvent : (self.EventSource),
         webWorker : (self.Worker),
-//        sharedWebWorker : (self.SharedWorker),
+//        sharedWebWorker : (self.SharedWorker), <--- disabled because it isn't really supported in any web engine 
         arrayBuffer : (self.ArrayBuffer),
         webSocket : (self.WebSocket),
         computedStyle : (self.getComputedStyle),
         deviceOrientation : (self.DeviceOrientationEvent)
     };
+    
+// Tests for the Mozilla Add-on SDK
 }else if(platform[2] == 'MozillaAddonSDK'){
 //  at the moment there are no known platform tests for the 'Mozilla Add-on SDK' platform.
     var platformTests= {};
 }
 
+//check if any test failed
 var faildTests= 0;
 var allTests= 0;
 for(var i in platformTests){
@@ -391,11 +403,21 @@ for(var i in platformTests){
         }
 }
 
+//if a test failed the engine will quit
 if(faildTests > 0){
     self.console.log(faildTests+' of '+allTests+' platform tests are faild!');
-//    return false;
+//    engine.exit(0);
 }
-	
+    
+// setup environment
+if(platform[2] == 'Web'){
+//  at the moment nothing to do here.
+}else if(platform[2] == 'MozillaAddonSDK'){
+//  create new Addon Scope
+    scopes.push(new MozillaAddonScope());
+    self.require('af/addonCore.js'); // <--- does not exist yet. Not sure if it is really needed
+    }
+    
 // publish APIs
 self.$= selector;
 self.$_= scopeSelector;
