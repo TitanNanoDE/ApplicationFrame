@@ -11,6 +11,7 @@ Application Frame will be compatible with:
 - latest Opera
 - [1] latest Geko Engine
 - [X] latest Mozilla Add-on SDK
+- [X] latest Google Addon API
 - latest WebRT from Mozilla
 - latest B2G
 
