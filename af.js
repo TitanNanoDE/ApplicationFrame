@@ -47,8 +47,8 @@ var ApplicationScope= function(name){
 			},
         wait : function(key, callback){
             thisScope.waitList.push({key : key, callback : callback});
-            }
-		$dom : function(selector){
+            },
+		dom : function(selector){
 			return {
 				setProperty : function(name, value){
 					engine.domUpdates.push({selector : selector, type : 'property', name : name, value : value});
@@ -211,7 +211,7 @@ var handleEvents= function(scope, key){
             scope.waitList.splice(i, 1);
             }
         });
-    }
+    };
 
 //the scope selector selects an application or service from the scopes array.
 var scopeSelector = function(name){
@@ -231,7 +231,7 @@ var scopeSelector = function(name){
                 x.set= function(name, value){
                     if(scope.settings.allowSetter && scope.properties[name]){
                         scope.properties[name]= value;
-                        handleEvents(scope, key);
+                        handleEvents(scope, name);
                         return true;
                     }else{
                         return false;
@@ -245,7 +245,7 @@ var scopeSelector = function(name){
                         scope.thread= thread;
                         engine.threadQueue.push(scope);
                         },
-                    'module' : function(int){
+                    'module' : function(){
                         
                         }
                     };
