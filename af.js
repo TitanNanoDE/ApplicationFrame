@@ -2,10 +2,7 @@
 
 (function(){
     
-"use strict";
-    
-//set the global object to self
-this.self= this;
+this.self= this, "use strict"; 
   
 //default settings for the Application Frame Engine
 var settings= {
@@ -346,7 +343,7 @@ if (platform != 'notDefault'){
 
 // check if current platform is the Mozilla Add-on runtime
 }else if(self.require && self.exports && self.Components){
-    let system= self.require('sdk/system');
+    var system= self.require('sdk/system');
     platform= [system.name, system.version, 'MozillaAddonSDK'];
     }
 
