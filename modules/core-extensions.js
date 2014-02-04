@@ -37,4 +37,16 @@ $('escape').wrapper(function(){
             });
 //        object.prototype= prototype;
         };
+    
+/* --- forEach extension --- */
+var forEach= function(callback){
+    for(var i= 0; i<this.length; i++){
+        callback(this[i], i);
+        }
+    }
+
+// if your required list type isn't here just add it
+if(!Array.forEach) Array.prototype.forEach= forEach;
+if(!NodeList.forEach) NodeList.prototype.forEach= forEach;
+    
 });
