@@ -1,4 +1,6 @@
-script: ./.travis/build.pl
+script:
+    - chmod +x "./.travis/build.pl"
+    - ./.travis/build.pl
 branches:
     only:
         - master
