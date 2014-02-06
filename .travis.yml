@@ -1,0 +1,8 @@
+install: sudo apt-get install -qq perl
+script: ./.travis/build.pl
+branches:
+    only:
+        - master
+language: node_js
+node_js:
+    - "0.11"
