@@ -2,7 +2,7 @@
 /* global self */
 /* global $ */
 
-'use strict';
+this.self= this, 'use strict';
     
 $('new')({
     name : 'hash',

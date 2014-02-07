@@ -2,7 +2,7 @@
 /* global $ */
 /* global self */
 
-"use strict";
+this.self= this, 'use strict';
 
 $('new')({
     name : 'packages',

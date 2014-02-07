@@ -4,7 +4,7 @@
 
 $('escape').wrapper(function(){
 
-'use strict';
+this.self= this, "use strict";
 
 /* --- eventManagement --- */
     self.EventManager= function(){
@@ -43,10 +43,11 @@ var forEach= function(callback){
     for(var i= 0; i<this.length; i++){
         callback(this[i], i);
         }
-    }
+    };
 
 // if your required list type isn't here just add it
-if(!Array.forEach) Array.prototype.forEach= forEach;
-if(!NodeList.forEach) NodeList.prototype.forEach= forEach;
+if(!self.Array.forEach) self.Array.prototype.forEach= forEach;
+if(!self.NodeList.forEach) self.NodeList.prototype.forEach= forEach;
+if(self.navigator.isTouch && !self.TouchList.forEach) self.TouchList.prototype.forEach= forEach;
     
 });
