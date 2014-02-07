@@ -408,7 +408,8 @@ if(faildTests > 0){
     
 // setup environment
 if(platform[2] == 'Web'){
-//  at the moment nothing to do here.
+//  check if touchscreen is supported
+    self.navigator.isTouch= 'ontouchstart' in self;
 }else if(platform[2] == 'MozillaAddonSDK'){
 //  create new Addon Scope
     scopes.push(new MozillaAddonScope());
