@@ -162,8 +162,10 @@ $('escape').wrapper(function(){
         item.addEventListener(self.events.TOUCHEND, function(e){
             if(self.navigator.isTouch){
                 var emitter= this;
-                e.touches.forEach(function(item, i){
-                    releaseHook.apply(emitter, [item, i]);
+                touchMeta.forEach(function(item, i){
+                    if(!e.touches[i]){
+                        releaseHook.apply(emitter, [e, i]);
+                        }
                     });
             }else{
                 isDown= false;
