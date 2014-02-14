@@ -1,4 +1,4 @@
-Application Frame
+Application Frame [![Build Status](https://travis-ci.org/TitanNano/ApplicationFrame.png?branch=master)](https://travis-ci.org/TitanNano/ApplicationFrame)
 ================
 
 Application Frame is a small JavaScript Framework / Library. 
@@ -8,10 +8,10 @@ The core file 'af.js' contains the engine to manage one or more webapplications 
 Application Frame will be compatible with:
 
 - latest Google Chrome
-- latest Opera
 - [1] latest Gecko Engine
 - [X] latest Mozilla Add-on SDK
-- [X] latest Google Addon API
+- [X] latest Chromium Add-on Runtime
+- latest Node.js
 - latest WebRT from Mozilla
 - latest B2G
 
