@@ -216,6 +216,7 @@ var handleEvents= function(scope, key){
 var scopeSelector = function(name){
 	var prepare= function(item){
 		if(item.name == name){
+            
 //          return a application scope
             if(item.type == 'application'){
                 var scope= item;
@@ -242,6 +243,7 @@ var scopeSelector = function(name){
                         }
                     };
                 x.override= scope.override;
+                
 //          return a addon scope (at the moment only mozilla)
             }else if(item.type == 'addon'){
                 var scope= item;
@@ -258,10 +260,12 @@ var scopeSelector = function(name){
             return x;
 			}
 		};
+    
 //  special handling for the application key
 	if(name == 'application'){
         name= engine.mainApplication.name;
 		return prepare(engine.mainApplication);
+        
 //  special handling for the eninge key
 	}else if(name == 'engine'){
 		return {
@@ -284,6 +288,7 @@ var scopeSelector = function(name){
                     }
                 }
 			};
+        
 //  default handling for all other keys
 	}else{
 		for (var i=0; i < scopes.length; i++){
@@ -300,7 +305,7 @@ var preProcesse= function(func){
 	return new Function(func);
 	};
 	
-// engine
+// Engine
 //the engine hash, holds private flags, arrays and functions.
 var engine = {
 	isApplicationLimit : false,
@@ -339,7 +344,7 @@ var engine = {
 // get the current Platform
 var platform= null;    
 
-// find out wich engine is used
+// find out which engine is used
 if (self.navigator){
     platform= self.navigator.userAgent;
 //              Mozilla
@@ -370,7 +375,7 @@ engine.type= platform[2];
 
 /* 
 Tests for Web platforms.
-If any test fails Application Frame will quit but at the moment only a notification in the console will be shown
+If any test fails Application Frame will quit but at the moment only a notification in the console will be shown.
 */
 if(platform[2] == 'Web'){
     var platformTests= {
@@ -406,8 +411,10 @@ if(platform[2] == 'Web'){
 }else if(platform[2] == 'MozillaAddonSDK'){
 //  at the moment there are no known platform tests for the 'Mozilla Add-on SDK' platform.
     var platformTests= {};
+
+// Tests for the Node.js runtime or something like that
 }else if(platform[2] == 'Node'){
-//  at the moment there are no known platform tests for the 'Mozilla Add-on SDK' platform.
+//  at the moment there are no known platform tests for the 'Node' platform.
     var platformTests= {};
     }
 
