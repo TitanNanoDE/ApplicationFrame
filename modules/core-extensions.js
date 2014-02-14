@@ -46,8 +46,8 @@ var forEach= function(callback){
     };
 
 // if your required list type isn't here just add it
-if(!self.Array.forEach) self.Array.prototype.forEach= forEach;
-if(!self.NodeList.forEach) self.NodeList.prototype.forEach= forEach;
-if(self.navigator.isTouch && !self.TouchList.forEach) self.TouchList.prototype.forEach= forEach;
+if(self.Array && !self.Array.forEach) self.Array.prototype.forEach= forEach;
+if(self.NodeList && !self.NodeList.forEach) self.NodeList.prototype.forEach= forEach;
+if(self.navigator && self.navigator.isTouch && !self.TouchList.forEach) self.TouchList.prototype.forEach= forEach;
     
 });

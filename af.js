@@ -23,7 +23,9 @@ var settings= {
 //  If any dependencies couldn't be found, the user will be forwarded to crashPage.
 	support : true,
 //  defines the page to which the engine forwards, if there is a unsolved dependency.
-	crashPage : 'about:blank'
+	crashPage : 'about:blank',
+// gives the main application the possibility to access the engine object (only available in node)
+    grantRoot : false
 	};	
 	
 // Classes
@@ -34,7 +36,7 @@ var ApplicationScope= function(name){
 	this.type= 'application';
 	this.settings= {
 		allowSetters : true,
-		allowGettes : true,
+		allowGetters : true,
 		lockOverride : false,
 		autoLock : true
         };
@@ -101,8 +103,8 @@ var items= {
 				});
 				
 			if(!exists && !engine.isApplicationLimit){
-				if(scopes.length < 1) engine.mainApplication= name;
 				scopes.push(new ApplicationScope(name));
+                if(scopes.length < 1) engine.mainApplication= scopes[scopes.length-1];
 				if(settings.singleApplicationMode) engine.isApplicationLimit= true;
                 if(settings.masterApplication == scopes[scopes.length-1].name) 
                     engine.mainApplication= scopes[scopes.length-1];
@@ -223,11 +225,15 @@ var scopeSelector = function(name){
                     engine.threadQueue.push(scope);
                     };
                 x.get= function(name){
-                    if(scope.settings.allowGetters && scope.properties[name]) return scope.properties[name];
-                    handleEvents(scope, name);
+                    if(scope.settings.allowGetters && scope.properties[name]){
+                        handleEvents(scope, name);
+                        return scope.properties[name];
+                    }else{
+                        return null;
+                        }
                     };
                 x.set= function(name, value){
-                    if(scope.settings.allowSetter && scope.properties[name]){
+                    if(scope.settings.allowSetters && scope.properties[name]){
                         scope.properties[name]= value;
                         handleEvents(scope, name);
                         return true;
@@ -268,7 +274,15 @@ var scopeSelector = function(name){
 				},
 			stop : function(){
 				self.location.replace(settings.crashPage);
-				}
+				},
+            requestRoot : function(scope){
+                if( (engine.type == 'Node') && (scope == engine.mainApplication.properties) ){
+                    scope.engine= engine;
+                    return true;
+                }else{
+                    return false;
+                    }
+                }
 			};
 //  default handling for all other keys
 	}else{
@@ -291,7 +305,11 @@ var preProcesse= function(func){
 var engine = {
 	isApplicationLimit : false,
 	mainApplication : null,
-	engine : self.navigator.userAgent.match(/(?!^)[A-Z][A-Za-z]*\/[0-9\.]*/g)[0].split('/'),
+	name : 'unknown',
+    version : '1',
+    platform : 'unknown',
+    arch : 'x32',
+    type : 'Web',
 	activeThreads : 0,
 	domUpdates : [],
 	threadQueue : {
@@ -319,17 +337,11 @@ var engine = {
 	};
 
 // get the current Platform
-    
-// check if current platform is a common JavaScript engine
 var platform= null;    
 
-if(self.navigator)
-    platform= self.navigator.userAgent || 'notDefault';
-else
-    platform= 'notDefault';
-
 // find out wich engine is used
-if (platform != 'notDefault'){
+if (self.navigator){
+    platform= self.navigator.userAgent;
 //              Mozilla
     platform=   (((platform.indexOf('Gecko/') > -1) && 'Gecko '+platform.substring(platform.indexOf('rv:')+3, platform.indexOf(')')) ) || false) ||
 //              Google / Apple / Opera
@@ -342,10 +354,17 @@ if (platform != 'notDefault'){
     platform.push('Web');
 
 // check if current platform is the Mozilla Add-on runtime
-}else if(self.require && self.exports && self.Components){
+}else if(self.exports && self.Components){
     var system= self.require('sdk/system');
     platform= [system.name, system.version, 'MozillaAddonSDK'];
+
+// check if current platform is the Node.js runtime
+}else if(self.process && self.process.versions && self.process.env && self.process.pid){
+    platform= ['Node.js', self.process.versions.node, 'Node'];
     }
+    
+//  set platform type
+engine.type= platform[2];
 
 // various platform tests for the different platforms
 
@@ -387,7 +406,10 @@ if(platform[2] == 'Web'){
 }else if(platform[2] == 'MozillaAddonSDK'){
 //  at the moment there are no known platform tests for the 'Mozilla Add-on SDK' platform.
     var platformTests= {};
-}
+}else if(platform[2] == 'Node'){
+//  at the moment there are no known platform tests for the 'Mozilla Add-on SDK' platform.
+    var platformTests= {};
+    }
 
 //check if any test failed
 var faildTests= 0;
@@ -410,11 +432,23 @@ if(faildTests > 0){
 if(platform[2] == 'Web'){
 //  check if touchscreen is supported
     self.navigator.isTouch= 'ontouchstart' in self;
+    engine.name= platform[0];
+    engine.version= platform[1];
+    engine.platform= self.navigator.userAgent.substring(self.navigator.userAgent.indexOf('(')+1, self.navigator.userAgent.indexOf(';'));
+    engine.arch= self.navigator.userAgent.substring(self.navigator.userAgent.indexOf(';')+2, self.navigator.userAgent.indexOf(';', self.navigator.userAgent.indexOf(';')+1));
+    
 }else if(platform[2] == 'MozillaAddonSDK'){
 //  create new Addon Scope
     scopes.push(new MozillaAddonScope());
     self.require('af/addonCore.js'); // <--- does not exist yet. Not sure if it is really needed
-    }
+    
+}else if(platform[2] == 'Node'){
+    engine.name= platform[0];
+    engine.version= platform[1];
+    engine.platform= self.process.platform;
+    engine.arch= self.process.arch;
+}
+    
     
 // publish APIs
 self.$= selector;
