@@ -1,5 +1,7 @@
 before_script: chmod +x "./.travis/build.pl"
-script: ./.travis/build.pl
+script: 
+    - ./.travis/build.pl
+    - node .travis/sf-test.js
 branches:
     only:
         - master
