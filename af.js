@@ -115,8 +115,8 @@ var items= {
 		},
     'new' : function(settings){
         var object = {};
-        if(settings.construct){
-            object= new settings.construct(engine);
+        if(settings.constructor){
+            object= new settings.constructor(engine);
         }else if(settings.builder && settings.nameSpace){
             engine[settings.nameSpace]= {};
             object= function(){
@@ -263,8 +263,12 @@ var scopeSelector = function(name){
     
 //  special handling for the application key
 	if(name == 'application'){
-        name= engine.mainApplication.name;
-		return prepare(engine.mainApplication);
+        if(engine.mainApplication){
+            name= engine.mainApplication.name;
+            return prepare(engine.mainApplication);
+        }else{
+            throw 'Can not access "application"! No main application was set!';
+            }
         
 //  special handling for the eninge key
 	}else if(name == 'engine'){
