@@ -10,9 +10,10 @@ $('escape').wrapper(function(){
 //  events
     self.events= {
         SCROLL : 'phT_scroll',
-        TAPP : 'phT_tapp',
+        VERTICAL_SCROLL : 'phT_vScroll',
         STROCKE : 'phT_strocke',
         MOVE : 'phT_move',
+        TAP : 'phT_tap',
         TOUCH : 'phT_touch',
         RELEASE : 'phT_release',
         TOUCHSTART : (self.navigator.isTouch ? 'touchstart' : 'mousedown'),
@@ -40,6 +41,11 @@ $('escape').wrapper(function(){
             touchMeta[index].lastTimeout= this.timeout;
             }
         this.position= { x: this.screenX, y: this.screenY };
+        this.offset= {
+            x : Math.abs(touchMeta[index].start.x - this.position.x),
+            y : Math.abs(touchMeta[index].start.y - this.position.y)
+            };
+        this.duration= (now - touchMeta[index].start.time);
         
         if( (touchMeta[index].lastPos.y != this.position.y && touchMeta[index].lastMovement.x != this.position.x) || (this.timeout > 0.1) ){
             this.movement= touchMeta[index].lastMovement= {x: (this.position.x - touchMeta[index].lastPos.x),
@@ -53,6 +59,16 @@ $('escape').wrapper(function(){
         
         touchMeta[index].lastPos= this.position;
         touchMeta[index].lastTime= now;
+        
+        if(this.offset.x > 3 || this.offset.y > 3){
+            if(this.offset.x > this.offset.y){
+                this.type= TouchTypes.VERTICAL_STROCKE;
+            }else{
+                this.type= TouchTypes.STROCKE;
+                }
+        }else if(!this.type ){
+            this.type= TouchTypes.TAP;
+            }
         };
 
     var OverScrollData= function(target, direction, y, speed){
@@ -62,7 +78,7 @@ $('escape').wrapper(function(){
         this.direction= direction;
         this.target= target;
         this.release= function(){
-            const backSpeed= 2000;
+            const backSpeed= 1500;
             
             var now= new Date().getTime();
             var timeout= (now - this.lastUpdate) / 1000;
@@ -98,7 +114,13 @@ $('escape').wrapper(function(){
             };
         };
     OverScrollData.UP= '1';
-    OverScrollData.DOWN= '0'; 
+    OverScrollData.DOWN= '0';
+    
+    var TouchTypes= {
+        STROCKE : 0,
+        VERTICAL_STROCKE : 1,
+        TAP : 2
+    };
     
 /*  ---     Hooks   --- */
     
@@ -108,17 +130,24 @@ $('escape').wrapper(function(){
             lastTime : (new Date().getTime()),
             lastPos : { x: e.screenX, y: e.screenY },
             lastMovement : {x: 0, y: 0},
-            lastTimeout : 0
+            lastTimeout : 0,
+            start : { x: e.screenX, y: e.screenY, time: new Date().getTime()},
+            type : null
             };
         };
     
 //  global movment hook
     var movmentHook= function(e, index){
         EventObjectExtension.apply(e, [index]);
+        
+        var isPhysicalTouch= !this.hasAttribute('physicalTouch') || this.getAttribute('physicalTouch') != 'false';
+        var defaultScroll= self.getComputedStyle(this).getPropertyValue('overflow') != 'hidden';
                 
 //      grabbed scroll
-        if( (e.movement.y !== 0) && (self.getComputedStyle(this).getPropertyValue('overflow') == 'hidden') && (!this.hasAttribute('physicalTouch') || this.getAttribute('physicalTouch') != 'false') ){
+        if(e.type == TouchTypes.STROCKE && !defaultScroll && isPhysicalTouch){
             physicalScroll(this, e.movement.y, true);
+        }else if(e.type == TouchTypes.VERTICAL_STROCKE && !defaultScroll && isPhysicalTouch){
+            
             }
         };
     
@@ -126,8 +155,11 @@ $('escape').wrapper(function(){
     var releaseHook= function(e, index){
         EventObjectExtension.apply(e, [index]);
         
+        var isPhysicalTouch= !this.hasAttribute('physicalTouch') || this.getAttribute('physicalTouch') != 'false';
+        var defaultScroll= self.getComputedStyle(this).getPropertyValue('overflow') != 'hidden';
+        
 //      released remaining velocity scroll
-        if( (self.getComputedStyle(this).getPropertyValue('overflow') == 'hidden') && (!this.hasAttribute('physicalTouch') || this.getAttribute('physicalTouch') != 'false')){
+        if(e.type == TouchTypes.STROCKE && !defaultScroll && isPhysicalTouch){
             physicalScroll(this, e.speed.y, false);
             }
         };
@@ -206,6 +238,48 @@ $('escape').wrapper(function(){
                 sData.cursorY+= Math.abs(change);
                 target.lastElementChild.style.marginBottom= stretching(sData.cursorY)+'px';
                 target.scrollTop= target.scrollTopMax;
+                }
+            
+//      if the object was released
+        }else{
+            if(target._physicalID > -1 && overScrollMeta[target._physicalID]){
+                var sData= overScrollMeta[target._physicalID];
+                sData.lastUpdate= new Date().getTime();
+                sData.release();
+                }
+            }
+        };
+    
+    var physicalVScroll= function(target, movement, isGrabbed){
+        
+//      invert movement direction to scroll direction
+        var change= movement * -1;
+
+//      if the scrolled element is still grabbed
+        if(isGrabbed){
+            target.scrollLeft+= change;
+            
+//          on overscrolling at the top
+            if(target.scrollLeft === 0 && movement > 0){
+                if(target._physicalID < 0 || !overScrollMeta[target._physicalID]){
+                    overScrollMeta.push(new OverScrollData(target, OverScrollData.DOWN, 0, 0));
+                    target._physicalID= overScrollMeta.length - 1;
+                    }
+                var sData= overScrollMeta[target._physicalID];
+                sData.cursorX+= Math.abs(change);
+                target.firstElementChild.style.marginLeft= stretching(sData.cursorX)+'px';
+                target.scrollLeft= 0;
+                
+//          on overscrolling at the bottom
+            }else if(target.scrollLeft == target.scrollLeftMax && movement < 0){
+                if(target._physicalID < 0 || !overScrollMeta[target._physicalID]){
+                    overScrollMeta.push(new OverScrollData(target, OverScrollData.UP, 0, 0));
+                    target._physicalID= overScrollMeta.length - 1;
+                    }
+                var sData= overScrollMeta[target._physicalID];
+                sData.cursorX+= Math.abs(change);
+                target.lastElementChild.style.marginRight= stretching(sData.cursorX)+'px';
+                target.scrollLeft= target.scrollLeftMax;
                 }
             
 //      if the object was released
