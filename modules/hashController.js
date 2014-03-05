@@ -1,6 +1,4 @@
-//hash control module for Application Frame - v1.0.0 copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
-/* global self */
-/* global $ */
+//Hash Controller - v0.1 copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
 this.self= this, 'use strict';
     

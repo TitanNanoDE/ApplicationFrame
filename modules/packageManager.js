@@ -1,6 +1,4 @@
-//packageManager v1.0 © copyright by TitanNano / Jovan Gerodetti - titannano.de
-/* global $ */
-/* global self */
+//Package Manager v0.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
 
 this.self= this, 'use strict';
 

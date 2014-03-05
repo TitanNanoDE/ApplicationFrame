@@ -1,11 +1,8 @@
-//fileSystem v1.0 © copyright by TitanNano / Jovan Gerodetti - titannano.de
-/* global $ */
-/* global self */
+//fileSystem v0.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
 
 this.self= this, 'use strict';
 
 $('new')({
-    
     name : 'fileSystem',
     construct : function(engine){
         var module= this;

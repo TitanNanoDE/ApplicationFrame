@@ -1,6 +1,4 @@
 //default core extensions for the default Application Frame modules - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
-/* global $ */
-/* global self */
 
 $('escape').wrapper(function(){
 
