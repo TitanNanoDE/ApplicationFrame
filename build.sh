@@ -40,6 +40,6 @@ rm -r ./mozilla
 if [ "$CLEAN" = "1" ]
 then
 	echo "clean up..."
-	rm README.md
+	find ./ -name README.md -delete
 	rm build.sh
 fi
