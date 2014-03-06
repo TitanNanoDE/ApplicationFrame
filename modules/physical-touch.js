@@ -1,7 +1,8 @@
-//Physical Touch v0.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
+// Physical Touch v0.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
+
 $('escape').wrapper(function(){
     
-    this.self= this, 'use strict';
+    'use strict';
     
     var isDown= false;
     

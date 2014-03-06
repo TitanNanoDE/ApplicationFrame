@@ -1,8 +1,8 @@
 //default core extensions for the default Application Frame modules - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
 $('escape').wrapper(function(){
-
-this.self= this, "use strict";
+    
+    "use strict";
 
 /* --- eventManagement --- */
     self.EventManager= function(){

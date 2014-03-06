@@ -1,6 +1,6 @@
 //fileSystem v0.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
 
-this.self= this, 'use strict';
+"use strict";
 
 $('new')({
     name : 'fileSystem',

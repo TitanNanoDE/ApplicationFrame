@@ -1,6 +1,6 @@
 //Hash Controller - v0.1 copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
-this.self= this, 'use strict';
+'use strict';
     
 $('new')({
     name : 'hash',

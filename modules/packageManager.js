@@ -1,10 +1,10 @@
 //Package Manager v0.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
 
-this.self= this, 'use strict';
+'use strict';
 
 $('new')({
     name : 'packages',
-    constructor : function(engine){
+    constructor : function(){
         this.unpack= function(pack){
                 pack.files.forEach(function(item, index){
                     if(item.content.length === item.length){
