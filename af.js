@@ -1,4 +1,4 @@
-//Application Frame v1.0.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
+//Application Frame v0.1.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
 (function(){
     
@@ -252,8 +252,12 @@ var scopeSelector = function(name){
                         scope.thread= thread;
                         engine.threadQueue.push(scope);
                         },
-                    'module' : function(){
-                        
+                    'module' : function(deps, f){
+                        var dependencies= [];
+                        deps.forEach(function(item){
+                            dependencies.push(self.require(item));
+                        });
+                        f.apply(self.exports, dependencies);
                         }
                     };
                 }
@@ -408,7 +412,8 @@ if(platform[2] == 'Web'){
         arrayBuffer : (self.ArrayBuffer),
         webSocket : (self.WebSocket),
         computedStyle : (self.getComputedStyle),
-        deviceOrientation : (self.DeviceOrientationEvent)
+        deviceOrientation : (self.DeviceOrientationEvent),
+//        spread : (function(){try{ return eval("var x; x= [1, 2, 3], (function(x, y, z){})(...x), true;"); }catch(e){ return false; }})()
     };
     
 // Tests for the Mozilla Add-on SDK
@@ -447,21 +452,32 @@ if(platform[2] == 'Web'){
     engine.version= platform[1];
     engine.platform= self.navigator.userAgent.substring(self.navigator.userAgent.indexOf('(')+1, self.navigator.userAgent.indexOf(';'));
     engine.arch= self.navigator.userAgent.substring(self.navigator.userAgent.indexOf(';')+2, self.navigator.userAgent.indexOf(';', self.navigator.userAgent.indexOf(';')+1));
+
+//  publish APIs
+    self.$= selector;
+    self.$_= scopeSelector;
     
 }else if(platform[2] == 'MozillaAddonSDK'){
 //  create new Addon Scope
     scopes.push(new MozillaAddonScope());
-    self.require('af/addonCore.js'); // <--- does not exist yet. Not sure if it is really needed
+    engine.name= platform[0];
+    engine.version= platform[1];
+    engine.platform= platform[2];
+//    self.require('af/addonCore.js'); // <--- does not exist yet. Not sure if it is really needed
+    
+//  publish APIs
+    self.exports.$= selector;
+    self.exports.$_= scopeSelector;
     
 }else if(platform[2] == 'Node'){
     engine.name= platform[0];
     engine.version= platform[1];
     engine.platform= self.process.platform;
     engine.arch= self.process.arch;
+
+//  publish APIs
+    self.$= selector;
+    self.$_= scopeSelector;
 }
     
-    
-// publish APIs
-self.$= selector;
-self.$_= scopeSelector;
 })();
