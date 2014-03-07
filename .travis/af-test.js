@@ -28,7 +28,7 @@ $_('application')(function(scope){
         exit(1);
         }
     
-    console.info('main Application is running!');
+    console.info('main Application spwaned!');
     this.tests= {
         root : false,
         propGet : false,
@@ -54,9 +54,7 @@ $_('application')(function(scope){
     console.log('engineType: ' + this.engine.type);
     console.log('platform: ' + this.engine.platform);
     
-    console.log('try to load core Extensions...');
-    this.tests.ext= require('../modules/core-extensions.js');
-    console.log((this.tests.ext) ? 'okay' : 'faild');
+    console.log('try to load core Extensions... ' + ( this.tests.ext= require('../modules/core-extensions.js'), ((this.tests.ext) ? 'okay' : 'faild') ));
     this.tests.prototype= self.prototyping;
     console.log('testing advanced prototyping... ' + ((this.tests.prototype) ? 'okay' : 'faild'));
     this.tests.event= self.EventManager;
@@ -66,5 +64,29 @@ $_('application')(function(scope){
             exit(1);
             }
         }
+    console.log('testing module builder...');
+    this.tests= [];
+    $('new')({
+        name : 'builder-test',
+        constructor : function(engine){
+            console.log('construct test module...');
+            console.log('enumerating engine object...');
+            for(var i in engine){
+                console.log('engine.' + i + ' is available...');
+            }
+            this.x= '123';
+            this.y= 'y-property';
+            this.z= 50;
+            this.m= function(){
+                return this.x;
+            };
+        }
+    });
+    this.tests.push($('builder-test'));
+    console.log('testing test module... ' + ((this.tests[0]) ? 'okay' : 'faild'));
+    this.tests.push($('builder-test').x == '123' && $('builder-test').y == 'y-property');
+    console.log('testing properties... ' + ((this.tests[1]) ? 'okay' : 'faild'));
+//    console.log('testing launch queue...');
+//    this.tests.push($('queue').push({type : 'test', }));
     exit(0); 
 });

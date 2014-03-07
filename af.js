@@ -158,6 +158,7 @@ var items= {
             if(typeof object == 'object'){
                 object.push= push;
                 engine.launchQueue.push(object);
+                return true;
             }else
                 throw 'The launch queue only accepts launch objects!';
             },
