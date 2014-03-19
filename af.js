@@ -249,8 +249,12 @@ var scopeSelector = function(name){
             }else if(item.type == 'addon'){
                 var scope= item;
                 return {
-                    create : function(thread){
-                        scope.thread= thread;
+                    create : function(deps, thread){
+                        var dependencies= [];
+                        deps.forEach(function(item){
+                            dependencies.push(self.require(item));
+                        });
+                        scope.thread= function(){ thread(...dependencies); };
                         engine.threadQueue.push(scope);
                         },
                     'module' : function(deps, f){
@@ -330,20 +334,20 @@ var engine = {
 		queue : [],
 		push : function(scope){
 			if(!this.isRunning){
-				this.isRunning= false;
+				this.isRunning= true;
 				if(settings.renderMode == 'default'){
 					scope.thread.apply(scope.properties, [scope]);
 					}
 				
-				this.isRunning= false;
 				if(this.queue.length > 0){
 					var n= this.queue[0]; this.queue.shift();
 					this.push(n);
-					}
+				}
+				this.isRunning= false;
 			}else{
 				this.queue.push(scope);
-				}
-			},
+            }
+        },
 		isRunning : false 
 		},
     launchQueue : [],
