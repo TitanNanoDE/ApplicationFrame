@@ -1,14 +1,18 @@
 
-var {$, $_}= self.require('af/core');
+this.self= this;
+var { $_ }= self.require('af/core');
 
-$('addon').module(['sdk/preferences/service', 'sdk/self'], function(globalPref, system){
-    
-    "use strict";
-    
-    var prefName= 'extensions.'+system.id+'.sdk.console.logLevel';
-    
+$_('addon').hook(self);
+
+$_('addon').modules({
+    'globalPrefs' : self.require('sdk/preferences/service'),
+    'self' : self.require('sdk/self')
+});
+
+$_('addon').module(function(){    
+    var prefName= 'extensions.'+$_('self').id+'.sdk.console.logLevel';
     this.enabled= function(value){
         var status= (value) ? 'debug' : 'error';
-        globalPref.set(prefName, status);
-        };
+        $_('globalPrefs').set(prefName, status);
+    };
 });

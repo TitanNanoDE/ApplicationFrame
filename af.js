@@ -82,8 +82,9 @@ var MozillaAddonScope = function(){
         fastExport : true
         };
     this.defaultProperties= {
-        modules : []
         };
+    this.modules= {};
+    this.global= null;
     this.thread= null;
     this.override= function(newSettings){
         for(var i in newSettings)
@@ -185,9 +186,6 @@ var items= {
             },
         shell : function(sub){
         
-            },
-        scopeLoop : function(sub){
-        
             }
         },
 	};
@@ -212,72 +210,84 @@ var handleEvents= function(scope, key){
             }
         });
     };
+    
+var findScope= function(name){
+    for(var i=0; i < scopes.length; i++){
+        if(scopes[i].name == name)
+            return scopes[i];
+        else
+            return null;
+    }
+};
+
+var prepareScope= function(item){
+    if(item){
+//      return a application scope
+        if(item.type == 'application'){
+            var scope= item;
+            var x= function(thread){
+                scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
+                if(scope.settings.autoLock) scope.settings.isLocked= true;
+                engine.threadQueue.push(scope);
+            };
+            x.get= function(name){
+                if(scope.settings.allowGetters && scope.properties[name]){
+                    handleEvents(scope, name);
+                    return scope.properties[name];
+                }else{
+                    return null;
+                }
+            };
+            x.set= function(name, value){
+                if(scope.settings.allowSetters && scope.properties[name]){
+                    scope.properties[name]= value;
+                    handleEvents(scope, name);
+                    return true;
+                }else{
+                    return false;
+                }
+            };
+            x.override= scope.override;
+                
+        }else if(item.type == 'addon'){
+//          return a addon scope (at the moment only mozilla)
+            var scope= item;
+            return {
+                create : function(thread){
+                    scope.thread= thread;
+                    engine.threadQueue.push(scope);
+                },
+                'module' : function(f){
+                    f.apply(scope.global.exports);
+                },
+                modules : function(depsObject){
+                    for (var i in depsObject){
+                        if(!scope.modules[i])
+                            scope.modules[i]= depsObject[i];
+                    }
+                },
+                hook : function(globalObject){
+                    scope.global= globalObject;
+                }
+            };
+        }
+        return x;
+    }else{
+        return null;
+    }
+};
 
 //the scope selector selects an application or service from the scopes array.
 var scopeSelector = function(name){
-	var prepare= function(item){
-		if(item.name == name){
-            
-//          return a application scope
-            if(item.type == 'application'){
-                var scope= item;
-                var x= function(thread){
-                    scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
-                    if(scope.settings.autoLock) scope.settings.isLocked= true;
-                    engine.threadQueue.push(scope);
-                    };
-                x.get= function(name){
-                    if(scope.settings.allowGetters && scope.properties[name]){
-                        handleEvents(scope, name);
-                        return scope.properties[name];
-                    }else{
-                        return null;
-                        }
-                    };
-                x.set= function(name, value){
-                    if(scope.settings.allowSetters && scope.properties[name]){
-                        scope.properties[name]= value;
-                        handleEvents(scope, name);
-                        return true;
-                    }else{
-                        return false;
-                        }
-                    };
-                x.override= scope.override;
-                
-//          return a addon scope (at the moment only mozilla)
-            }else if(item.type == 'addon'){
-                var scope= item;
-                return {
-                    create : function(deps, thread){
-                        var dependencies= [];
-                        deps.forEach(function(item){
-                            dependencies.push(self.require(item));
-                        });
-                        scope.thread= function(){ thread(...dependencies); };
-                        engine.threadQueue.push(scope);
-                        },
-                    'module' : function(deps, f){
-                        var dependencies= [];
-                        deps.forEach(function(item){
-                            dependencies.push(self.require(item));
-                        });
-                        f.apply(self.exports, dependencies);
-                        }
-                    };
-                }
-            return x;
-			}
-		};
     
 //  special handling for the application key
 	if(name == 'application'){
         if(engine.mainApplication){
             name= engine.mainApplication.name;
-            return prepare(engine.mainApplication);
+            return prepareScope(engine.mainApplication);
         }else{
             throw 'Can not access "application"! No main application was set!';
-            }
+        }
         
 //  special handling for the eninge key
 	}else if(name == 'engine'){
@@ -301,14 +311,13 @@ var scopeSelector = function(name){
                     }
                 }
 			};
-        
-//  default handling for all other keys
+    }else if(engine.type == 'MozillaAddonSDK' && findScope('addon').modules[name]){
+        return findScope('addon').modules[name];
 	}else{
-		for (var i=0; i < scopes.length; i++){
-			return prepare(scopes[i]);
-			}
-		}
-	};
+//      default handling for all other keys
+        return prepareScope(findScope(name));
+    }
+};
 
 //preprocesses source from any function.
 var preProcesse= function(func){
@@ -372,7 +381,7 @@ if (self.navigator){
     platform.push('Web');
 
 // check if current platform is the Mozilla Add-on runtime
-}else if(self.exports && self.Components){
+}else if(self.exports && self.require && self.module){
     var system= self.require('sdk/system');
     platform= [system.name, system.version, 'MozillaAddonSDK'];
 
