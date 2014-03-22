@@ -202,14 +202,14 @@ var handleEvents= function(scope, key){
     scope.setterListeners.forEach(function(item){
         if(item.key == key)
         item.callback(scope.properties[key]);
-        });
+    });
     scope.waitList.forEach(function(item, i){
         if(item.key == key){
             item.callback(scope.properties[key]);
             scope.waitList.splice(i, 1);
-            }
-        });
-    };
+        }
+    });
+};
     
 var findScope= function(name){
     for(var i=0; i < scopes.length; i++){
@@ -268,6 +268,9 @@ var prepareScope= function(item){
                 },
                 hook : function(globalObject){
                     scope.global= globalObject;
+                },
+                dataURL : function(name){
+                    return self.require('sdk/self').data.url(name);
                 }
             };
         }
