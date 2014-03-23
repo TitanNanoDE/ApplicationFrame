@@ -188,12 +188,6 @@ var handleEvents= function(scope, key){
         if(item.key == key)
         item.callback(scope.properties[key]);
     });
-    scope.waitList.forEach(function(item, i){
-        if(item.key == key){
-            item.callback(scope.properties[key]);
-            scope.waitList.splice(i, 1);
-        }
-    });
 };
     
 var findScope= function(name){
