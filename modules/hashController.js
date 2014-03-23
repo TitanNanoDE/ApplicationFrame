@@ -36,7 +36,10 @@ $('new')({
         HashEvent.LOST= 1;
         
         self.addEventListener('hashchange', function(){
-            var hashPath= self.location.hash.split('/');
+            if(self.location.hash == "")
+                var hashPath= ('#!/').split('/');
+            else
+                var hashPath= self.location.hash.split('/');
             
 //          check hash path
             if(hashPath[0] != '#!'){
@@ -93,7 +96,13 @@ $('new')({
         });
 
         this.mount= function(path, enter, exit){
-            return engine.hash.actions.push({path: path, enter : enter, exit: exit});
+            if(path instanceof Array)
+                path.forEach(function(item){
+                    engine.hash.actions.push({path : item, enter : enter, exit : exit});
+                });
+            else
+                engine.hash.actions.push({path : path, enter : enter, exit : exit});
+            return true;
         };
         
         this.unmount= function(id){
@@ -113,6 +122,11 @@ $('new')({
         
         this.swichTo= function(path){
             self.location.hash= '!' + path;
+        };
+        
+        this.trigger= function(){
+            var e= new self.Event('hashchange');
+            self.dispatchEvent(e);
         };
     }
 });
