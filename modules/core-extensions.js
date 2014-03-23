@@ -44,8 +44,36 @@ var forEach= function(callback){
     };
 
 // if your required list type isn't here just add it
-if(self.Array && !self.Array.forEach) self.Array.prototype.forEach= forEach;
+self.Array.prototype.forEach= forEach;
 if(self.NodeList && !self.NodeList.forEach) self.NodeList.prototype.forEach= forEach;
 if(self.navigator && self.navigator.isTouch && !self.TouchList.forEach) self.TouchList.prototype.forEach= forEach;
+    
+/* --- DOM Node extensions --- */
+if(self.Node){
+    self.Node.prototype.transition= function(add, remove){
+        var node= this;
+        return new self.Promise(function(setValue){
+//          set event listener            
+            node.addEventListener('transitionend', function x(e){
+                this.removeEventListener('transitionend', x);
+                setValue(this, e);
+            });
+//          set css classes
+            if(add && add instanceof Array)
+                add.forEach(function(item){
+                    node.classList.add(item);
+                });
+            else if(add)
+                node.classList.add(add);
+            
+            if(remove && remove instanceof Array)
+                remove.forEach(function(item){
+                    node.classList.add(item);
+                });
+            else if(remove)
+                node.classList.remove(remove);
+        });  
+    };
+}
     
 });
