@@ -81,7 +81,7 @@ $('new')({
 				loop();
 				}
 			};
-		};
+        };
         
 	this.pack= function(pack){
         if(pack.ready){
