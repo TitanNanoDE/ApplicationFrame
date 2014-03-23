@@ -43,25 +43,11 @@ var ApplicationScope= function(name){
 	this.properties=  { 
         addSetterListener : function(key, callback){
 			thisScope.setterListeners.push({key : key, callback : callback});
-			},
-        wait : function(key, callback){
-            thisScope.waitList.push({key : key, callback : callback});
-            },
-		dom : function(selector){
-			return {
-				setProperty : function(name, value){
-					engine.domUpdates.push({selector : selector, type : 'property', name : name, value : value});
-					},
-				setCSS : function(name, value){
-					engine.domUpdates.push({selector : selector, type : 'style', name : name, value : value});
-					}
-				};
-            }
+			}
         };
 	this.thread= null;
 	this.worker= null;
 	this.setterListeners= [];
-    this.waitList= [];
     this.override= function(newSettings){
         if(!thisScope.settings.lockOverride){
             for(var i in newSettings)
@@ -153,49 +139,48 @@ var items= {
                 }else if(!this.type.length){
                     this.action();
                     engine.launchQueue.splice(engine.launchQueue.indexOf(this), 1);
-                    }
-                };
+                }
+            };
             
             if(typeof object == 'object'){
                 object.push= push;
                 engine.launchQueue.push(object);
                 return true;
-            }else
-                throw 'The launch queue only accepts launch objects!';
-            },
+            }else self.console.error('The launch queue only accepts launch objects!');
+        },
         trigger : function(type){
             engine.launchQueue.forEach(function(i){
                 if(i.type == type) i.push();
-                });
-            }
-        },
+            });
+        }
+    },
     dom : {
         select : function(query){
             return self.document.querySelector(query);
-            },
+        },
         selectAll : function(query){
             return self.document.querySelectorAll(query);
-            }
         },
+        append : function(element, target){
+            target.appendChild(element);    
+        }
+    },
     escape : {
         wrapper : function(sub){
             if(sub())
                 return true;
             else
                 return false;
-            },
-        shell : function(sub){
-        
-            }
-        },
-	};
+        }
+    },
+};
     
 //selects a item of the items hash.
 var selector= function(name){
 	if(items[name])
 		return items[name];
 	else
-		throw 'unknown selector!!';
+		self.console.error('unknown selector!!');
 	};
 
 var handleEvents= function(scope, key){
