@@ -4,7 +4,7 @@
 
 $('new')({
     name : 'fileSystem',
-    construct : function(engine){
+    constructor : function(engine){
         var module= this;
         var db;
         var request= self.indexedDB.open("pf.filesystem", 2);
@@ -46,7 +46,7 @@ $('new')({
             this.saveTo= function(args){
                 var system= args.system || "main";
                 var path= args.path || "";
-                self.$fileSystem.saveFileTo({file : this, path : path, system : system});
+                $('fileSystem').saveFileTo({file : this, path : path, system : system});
                 };
             this.mimeType= this.data.type || "text/plain";
             };
