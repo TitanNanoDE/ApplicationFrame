@@ -163,6 +163,9 @@ var items= {
         },
         append : function(element, target){
             target.appendChild(element);    
+        },
+        create : function(elementName){
+            return self.document.createElement(elementName);
         }
     },
     escape : {
