@@ -1,9 +1,10 @@
 Application Frame [![Build Status](https://travis-ci.org/TitanNano/ApplicationFrame.png?branch=master)](https://travis-ci.org/TitanNano/ApplicationFrame)
 ================
 
-Application Frame is a small JavaScript Framework / Library. 
+Application Frame is a small JavaScript Framework / Library at realy early alpha stage. 
 
-The core file 'af.js' contains the engine to manage one or more webapplications and different services / webworkers. The exact syntax and techniques to use af.js will be placed in the wiki soon. The lib and modules folders contain different modules which aren't realy related to af.js but are parts of the Library.
+The core af.js contains the engine to manage one or more webapplications and different services / webworkers. The exact syntax and techniques to use af.js will be placed in the wiki soon. 
+The lib and modules folders contain different modules which aren't realy related to af.js but are parts of the Library.
 
 Application Frame will be compatible with:
 
@@ -15,8 +16,8 @@ Application Frame will be compatible with:
 - latest WebRT from Mozilla
 - latest B2G
 
-Items marked with a 'X' aren't supportet at any way. Items marked with a number have special focus from a developer. All other should be compatible.
+Items marked with a 'X' aren't supported at all. Items marked with a number have special focus from a developer. All other should be compatible.
 
-Developers with special Focus for support of a application:
+Developers with special Focus for support of an application:
 
 1. Jovan Gerodetti
