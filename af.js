@@ -207,29 +207,31 @@ var prepareScope= function(item){
 //      return a application scope
         if(item.type == 'application'){
             var scope= item;
-            var x= function(thread){
-                scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
-                if(scope.settings.autoLock) scope.settings.isLocked= true;
-                engine.threadQueue.push(scope);
+            return {
+                thread : function(thread){
+                    scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
+                    if(scope.settings.autoLock) scope.settings.isLocked= true;
+                    engine.threadQueue.push(scope);
+                },
+                get : function(name){
+                    if(scope.settings.allowGetters && scope.properties[name]){
+                        handleEvents(scope, name);
+                        return scope.properties[name];
+                    }else{
+                        return null;
+                    }
+                },
+                set : function(name, value){
+                    if(scope.settings.allowSetters && scope.properties[name]){
+                        scope.properties[name]= value;
+                        handleEvents(scope, name);
+                        return true;
+                    }else{
+                        return false;
+                    }
+                },
+                override : scope.override
             };
-            x.get= function(name){
-                if(scope.settings.allowGetters && scope.properties[name]){
-                    handleEvents(scope, name);
-                    return scope.properties[name];
-                }else{
-                    return null;
-                }
-            };
-            x.set= function(name, value){
-                if(scope.settings.allowSetters && scope.properties[name]){
-                    scope.properties[name]= value;
-                    handleEvents(scope, name);
-                    return true;
-                }else{
-                    return false;
-                }
-            };
-            x.override= scope.override;
                 
         }else if(item.type == 'addon'){
 //          return a addon scope (at the moment only mozilla)
@@ -256,7 +258,6 @@ var prepareScope= function(item){
                 }
             };
         }
-        return x;
     }else{
         return null;
     }
