@@ -16,7 +16,7 @@ $_('engine').override({
 $('application').new('test');
 $('application').new('test-master');
 
-$_('test')(function(){
+$_('test').main(function(){
     console.log('helper Application spawned!');
     this.property= 'value - 000';
 });
