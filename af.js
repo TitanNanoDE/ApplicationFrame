@@ -218,7 +218,7 @@ var prepareScope= function(item){
         if(item.type == 'application'){
             var scope= item;
             return {
-                thread : function(thread){
+                main : function(thread){
                     scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
                     if(scope.settings.autoLock) scope.settings.isLocked= true;
                     engine.threadQueue.push(scope);
@@ -282,7 +282,7 @@ var scopeSelector = function(name){
             name= engine.mainApplication.name;
             return prepareScope(engine.mainApplication);
         }else{
-            throw 'Can not access "application"! No main application was set!';
+            throw 'Can not access "application"! No main application is set!';
         }
         
 //  special handling for the eninge key
