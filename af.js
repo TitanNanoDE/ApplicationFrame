@@ -167,7 +167,7 @@ var items= {
         create : function(elementName){
             return self.document.createElement(elementName);
         },
-        enrtyPoint : function(entryPoint){
+        entryPoint : function(entryPoint){
             return {
                 select : function(query){
                     entryPoint.querySelector(query);
