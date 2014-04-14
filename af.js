@@ -170,10 +170,10 @@ var items= {
         entryPoint : function(entryPoint){
             return {
                 select : function(query){
-                    entryPoint.querySelector(query);
+                    return entryPoint.querySelector(query);
                 },
                 selectAll : function(query){
-                    entryPoint.querySelectorAll(query);
+                    return entryPoint.querySelectorAll(query);
                 }
             };
         }
