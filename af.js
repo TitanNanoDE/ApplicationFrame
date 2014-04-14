@@ -166,6 +166,16 @@ var items= {
         },
         create : function(elementName){
             return self.document.createElement(elementName);
+        },
+        enrtyPoint : function(entryPoint){
+            return {
+                select : function(query){
+                    entryPoint.querySelector(query);
+                },
+                selectAll : function(query){
+                    entryPoint.querySelectorAll(query);
+                }
+            };
         }
     },
     escape : {
