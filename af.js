@@ -146,7 +146,10 @@ var items= {
                 object.push= push;
                 engine.launchQueue.push(object);
                 return true;
-            }else self.console.error('The launch queue only accepts launch objects!');
+            }else{
+                self.console.error('The launch queue only accepts launch objects!');
+                return false;
+            }
         },
         trigger : function(type){
             engine.launchQueue.forEach(function(i){
@@ -194,6 +197,7 @@ var selector= function(name){
 		return items[name];
 	else
 		self.console.error('unknown selector!!');
+        return null;
 	};
 
 var handleEvents= function(scope, key){
@@ -207,9 +211,8 @@ var findScope= function(name){
     for(var i=0; i < scopes.length; i++){
         if(scopes[i].name == name)
             return scopes[i];
-        else
-            return null;
     }
+    return null;
 };
 
 var prepareScope= function(item){
@@ -267,7 +270,8 @@ var prepareScope= function(item){
                     return self.require('sdk/self').data.url(name);
                 }
             };
-        }
+        }else 
+            return null;
     }else{
         return null;
     }
@@ -395,10 +399,13 @@ engine.type= platform[2];
 Tests for Web platforms.
 If any test fails Application Frame will quit but at the moment only a notification in the console will be shown.
 */
+//workaround for XUL Runner error while testing the storage and indexedDB features. They are both not avaiable, so the whole app runs in to an error while testing.
+var isNotChromeURL= (self.location.protocol != 'chrome:');
+    
 if(platform[2] == 'Web'){
     var platformTests= {
-        storrage : (self.sessionStorage && self.localStorage),
-        indexedDB : (self.indexedDB),
+        storrage : isNotChromeURL && (self.sessionStorage && self.localStorage),
+        indexedDB : isNotChromeURL && (self.indexedDB),
         notifications : (self.Notification),
         renderFrame : (self.requestAnimationFrame),
         audio : (self.Audio),
