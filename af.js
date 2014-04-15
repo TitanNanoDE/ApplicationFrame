@@ -162,7 +162,7 @@ var items= {
             return self.document.querySelectorAll(query);
         },
         append : function(element, target){
-            target.appendChild(element);    
+            return target.appendChild(element);    
         },
         create : function(elementName){
             return self.document.createElement(elementName);
