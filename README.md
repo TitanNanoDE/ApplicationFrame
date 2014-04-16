@@ -1,5 +1,5 @@
 Application Frame [![Build Status](https://travis-ci.org/TitanNano/ApplicationFrame.png?branch=master)](https://travis-ci.org/TitanNano/ApplicationFrame)
-================
+=================================
 
 Application Frame is a small JavaScript Framework / Library at realy early alpha stage. 
 
@@ -21,3 +21,8 @@ Items marked with a 'X' aren't supported at all. Items marked with a number have
 Developers with special Focus for support of an application:
 
 1. Jovan Gerodetti
+
+
+==================================
+
+Application Frame 0.1-preview http://github.com/TitanNano/ApplicationFrame
