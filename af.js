@@ -399,10 +399,11 @@ engine.type= platform[2];
 Tests for Web platforms.
 If any test fails Application Frame will quit but at the moment only a notification in the console will be shown.
 */
-//workaround for XUL Runner error while testing the storage and indexedDB features. They are both not avaiable, so the whole app runs in to an error while testing.
-var isNotChromeURL= (self.location.protocol != 'chrome:');
     
 if(platform[2] == 'Web'){
+//  workaround for XUL Runner error while testing the storage and indexedDB features. They are both not avaiable, so the whole app runs in to an error while testing.
+    var isNotChromeURL= (self.location.protocol != 'chrome:');
+    
     var platformTests= {
         storrage : isNotChromeURL && (self.sessionStorage && self.localStorage),
         indexedDB : isNotChromeURL && (self.indexedDB),
