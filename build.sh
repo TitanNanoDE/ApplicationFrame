@@ -15,9 +15,8 @@ echo "engine: $ENGINE"
 if [ "$BUILD_DIR" != "" ]
 then
 	rm -rf $BUILD_DIR
-	mkdir -p ./target
-	rsync -r ./ ./target --exclude target
-	mv ./target $BUILD_DIR
+	mkdir -p $BUILD_DIR
+	rsync -r ./ $BUILD_DIR --exclude '*.md' --exclude '*.sh'
 	cd $BUILD_DIR
 fi
 
