@@ -5,7 +5,7 @@ $('escape').wrapper(function(){
     "use strict";
 
 /* --- eventManagement --- */
-    self.EventManager= function(){
+    $$.EventManager= function(){
         var listeners= [];
         this.addEventListener= function(type, listener, useCapture){
             listeners.push({
@@ -24,7 +24,7 @@ $('escape').wrapper(function(){
         };
 	
 /* --- advanced Prototyping --- */
-    self.prototyping= function(object, types){
+    $$.prototyping= function(object, types){
         var prototype= {};
         types.forEach(function(Item){
             Item.apply(object);
@@ -44,15 +44,15 @@ var forEach= function(callback){
     };
 
 // if your required list type isn't here just add it
-self.Array.prototype.forEach= forEach;
-if(self.NodeList && !self.NodeList.forEach) self.NodeList.prototype.forEach= forEach;
-if(self.navigator && self.navigator.isTouch && !self.TouchList.forEach) self.TouchList.prototype.forEach= forEach;
+$$.Array.prototype.forEach= forEach;
+if($$.NodeList && !$$.NodeList.forEach) $$.NodeList.prototype.forEach= forEach;
+if($$.navigator && $$.navigator.isTouch && !$$.TouchList.forEach) $$.TouchList.prototype.forEach= forEach;
     
 /* --- DOM Node extensions --- */
-if(self.Node){
-    self.Node.prototype.transition= function(add, remove){
+if($$.Node){
+    $$.Node.prototype.transition= function(add, remove){
         var node= this;
-        return new self.Promise(function(setValue){
+        return new $$.Promise(function(setValue){
 //          set event listener            
             node.addEventListener('transitionend', function x(e){
                 this.removeEventListener('transitionend', x);

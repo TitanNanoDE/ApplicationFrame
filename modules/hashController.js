@@ -27,7 +27,7 @@ $('new')({
                             item.exit();
                     });
                 }else{
-                    self.console.error('unknown HashEvent type!');
+                    $$.console.error('unknown HashEvent type!');
                 }
             };
         };
@@ -35,15 +35,15 @@ $('new')({
         HashEvent.ADD= 0;
         HashEvent.LOST= 1;
         
-        self.addEventListener('hashchange', function(){
-            if(self.location.hash == "")
+        $$.addEventListener('hashchange', function(){
+            if($$.location.hash == "")
                 var hashPath= ('#!/').split('/');
             else
-                var hashPath= self.location.hash.split('/');
+                var hashPath= $$.location.hash.split('/');
             
 //          check hash path
             if(hashPath[0] != '#!'){
-                self.console.error('error in your hash path!'); 
+                $$.console.error('error in your hash path!'); 
                 return false;
             }
             hashPath.shift();
@@ -89,9 +89,9 @@ $('new')({
             engine.hash.path= hashPath;
             
 //          Google Analytics Support (only analytics.js)
-            if(self.ga){
-                var location= self.location.protocol + '//' + self.location.hostname + self.location.pathname + self.location.search + self.location.hash;
-                self.ga('send', 'pageview', location);
+            if($$.ga){
+                var location= $$.location.protocol + '//' + $$.location.hostname + $$.location.pathname + $$.location.search + $$.location.hash;
+                $$.ga('send', 'pageview', location);
             }
         });
 
@@ -110,23 +110,23 @@ $('new')({
         };
         
         this.down= function(newElement){
-            self.location.hash+= '/' + newElement;
+            $$.location.hash+= '/' + newElement;
         };
         
         this.up= function(){
-            var hash= self.location.hash.split('/');
+            var hash= $$.location.hash.split('/');
             hash.shift();
             hash.pop();
-            self.location.hash= '!/' + hash.join('/');
+            $$.location.hash= '!/' + hash.join('/');
         };
         
         this.swichTo= function(path){
-            self.location.hash= '!' + path;
+            $$.location.hash= '!' + path;
         };
         
         this.trigger= function(){
-            var e= new self.Event('hashchange');
-            self.dispatchEvent(e);
+            var e= new $$.Event('hashchange');
+            $$.dispatchEvent(e);
         };
     }
 });

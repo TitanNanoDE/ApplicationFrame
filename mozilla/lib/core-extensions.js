@@ -1,13 +1,13 @@
 //default core extensions for the default Application Frame modules - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
-var {$, $_}= self.require('af/core');
+var {$, $_}= $$.require('af/core');
 
 $('addon').module([], function(){
 
 "use strict";
 
 /* --- eventManagement --- */
-    self.EventManager= function(){
+    $$.EventManager= function(){
         var listeners= [];
         this.addEventListener= function(type, listener, useCapture){
             listeners.push({
@@ -26,7 +26,7 @@ $('addon').module([], function(){
         };
 	
 /* --- advanced Prototyping --- */
-    self.prototyping= function(object, types){
+    $$.prototyping= function(object, types){
         var prototype= {};
         types.forEach(function(Item){
             Item.apply(object);
@@ -46,8 +46,8 @@ var forEach= function(callback){
     };
 
 // if your required list type isn't here just add it
-if(self.Array && !self.Array.forEach) self.Array.prototype.forEach= forEach;
-if(self.NodeList && !self.NodeList.forEach) self.NodeList.prototype.forEach= forEach;
-if(self.navigator && self.navigator.isTouch && !self.TouchList.forEach) self.TouchList.prototype.forEach= forEach;
+if($$.Array && !$$.Array.forEach) $$.Array.prototype.forEach= forEach;
+if($$.NodeList && !$$.NodeList.forEach) $$.NodeList.prototype.forEach= forEach;
+if($$.navigator && $$.navigator.isTouch && !$$.TouchList.forEach) $$.TouchList.prototype.forEach= forEach;
     
 });

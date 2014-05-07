@@ -8,9 +8,9 @@ $('new')({
         this.unpack= function(pack){
             pack.files.forEach(function(item, index){
                 if(item.content.length === item.length){
-                    var buffer= self.lib.b64.decode(item.content);
-                    var blob= new self.Blob([buffer], { type : item.type });
-                    var file= new self.TNFile(item.path.substring(item.path.lastIndexOf('/')+1, item.path.indexOf('.')), item.path.substr(item.path.indexOf('.')+1), blob);
+                    var buffer= $$.lib.b64.decode(item.content);
+                    var blob= new $$.Blob([buffer], { type : item.type });
+                    var file= new $$.TNFile(item.path.substring(item.path.lastIndexOf('/')+1, item.path.indexOf('.')), item.path.substr(item.path.indexOf('.')+1), blob);
                     file.saveTo({path : 'packages/'+pack.name+item.path.substring(0, item.path.lastIndexOf('/')+1)});
                 }else{
                     throw 'Failed to unpack "'+pack.name+'": wrong length for item '+index+'!!';
@@ -18,7 +18,7 @@ $('new')({
             });
         };
         this.Package= function(name){
-            self.prototyping(this, [self.EventManager]);
+            $$.prototyping(this, [$$.EventManager]);
             var object= this;
             this.name= name;
             this.files= [];
@@ -27,12 +27,12 @@ $('new')({
             var queue= [];
             var setReady= function(){
                 object.ready= true;
-                var event= new self.CustomEvent('ready');
+                var event= new $$.CustomEvent('ready');
                 object.dispatchEvent(event);
             };
             var setWorking= function(){
                 object.ready= false;
-                var event= new self.CustomEvent('working');
+                var event= new $$.CustomEvent('working');
                 object.dispatchEvent(event);
             };
             var loop= function(){
@@ -41,9 +41,9 @@ $('new')({
                 if(typeof item.object === "string"){
                     var block= {
                         path : this.path,
-                        content : self.btoa(object),
+                        content : $$.btoa(object),
                         type : "text/plain",
-                        length : self.btoa(object).length
+                        length : $$.btoa(object).length
                     };
                     object.files.push(block);
                     if(queue.length > 0){
@@ -51,8 +51,8 @@ $('new')({
                     }else{
                         setReady();
                     }
-                }else if(item.object instanceof self.Blob){
-                    var reader= new self.FileReader();
+                }else if(item.object instanceof $$.Blob){
+                    var reader= new $$.FileReader();
                     reader.onloadend= function(event){
                         var content= event.target.result.substring(event.target.result.indexOf(',')+1);
                         var block= {
@@ -88,7 +88,7 @@ $('new')({
                pack.fileCount= pack.files.length;
                return JSON.stringify(pack, null, '  ');
            }else{
-               self.console.warn("Package \""+pack.name+"\" is not read!!");
+               $$.console.warn("Package \""+pack.name+"\" is not read!!");
            }
         };
 		
@@ -97,7 +97,7 @@ $('new')({
         };
         
         this.download= function(path){
-            var request= new self.XMLHttpRequest();
+            var request= new $$.XMLHttpRequest();
             request.open('GET', path, true);
             var manager= this;
             request.onreadystatechange= function(){

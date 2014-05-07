@@ -2,7 +2,7 @@
 
 (function(){
     
-this.self= this, "use strict"; 
+this.$$= this; "use strict"; 
   
 //default settings for the Application Frame Engine
 var settings= {
@@ -87,11 +87,11 @@ var ServiceScopeLocal= function(){
     };
     this.properties= {
         recive : function(name, callback){
-            self.addEventListener('message', function(e){
+            $$.addEventListener('message', function(e){
                 if(e.data.name == name){
                     var id= e.data.id;
                     var setAnswert= function(data){
-                        self.postMessage({
+                        $$.postMessage({
                             name : id,
                             data : data
                         });
@@ -119,7 +119,7 @@ var ServiceScopeRemote= function(name){
 ServiceScopeRemote.prototype= {
     push : function(message){
         var scope= this;
-        return new self.Promise(function(setSuccess){
+        return new $$.Promise(function(setSuccess){
             var id= Date.now();
             message.id= id;
             var listener= function(e){
@@ -170,7 +170,7 @@ var items= {
                 if(settings.masterApplication == scopes[scopes.length-1].name) 
                     engine.mainApplication= scopes[scopes.length-1];
 			}else
-                self.console.log("application or service \""+name+"\" already exists!!");
+                $$.console.log("application or service \""+name+"\" already exists!!");
 				
 			}
 		},
@@ -184,7 +184,7 @@ var items= {
             if(!exists){
                 scopes.push(new ServiceScopeRemote(name));
             }else
-                self.console.log("application or service \""+name+"\" already exists!!");
+                $$.console.log("application or service \""+name+"\" already exists!!");
         },
         setEngine : function(src){
             engine.workerEngineSource= src;
@@ -208,7 +208,7 @@ var items= {
         if(settings.name && !items[settings.name])
             items[settings.name]= object;
         else
-            self.console.error("No or ilegall name!");
+            $$.console.error("No or ilegall name!");
         if(settings._init){
             if(settings.nameSpace)
                 settings._init(engine[settings.nameSpace], settings.object);
@@ -237,7 +237,7 @@ var items= {
                 engine.launchQueue.push(object);
                 return true;
             }else{
-                self.console.error('The launch queue only accepts launch objects!');
+                $$.console.error('The launch queue only accepts launch objects!');
                 return false;
             }
         },
@@ -249,16 +249,16 @@ var items= {
     },
     dom : {
         select : function(query){
-            return self.document.querySelector(query);
+            return $$.document.querySelector(query);
         },
         selectAll : function(query){
-            return self.document.querySelectorAll(query);
+            return $$.document.querySelectorAll(query);
         },
         append : function(element, target){
             return target.appendChild(element);    
         },
         create : function(elementName){
-            return self.document.createElement(elementName);
+            return $$.document.createElement(elementName);
         },
         entryPoint : function(entryPoint){
             return {
@@ -286,7 +286,7 @@ var selector= function(name){
 	if(items[name])
 		return items[name];
 	else
-		self.console.error('unknown selector!!');
+		$$.console.error('unknown selector!!');
         return null;
 	};
 
@@ -357,20 +357,20 @@ var prepareScope= function(item){
                     scope.global= globalObject;
                 },
                 dataURL : function(name){
-                    return self.require('sdk/self').data.url(name);
+                    return $$.require('sdk/self').data.url(name);
                 }
             };
         }else if(item.type == 'serviceRemote'){
             var scope= item;
             return {
                 main : function(source){
-                    scope.thread= new self.Worker(engine.workerEngineSource);
-                    var source= 'self.__main__= ' + source.toString();
-                    source= new self.Blob([source], { type : 'text/javascript' });
+                    scope.thread= new $$.Worker(engine.workerEngineSource);
+                    var source= '$$.__main__= ' + source.toString();
+                    source= new $$.Blob([source], { type : 'text/javascript' });
                     var firstStage= new WorkerStack({
                         action : 'initThread',
                         settings : scope.settings,
-                        source : self.URL.createObjectURL(source)
+                        source : $$.URL.createObjectURL(source)
                     });
                     scope.pushStack(firstStage).then(function(){
                         scope.isReady= true;
@@ -378,7 +378,7 @@ var prepareScope= function(item){
                 },
                 call : function(name, argumentS){
                     if(scope.isReady){
-                        return new self.Promise(function(setSuccess){
+                        return new $$.Promise(function(setSuccess){
                             scope.callStack({
                                 action : 'callFunction',
                                 call : name,
@@ -435,7 +435,7 @@ var scopeSelector = function(name){
 					}
 				},
 			stop : function(){
-				self.location.replace(settings.crashPage);
+				$$.location.replace(settings.crashPage);
 				},
             requestRoot : function(scope){
                 if( (engine.type == 'Node') && (scope == engine.mainApplication.properties) ){
@@ -504,8 +504,8 @@ var engine = {
 var platform= null;    
 
 // find out which engine is used
-if (self.navigator && !self.importScripts){
-    platform= self.navigator.userAgent;
+if ($$.navigator && !$$.importScripts){
+    platform= $$.navigator.userAgent;
 //              Mozilla
     platform=   (((platform.indexOf('Gecko/') > -1) && 'Gecko '+platform.substring(platform.indexOf('rv:')+3, platform.indexOf(')')) ) || false) ||
 //              Google / Apple / Opera
@@ -518,8 +518,8 @@ if (self.navigator && !self.importScripts){
     platform.push('Web');
 
 // check if we are in a Worker
-}else if(self.navigator && self.importScripts){
-    platform= self.navigator.userAgent;
+}else if($$.navigator && $$.importScripts){
+    platform= $$.navigator.userAgent;
 //              Mozilla
     platform=   (((platform.indexOf('Gecko/') > -1) && 'Gecko '+platform.substring(platform.indexOf('rv:')+3, platform.indexOf(')')) ) || false) ||
 //              Google / Apple / Opera
@@ -532,13 +532,13 @@ if (self.navigator && !self.importScripts){
     platform.push('Worker');
     
 // check if current platform is the Mozilla Add-on runtime
-}else if(self.exports && self.require && self.module){
-    var system= self.require('sdk/system');
+}else if($$.exports && $$.require && $$.module){
+    var system= $$.require('sdk/system');
     platform= [system.name, system.version, 'MozillaAddonSDK'];
 
 // check if current platform is the Node.js runtime
-}else if(self.process && self.process.versions && self.process.env && self.process.pid){
-    platform= ['Node.js', self.process.versions.node, 'Node'];
+}else if($$.process && $$.process.versions && $$.process.env && $$.process.pid){
+    platform= ['Node.js', $$.process.versions.node, 'Node'];
     }
     
 //  set platform type
@@ -553,35 +553,35 @@ If any test fails Application Frame will quit but at the moment only a notificat
     
 if(platform[2] == 'Web'){
 //  workaround for XUL Runner error while testing the storage and indexedDB features. They are both not avaiable, so the whole app runs in to an error while testing.
-    var isNotChromeURL= (self.location.protocol != 'chrome:');
+    var isNotChromeURL= ($$.location.protocol != 'chrome:');
     
     var platformTests= {
-        storrage : isNotChromeURL && (self.sessionStorage && self.localStorage),
-        indexedDB : isNotChromeURL && (self.indexedDB),
-        notifications : (self.Notification),
-        renderFrame : (self.requestAnimationFrame),
-        audio : (self.Audio),
-        indexOf : (self.Array.indexOf),
-        forEach : (self.Array.forEach),
-        geolocation : (self.navigator.geolocation),
-        appCache : (self.applicationCache),
-        xcom : (self.postMessage),
-        blobs : (self.Blob),
-        clipBoard : (self.ClipboardEvent),
-        file : (self.File),
-        fileReader : (self.FileReader),
-        hashchange : (typeof self.onhashchange != "undefined"),
-        json : (self.JSON),
-        matchMedia : (self.matchMedia),
-        timing : (self.PerformanceTiming),
-        pageVisibility : ((typeof self.document.hidden != "undefined") && self.document.visibilityState),
-        serverSentEvent : (self.EventSource),
-        webWorker : (self.Worker),
-//        sharedWebWorker : (self.SharedWorker), <--- disabled because it isn't really supported in any web engine 
-        arrayBuffer : (self.ArrayBuffer),
-        webSocket : (self.WebSocket),
-        computedStyle : (self.getComputedStyle),
-        deviceOrientation : (self.DeviceOrientationEvent),
+        storrage : isNotChromeURL && ($$.sessionStorage && $$.localStorage),
+        indexedDB : isNotChromeURL && ($$.indexedDB),
+        notifications : ($$.Notification),
+        renderFrame : ($$.requestAnimationFrame),
+        audio : ($$.Audio),
+        indexOf : ($$.Array.indexOf),
+        forEach : ($$.Array.forEach),
+        geolocation : ($$.navigator.geolocation),
+        appCache : ($$.applicationCache),
+        xcom : ($$.postMessage),
+        blobs : ($$.Blob),
+        clipBoard : ($$.ClipboardEvent),
+        file : ($$.File),
+        fileReader : ($$.FileReader),
+        hashchange : (typeof $$.onhashchange != "undefined"),
+        json : ($$.JSON),
+        matchMedia : ($$.matchMedia),
+        timing : ($$.PerformanceTiming),
+        pageVisibility : ((typeof $$.document.hidden != "undefined") && $$.document.visibilityState),
+        serverSentEvent : ($$.EventSource),
+        webWorker : ($$.Worker),
+//        sharedWebWorker : ($$.SharedWorker), <--- disabled because it isn't really supported in any web engine 
+        arrayBuffer : ($$.ArrayBuffer),
+        webSocket : ($$.WebSocket),
+        computedStyle : ($$.getComputedStyle),
+        deviceOrientation : ($$.DeviceOrientationEvent),
 //        spread : (function(){try{ return eval("var x; x= [1, 2, 3], (function(x, y, z){})(...x), true;"); }catch(e){ return false; }})()
     };
     
@@ -607,29 +607,29 @@ for(var i in platformTests){
     allTests++;
     if(!platformTests[i]){
         faildTests++;
-        self.console.log("Test for '"+i+"' faild!!");
+        $$.console.log("Test for '"+i+"' faild!!");
         }
 }
 
 //if a test failed the engine will quit
 if(faildTests > 0){
-    self.console.warn(faildTests+' of '+allTests+' platform tests are faild!');
+    $$.console.warn(faildTests+' of '+allTests+' platform tests are faild!');
 //    engine.exit(0);
 }
     
 // setup environment
 if(platform[2] == 'Web' || platform[2] == 'Worker'){
 //  check if touchscreen is supported
-    self.navigator.isTouch= 'ontouchstart' in self;
+    $$.navigator.isTouch= 'ontouchstart' in $$;
     engine.name= platform[0];
     engine.version= platform[1];
-    engine.platform= self.navigator.userAgent.substring(self.navigator.userAgent.indexOf('(')+1, self.navigator.userAgent.indexOf(';'));
-    engine.arch= self.navigator.userAgent.substring(self.navigator.userAgent.indexOf(';')+2, self.navigator.userAgent.indexOf(';', self.navigator.userAgent.indexOf(';')+1));
+    engine.platform= $$.navigator.userAgent.substring($$.navigator.userAgent.indexOf('(')+1, $$.navigator.userAgent.indexOf(';'));
+    engine.arch= $$.navigator.userAgent.substring($$.navigator.userAgent.indexOf(';')+2, $$.navigator.userAgent.indexOf(';', $$.navigator.userAgent.indexOf(';')+1));
     engine.type= 'Web';
     
 //  publish APIs
-    self.$= selector;
-    self.$_= scopeSelector;
+    $$.$= selector;
+    $$.$_= scopeSelector;
 
 // worker additions
     if(platform[2] == 'Worker'){
@@ -638,11 +638,11 @@ if(platform[2] == 'Web' || platform[2] == 'Worker'){
         scopes.push(scope);
         scope.properties.recive('transferStack', function(e, setAnswert){
             if(e.data.action == 'initThread'){
-                self.importScripts(e.data.source);
+                $$.importScripts(e.data.source);
                 $_('engine').override(e.data.settings);
-                scope.thread= self.__main__;
+                scope.thread= $$.__main__;
                 engine.threadQueue.push(scope);
-                self.console.log('sending answert...');
+                $$.console.log('sending answert...');
                 setAnswert({
                     status : true,
                     statusText : 'success'
@@ -658,22 +658,22 @@ if(platform[2] == 'Web' || platform[2] == 'Worker'){
     engine.version= platform[1];
     engine.platform= platform[2];
     engine.type= 'MozAddon';
-//    self.require('af/addonCore.js'); // <--- does not exist yet. Not sure if it is really needed
+//    $$.require('af/addonCore.js'); // <--- does not exist yet. Not sure if it is really needed
     
 //  publish APIs
-    self.exports.$= selector;
-    self.exports.$_= scopeSelector;
+    $$.exports.$= selector;
+    $$.exports.$_= scopeSelector;
     
 }else if(platform[2] == 'Node'){
     engine.name= platform[0];
     engine.version= platform[1];
-    engine.platform= self.process.platform;
-    engine.arch= self.process.arch;
+    engine.platform= $$.process.platform;
+    engine.arch= $$.process.arch;
     engine.type= 'Node';
 
 //  publish APIs
-    self.$= selector;
-    self.$_= scopeSelector;
+    $$.$= selector;
+    $$.$_= scopeSelector;
 }
     
 })();

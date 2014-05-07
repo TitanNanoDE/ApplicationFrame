@@ -1,12 +1,12 @@
 
 this.self= this;
-var { $_ }= self.require('af/core');
+var { $_ }= $$.require('af/core');
 
-$_('addon').hook(self);
+$_('addon').hook($$);
 
 $_('addon').modules({
-    'globalPrefs' : self.require('sdk/preferences/service'),
-    'self' : self.require('sdk/self')
+    'globalPrefs' : $$.require('sdk/preferences/service'),
+    'self' : $$.require('sdk/self')
 });
 
 $_('addon').module(function(){    
