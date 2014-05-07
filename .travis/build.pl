@@ -49,7 +49,7 @@ foreach(@fileList){
     if($content=~ /^?!(\/\/.*\n)/){ print "<$_> could not find file header!\n"; exit(1) };
     
 #   check strict and self (only core script)
-    if(($_=~ /af.js/) && ($content!~ /(this\.$$=( )?this(,|;)( )?('|")use strict('|");)/g)){ print "<$_> could not find strict mode!\n"; exit(1) };
+    if(($_=~ /af.js/) && ($content!~ /(this\.\$\$=( )?this(,|;)( )?('|")use strict('|");)/g)){ print "<$_> could not find strict mode!\n"; exit(1) };
     }
 
 print "all right! everything ok!\n";
