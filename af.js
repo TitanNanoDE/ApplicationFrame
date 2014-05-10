@@ -266,8 +266,9 @@ var prepareScope= function(item){
                 hook : function(globalObject){
                     scope.global= globalObject;
                 },
-                dataURL : function(name){
-                    return self.require('sdk/self').data.url(name);
+                dataURL : function(path){
+                    const { prefixURI } = require('@loader/options');
+                    return (prefixURI + 'af/lib/') + (path || '');
                 }
             };
         }else 
