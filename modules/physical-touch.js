@@ -7,10 +7,10 @@ $('escape').wrapper(function(){
     var isDown= false;
     
 // get all dom elements
-    var allElements= self.document.body.querySelectorAll('*');
+    var allElements= $$.document.body.querySelectorAll('*');
     
 //  events
-    self.events= {
+    $$.events= {
         SCROLL : 'phT_scroll',
         VERTICAL_SCROLL : 'phT_vScroll',
         STROCKE : 'phT_strocke',
@@ -18,9 +18,9 @@ $('escape').wrapper(function(){
         TAP : 'phT_tap',
         TOUCH : 'phT_touch',
         RELEASE : 'phT_release',
-        TOUCHSTART : (self.navigator.isTouch ? 'touchstart' : 'mousedown'),
-        TOUCHMOVE : (self.navigator.isTouch ? 'touchmove' : 'mousemove'),
-        TOUCHEND : (self.navigator.isTouch ? 'touchend' : 'mouseup')
+        TOUCHSTART : ($$.navigator.isTouch ? 'touchstart' : 'mousedown'),
+        TOUCHMOVE : ($$.navigator.isTouch ? 'touchmove' : 'mousemove'),
+        TOUCHEND : ($$.navigator.isTouch ? 'touchend' : 'mouseup')
     };
     
 //  physical touch meta data
@@ -89,11 +89,11 @@ $('escape').wrapper(function(){
             var newStretch= stretching(this.cursorY);
             
             if(this.direction == OverScrollData.DOWN){
-                var stretchDelta= Math.abs(newStretch - parseInt(self.getComputedStyle(this.target.firstElementChild).marginTop.replace('px', '')));
+                var stretchDelta= Math.abs(newStretch - parseInt($$.getComputedStyle(this.target.firstElementChild).marginTop.replace('px', '')));
                 var block= this.target.firstElementChild;
                 var margin= 'marginTop';
             }else if(this.direction == OverScrollData.UP){
-                var stretchDelta= Math.abs(newStretch - parseInt(self.getComputedStyle(this.target.lastElementChild).marginBottom.replace('px', '')));
+                var stretchDelta= Math.abs(newStretch - parseInt($$.getComputedStyle(this.target.lastElementChild).marginBottom.replace('px', '')));
                 var block= this.target.lastElementChild;
                 var margin= 'marginBottom';
                 }
@@ -101,14 +101,14 @@ $('escape').wrapper(function(){
             if(this.cursorSpeed === 0 || stretchDelta <= 1){
                 this.cursorY-= backSpeed * timeout;
                 if(this.cursorY < 0) this.cursorY= 0;
-                self.console.log('cursorY: '+this.cursorY);
+                $$.console.log('cursorY: '+this.cursorY);
                 block.style[margin]= stretching(this.cursorY)+'px';
                 }else{
                     block.style[margin]= newStretch;
                     }
             if(newStretch > 0.5){
                 var target= this; 
-                self.requestAnimationFrame(function(){ target.release(); });
+                $$.requestAnimationFrame(function(){ target.release(); });
             }else{
                 block.style[margin]= '0';
                 overScrollMeta.splice(overScrollMeta.indexOf(this), 1);
@@ -143,7 +143,7 @@ $('escape').wrapper(function(){
         EventObjectExtension.apply(e, [index]);
         
         var isPhysicalTouch= !this.hasAttribute('physicalTouch') || this.getAttribute('physicalTouch') != 'false';
-        var defaultScroll= self.getComputedStyle(this).getPropertyValue('overflow') != 'hidden';
+        var defaultScroll= $$.getComputedStyle(this).getPropertyValue('overflow') != 'hidden';
                 
 //      grabbed scroll
         if(e.type == TouchTypes.STROCKE && !defaultScroll && isPhysicalTouch){
@@ -158,7 +158,7 @@ $('escape').wrapper(function(){
         EventObjectExtension.apply(e, [index]);
         
         var isPhysicalTouch= !this.hasAttribute('physicalTouch') || this.getAttribute('physicalTouch') != 'false';
-        var defaultScroll= self.getComputedStyle(this).getPropertyValue('overflow') != 'hidden';
+        var defaultScroll= $$.getComputedStyle(this).getPropertyValue('overflow') != 'hidden';
         
 //      released remaining velocity scroll
         if(e.type == TouchTypes.STROCKE && !defaultScroll && isPhysicalTouch){
@@ -170,8 +170,8 @@ $('escape').wrapper(function(){
     allElements.forEach(function(item){
         item._physicalID= -1;
         
-        item.addEventListener(self.events.TOUCHSTART, function(e){
-            if(self.navigator.isTouch){
+        item.addEventListener($$.events.TOUCHSTART, function(e){
+            if($$.navigator.isTouch){
                 var emitter= this;
                 e.touches.forEach(function(item, i){
                     initHook.apply(emitter, [item, i]);
@@ -182,8 +182,8 @@ $('escape').wrapper(function(){
                 }
             });
         
-        item.addEventListener(self.events.TOUCHMOVE, function(e){
-            if(self.navigator.isTouch){
+        item.addEventListener($$.events.TOUCHMOVE, function(e){
+            if($$.navigator.isTouch){
                 var emitter= this;
                 e.touches.forEach(function(item, i){
                     movmentHook.apply(emitter, [item, i]);
@@ -193,8 +193,8 @@ $('escape').wrapper(function(){
                 }
             });
             
-        item.addEventListener(self.events.TOUCHEND, function(e){
-            if(self.navigator.isTouch){
+        item.addEventListener($$.events.TOUCHEND, function(e){
+            if($$.navigator.isTouch){
                 var emitter= this;
                 touchMeta.forEach(function(item, i){
                     if(!e.touches[i]){

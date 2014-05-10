@@ -7,15 +7,15 @@ $('new')({
     constructor : function(engine){
         var module= this;
         var db;
-        var request= self.indexedDB.open("pf.filesystem", 2);
+        var request= $$.indexedDB.open("pf.filesystem", 2);
 
         request.onsuccess= function(){
             db= request.result;
-            self.console.log("ready!!");
+            $$.console.log("ready!!");
             };
 
         request.onerror= function(){
-            self.console.error("Fehler beim verbinden mit der Datenbank!!");
+            $$.console.error("Fehler beim verbinden mit der Datenbank!!");
             };
         
         request.onupgradeneeded= function(event){
@@ -39,7 +39,7 @@ $('new')({
                 }
             };
 
-        self.TNFile= function(name, type, data){
+        $$.TNFile= function(name, type, data){
             this.name= name;
             this.type= type;
             this.data= data;
@@ -88,8 +88,8 @@ $('new')({
                 throw "FileSystem error while reading File \""+args.path+"\"";
                 };
             request.onsuccess= function(event){
-                self.console.log(event);
-                callback(new self.PFFile(event.target.result.name, event.target.result.type, event.target.result.data));
+                $$.console.log(event);
+                callback(new $$.PFFile(event.target.result.name, event.target.result.type, event.target.result.data));
                 };
             };
 	
@@ -111,10 +111,10 @@ $('new')({
             var request= storage.get(args.path);
             request.onsuccess= function(event){
                 var url= "";
-                if(event.target.result && ( (event.target.result.data instanceof self.Blob) || (event.target.result.data instanceof self.File) )){
-                    url= self.URL.createObjectURL(event.target.result.data);
+                if(event.target.result && ( (event.target.result.data instanceof $$.Blob) || (event.target.result.data instanceof $$.File) )){
+                    url= $$.URL.createObjectURL(event.target.result.data);
                 }else if(event.target.result){
-                    url= self.URL.createObjectURL(new self.Blob(["test"], {type : event.target.result.mimeType}));
+                    url= $$.URL.createObjectURL(new $$.Blob(["test"], {type : event.target.result.mimeType}));
                     }
                 callback({url : url, status : 1});
                 };
@@ -133,7 +133,7 @@ $('new')({
             storage.openCursor().onsuccess= function(event){
                 var cursor= event.target.result;
                 if(cursor){
-                    self.console.log(cursor.key);
+                    $$.console.log(cursor.key);
                     list.push(cursor.key);
                     cursor.continue();
                 }else{

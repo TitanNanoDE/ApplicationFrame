@@ -4,7 +4,7 @@ console.log('\n#####################################\n# Basic Application Frame 
 
 require('../af.js');
 
-var exit= self.process.exit;
+var exit= $$.process.exit;
 
 $_('engine').override({
     coreLock : true,
@@ -55,9 +55,9 @@ $_('application').main(function(scope){
     console.log('platform: ' + this.engine.platform);
     
     console.log('try to load core Extensions... ' + ( this.tests.ext= require('../modules/core-extensions.js'), ((this.tests.ext) ? 'okay' : 'faild') ));
-    this.tests.prototype= self.prototyping;
+    this.tests.prototype= $$.prototyping;
     console.log('testing advanced prototyping... ' + ((this.tests.prototype) ? 'okay' : 'faild'));
-    this.tests.event= self.EventManager;
+    this.tests.event= $$.EventManager;
     console.log('testing eventManager... ' + ((this.tests.event) ? 'okay' : 'faild'));
     for(var i in this.tests){
         if(!i){

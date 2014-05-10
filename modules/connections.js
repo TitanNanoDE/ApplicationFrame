@@ -9,7 +9,7 @@ $('new')({
                 this._url= url;
                 this._lastMessage= null;
                 this._open= false;
-                this._xhr= new self.XMLHttpRequest();
+                this._xhr= new $$.XMLHttpRequest();
             }
         },
         
@@ -34,7 +34,7 @@ $('new')({
             
             push : function(message){
                 var me= this;
-                return new self.Promise(function(setVaule, setError){
+                return new $$.Promise(function(setVaule, setError){
                     me._xhr.open('POST', this._url, true);
                     me.send(message);
                     me._xhr.onreadystatechange= function(e){
