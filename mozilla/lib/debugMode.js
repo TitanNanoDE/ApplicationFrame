@@ -1,5 +1,5 @@
 
-this.self= this;
+this.$$= this;
 var { $_ }= $$.require('af/core');
 
 $_('addon').hook($$);
