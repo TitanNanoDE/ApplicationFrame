@@ -357,9 +357,9 @@ var prepareScope= function(item){
                     scope.global= globalObject;
                 },
                 dataURL : function(path){
-            	    const { prefixURI } = require('@loader/options');
+            	    var prefixURI= require('@loader/options').prefixURI;
                     return (prefixURI + 'af/lib/') + (path || '');
-		}
+                }
             };
         }else if(item.type == 'serviceRemote'){
             var scope= item;
