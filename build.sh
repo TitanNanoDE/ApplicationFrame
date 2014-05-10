@@ -27,9 +27,7 @@ if [ "$ENGINE" = "mozilla" ]
 then
 	echo "rearrange to add-on SDK file tree..."
 	cp -r ./mozilla/* ./
-	mv ./modules ./data/modules
-    cp -r ./libs ./data/libs
-    cp af.js ./data/af.js
+	mv ./modules ./lib/modules
 	mv af.js ./lib/core.js
 	mv ./libs ./lib/libs
 fi
