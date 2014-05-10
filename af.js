@@ -357,7 +357,7 @@ var prepareScope= function(item){
                     scope.global= globalObject;
                 },
                 dataURL : function(path){
-            	    var prefixURI= require('@loader/options').prefixURI;
+                    var prefixURI= $$.require('@loader/options').prefixURI;
                     return (prefixURI + 'af/lib/') + (path || '');
                 }
             };
