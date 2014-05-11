@@ -447,7 +447,7 @@ var scopeSelector = function(name){
                     }
                 }
 			};
-    }else if(engine.type == 'MozillaAddonSDK' && findScope('addon').modules[name]){
+    }else if(engine.type == 'MozAddon' && findScope('addon').modules[name]){
         return findScope('addon').modules[name];
 	}else{
 //      default handling for all other keys
@@ -554,10 +554,10 @@ If any test fails Application Frame will quit but at the moment only a notificat
     
 if(platform[2] == 'Web'){
 //  workaround for XUL Runner error while testing the storage and indexedDB features. They are both not avaiable, so the whole app runs in to an error while testing.
-    var isNotChromeURL= ($$.location.protocol != 'chrome:');
+    var isNotChromeURL= ($$.location.protocol != 'chrome:' && $$.location.protocol != 'resource:');
     
     var platformTests= {
-        storrage : isNotChromeURL && ($$.sessionStorage && $$.localStorage),
+        storrage : isNotChromeURL && eval('$$.sessionStorage && $$.localStorage'),
         indexedDB : isNotChromeURL && ($$.indexedDB),
         notifications : ($$.Notification),
         renderFrame : ($$.requestAnimationFrame),
