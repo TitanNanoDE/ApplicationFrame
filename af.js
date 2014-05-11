@@ -192,7 +192,7 @@ var items= {
     },
     'new' : function(settings){
         var object = {};
-        if(settings.constructor){
+        if(settings.hasOwnProperty('constructor')){
             object= new settings.constructor(engine);
         }else if(settings.builder && settings.nameSpace){
             engine[settings.nameSpace]= {};
