@@ -4,7 +4,7 @@ $('new')({
     name :'connections',
     object : {
         classes : {
-            Server : function(type, url){
+            Socket : function(type, url){
                 this._type= type;
                 this._url= url;
                 this._lastMessage= null;
@@ -19,7 +19,7 @@ $('new')({
         }
     },
     _init : function(me){
-        me.classes.Server.prototype= {
+        me.classes.Socket.prototype= {
             get url(){
                 return this._url;
             },
