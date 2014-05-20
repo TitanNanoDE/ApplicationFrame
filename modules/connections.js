@@ -9,16 +9,11 @@ $('new')({
                 this._url= url;
                 this._lastMessage= null;
                 this._open= false;
-                this._xhr= new $$.XMLHttpRequest();
             }
-        },
-        
-        statics : {
-            UPSTREAM_NORMAL : 0,
-            DOWNSTREAM_NORMAL : 1
         }
     },
     _init : function(me){
+        var { Promise } = $('classes');
         me.classes.Socket.prototype= {
             get url(){
                 return this._url;
@@ -33,22 +28,31 @@ $('new')({
             },
             
             push : function(message){
-                var me= this;
-                return new $$.Promise(function(setVaule, setError){
-                    me._xhr.open('POST', this._url, true);
-                    me.send(message);
-                    me._xhr.onreadystatechange= function(e){
-                        if(e.readyState == 4){
-                            if(e.status == 200){
-                                setVaule(e);
+                var self= this;
+                var xhr= new $$.XMLHttpRequest();
+                return new Promise(function(setValue, setError){
+                    xhr.onreadystatechange= function(){
+                        if(this.readyState == 4){
+                            if(this.status == 200){
+                                setValue(this.responseText);
                             }else{
-                                setError(e);
+                                setError({status : this.status, statusText : this.statusText});
                             }
-                        me._lastMessage= e.statusText;
+                        self._lastMessage= this.statusText;
                         }
                     };
+                    if(self._type == me.classes.Socket.HTTP_POST){
+                        xhr.open('POST', self._url, true);
+                        xhr.send(message);
+                    }else if(self._type == me.classes.Socket.HTTP_GET){
+                        xhr.open('GET', self._url + '?' + message, true);
+                        xhr.send();
+                    }
                 });
             }
         };
+    me.classes.Socket.HTTP_GET= 'http_get';
+    me.classes.Socket.HTTP_POST= 'http_post';
+    me.classes.Socket.HTTP= 'http_post';
     }
 });
