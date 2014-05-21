@@ -27,6 +27,15 @@ $('new')({
                     xhr.open('GET', url, true);
                     xhr.send();
                 });
+            },
+            require : function(){
+                var xhr= new $$.XMLHttpRequest();
+                xhr.open('GET', url, false);
+                xhr.send();
+                if(xhr.status == 200)
+                    return this.responseText;
+                else
+                    return null;
             }
         }
     },
