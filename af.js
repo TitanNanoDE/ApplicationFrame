@@ -279,6 +279,34 @@ var items= {
                 return false;
         }
     },
+    addon : {
+        talk : function(type, message){
+            if($$ != $$.self){
+                return new $$.Promise(function(okay){
+                    var id= Date.now();
+                    $$.self.port.on(id, function ready(e){
+                        $$.self.port.removeListener(ready);
+                        okay(e);
+                    });
+                    $$.self.emit(type, { id : id, message : message });
+                });
+            }else{
+                $$.console.error('Not available in this context!!');
+            }
+        },
+        listen : function(type, callback){
+            if($$ != $$.self){
+                $$.self.port.on(type, function(e){
+                    var id= e.id;
+                    callback(e.message, function(message){
+                        $$.self.port.emit(id, message); 
+                    });
+                });
+            }else{
+                $$.console.error('Not available in this context!!');
+            }
+        }
+    }
 };
     
 //selects a item of the items hash.
@@ -359,6 +387,28 @@ var prepareScope= function(item){
                 dataURL : function(path){
                     var prefixURI= $$.require('@loader/options').prefixURI;
                     return (prefixURI + 'af/lib/') + (path || '');
+                },
+                talkTo : function(worker){
+                    return {
+                        talk : function(type, message){
+                            return new $$.Promise(function(okay){
+                                var id= Date.now();
+                                worker.port.on(id, function ready(e){
+                                    worker.port.removeListener(ready);
+                                    okay(e);
+                                });
+                                worker.emit(type, { id : id, message : message });
+                            });
+                        },
+                        listen : function(type, callback){
+                            worker.port.on(type, function(e){
+                                var id= e.id;
+                                callback(e.message, function(message){
+                                    worker.port.emit(id, message); 
+                                });
+                            });
+                        }
+                    };
                 }
             };
         }else if(item.type == 'serviceRemote'){
