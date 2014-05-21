@@ -10,6 +10,24 @@ $('new')({
                 this._lastMessage= null;
                 this._open= false;
             }
+        },
+        functions : {
+            request : function(url){
+                var { Promise } = $('classes');
+                return new Promise(function(okay, fail){
+                    var xhr= new $$.XMLHttpRequest();
+                    xhr.onreadystatechange= function(){
+                        if(this.readyState == 4){
+                            if(this.status == 200)
+                                okay(this.responseText);
+                            else
+                                fail({ status : this.status, statusText : this.statusText });
+                        }
+                    };
+                    xhr.open('GET', url, true);
+                    xhr.send();
+                });
+            }
         }
     },
     _init : function(me){
