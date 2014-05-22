@@ -5,7 +5,7 @@ var { $_ }= $$.require('af/core');
 
 $_('addon').hook($$);
 
-$('addon').module(function(){
+$_('addon').module(function(){
     
     "use strict";
     

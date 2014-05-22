@@ -33,7 +33,7 @@ $('new')({
                 xhr.open('GET', url, false);
                 xhr.send();
                 if(xhr.status == 200)
-                    return this.responseText;
+                    return xhr.responseText;
                 else
                     return null;
             }
