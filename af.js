@@ -120,7 +120,7 @@ ServiceScopeRemote.prototype= {
     push : function(message){
         var scope= this;
         return new $$.Promise(function(setSuccess){
-            var id= Date.now();
+            var id= Date.now() + '-' + parseInt(Math.random() * 10);
             message.id= id;
             var listener= function(e){
                 if(e.data.name == id){
@@ -283,12 +283,13 @@ var items= {
         talk : function(type, message){
             if($$ != $$.self){
                 return new $$.Promise(function(okay){
-                    var id= Date.now();
-                    $$.self.port.on(id, function ready(e){
+                    var id= Date.now() + '-' + parseInt(Math.random() * 10);
+                    var ready= function(e){
                         $$.self.port.removeListener(ready);
                         okay(e);
-                    });
-                    $$.self.emit(type, { id : id, message : message });
+                    };
+                    $$.self.port.on(id, ready, false);
+                    $$.self.port.emit(type, { id : id, message : message });
                 });
             }else{
                 $$.console.error('Not available in this context!!');
@@ -397,7 +398,7 @@ var prepareScope= function(item){
                                     worker.port.removeListener(ready);
                                     okay(e);
                                 });
-                                worker.emit(type, { id : id, message : message });
+                                worker.port.emit(type, { id : id, message : message });
                             });
                         },
                         listen : function(type, callback){
