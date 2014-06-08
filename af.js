@@ -339,31 +339,39 @@ var prepareScope= function(item){
 //      return a application scope
         if(item.type == 'application'){
             var scope= item;
-            return {
-                main : function(thread){
-                    scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
-                    if(scope.settings.autoLock) scope.settings.isLocked= true;
-                    engine.threadQueue.push(scope);
-                },
-                get : function(name){
-                    if(scope.settings.allowGetters && scope.properties[name]){
-                        handleEvents(scope, name);
-                        return scope.properties[name];
-                    }else{
-                        return null;
+            return Object.create(scope.properties, {
+                main : {
+                    value : function(thread){
+                        scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
+                        if(scope.settings.autoLock) scope.settings.isLocked= true;
+                        engine.threadQueue.push(scope);
                     }
                 },
-                set : function(name, value){
-                    if(scope.settings.allowSetters && scope.properties[name]){
-                        scope.properties[name]= value;
-                        handleEvents(scope, name);
-                        return true;
-                    }else{
-                        return false;
+                get : {
+                    value : function(name){
+                        if(scope.settings.allowGetters && scope.properties[name]){
+                            handleEvents(scope, name);
+                            return scope.properties[name];
+                        }else{
+                            return null;
+                        }
                     }
                 },
-                override : scope.override
-            };
+                set : {
+                    value : function(name, value){
+                        if(scope.settings.allowSetters && scope.properties[name]){
+                            scope.properties[name]= value;
+                            handleEvents(scope, name);
+                            return true;
+                        }else{
+                            return false;
+                        }
+                    }
+                },
+                override : {
+                    value : scope.override
+                }
+            });
                 
         }else if(item.type == 'addon'){
 //          return a addon scope (at the moment only mozilla)
