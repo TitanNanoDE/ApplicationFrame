@@ -17,6 +17,12 @@ $('new')({
             this._st= 0;
             this._res= null;
             this._a= false;
+        },
+        AsyncLoop : function(loop){
+            this._l= loop;
+            this.busy= false;
+            this.step= 0;
+            this.status= 'notstarted';
         }
     },
     _init : function(me){
@@ -59,10 +65,10 @@ $('new')({
                 if(!this._a){
                     var res= function(x){
                         self.resolve(x);
-                    }
+                    };
                     var rej= function(x){
                         self.reject(x);
-                    }
+                    };
                     this._a= true;
                     this._pr(res, rej);
                 }
@@ -103,6 +109,58 @@ $('new')({
                     });
                 }
                 return this;
+            }
+        };
+        me.AsyncLoop.prototype= {
+            'while' : function(condition){
+                this.busy= true;
+                var loop= this;
+                var next= function(){
+                    if(eval(condition)){
+                        loop.step++;
+                        loop.status= 'running';
+                        loop._l(next, exit);
+                    }else{
+                        exit(1);
+                    }
+                };
+                var exit= function(status){
+                    if(status === 0)
+                        loop.status= 'canceled';
+                    else if(status > 0)
+                        loop.status= 'completed';
+                    else
+                        loop.status= 'error';
+                    this.busy= false;
+                    this.step= 0;
+                };
+                next();
+            },
+            'for' : function(startIndex, condition, indexChange){
+                this.busy= true;
+                var loop= this;
+                var i= startIndex;
+                var next= function(){
+                    if(eval(condition)){
+                        loop.step++;
+                        loop.status= 'running';
+                        loop._l(next, exit);
+                        eval(indexChange);
+                    }else{
+                        exit(1);
+                    }
+                };
+                var exit= function(status){
+                    if(status === 0)
+                        loop.status= 'canceled';
+                    else if(status > 0)
+                        loop.status= 'completed';
+                    else
+                        loop.status= 'error';
+                    this.busy= false;
+                    this.step= 0;
+                };
+                next();
             }
         };
     }
