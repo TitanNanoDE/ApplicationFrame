@@ -24,16 +24,15 @@ $('escape').wrapper(function(){
         };
 	
 /* --- advanced Prototyping --- */
-    $$.prototyping= function(object, types){
+    $$.Prototype= function(types){
         var prototype= {};
-        types.forEach(function(Item){
-            Item.apply(object);
-            var x= new Item();
+        types.forEach(function(item){
+            var x= item.prototype || item;
             for(var i in x){
                 prototype[i]= x[i];
                 }
             });
-//        object.prototype= prototype;
+        return prototype;
         };
     
 /* --- forEach extension --- */
