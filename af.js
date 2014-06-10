@@ -120,7 +120,7 @@ ServiceScopeRemote.prototype= {
     push : function(message){
         var scope= this;
         return new $$.Promise(function(setSuccess){
-            var id= Date.now() + '-' + parseInt(Math.random() * 10);
+            var id= Date.now();
             message.id= id;
             var listener= function(e){
                 if(e.data.name == id){
@@ -288,6 +288,7 @@ var items= {
                         $$.self.port.removeListener(ready);
                         okay(e);
                     };
+                    $$.console.log(id);
                     $$.self.port.on(id, ready, false);
                     $$.self.port.emit(type, { id : id, message : message });
                 });
@@ -339,31 +340,39 @@ var prepareScope= function(item){
 //      return a application scope
         if(item.type == 'application'){
             var scope= item;
-            return {
-                main : function(thread){
-                    scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
-                    if(scope.settings.autoLock) scope.settings.isLocked= true;
-                    engine.threadQueue.push(scope);
-                },
-                get : function(name){
-                    if(scope.settings.allowGetters && scope.properties[name]){
-                        handleEvents(scope, name);
-                        return scope.properties[name];
-                    }else{
-                        return null;
+            return Object.create(scope.properties, {
+                main : {
+                    value : function(thread){
+                        scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
+                        if(scope.settings.autoLock) scope.settings.isLocked= true;
+                        engine.threadQueue.push(scope);
                     }
                 },
-                set : function(name, value){
-                    if(scope.settings.allowSetters && scope.properties[name]){
-                        scope.properties[name]= value;
-                        handleEvents(scope, name);
-                        return true;
-                    }else{
-                        return false;
+                get : {
+                    value : function(name){
+                        if(scope.settings.allowGetters && scope.properties[name]){
+                            handleEvents(scope, name);
+                            return scope.properties[name];
+                        }else{
+                            return null;
+                        }
                     }
                 },
-                override : scope.override
-            };
+                set : {
+                    value : function(name, value){
+                        if(scope.settings.allowSetters && scope.properties[name]){
+                            scope.properties[name]= value;
+                            handleEvents(scope, name);
+                            return true;
+                        }else{
+                            return false;
+                        }
+                    }
+                },
+                override : {
+                    value : scope.override
+                }
+            });
                 
         }else if(item.type == 'addon'){
 //          return a addon scope (at the moment only mozilla)
@@ -393,7 +402,7 @@ var prepareScope= function(item){
                     return {
                         talk : function(type, message){
                             return new $$.Promise(function(okay){
-                                var id= Date.now();
+                                var id= Date.now() + '-' + parseInt(Math.random() * 10);
                                 worker.port.on(id, function ready(e){
                                     worker.port.removeListener(ready);
                                     okay(e);
