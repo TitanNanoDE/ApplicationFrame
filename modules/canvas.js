@@ -52,6 +52,15 @@ $('new')({
             }
         };
         
+        var verifyOpacity= function(n){
+            if(n > 1)
+                return 1;
+            else if(n < 0)
+                return 0;
+            else
+                return n;
+        };
+        
 //      Classes
         this.Canvas= function(domNode){
             this._dom= domNode;
@@ -119,6 +128,7 @@ $('new')({
                 if(this.isRunning){
                     var context= new Context();                    
                     this._context.clearRect(0, 0, this._dom.width, this._dom.height);
+                    this._context.globalAlpha= 1;
                     layerRender.apply(this, [context, this._context]);
                     
                     if(this.fpsOverlay){
@@ -187,14 +197,17 @@ $('new')({
             this._elements= [];
             this.x= x;
             this.y= y;
+            this.opacity= 1;
             this.hidden= false;
         };
         this.Layer.prototype= {
             _render : function(context, canvas){
                 if(!this.hidden){
                     context.addOffset(this.x, this.y);
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
                     layerRender.apply(this, [context, canvas]);
                     context.removeOffset(this.x, this.y);
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha + (1-this.opacity));
                 }
             },
             addElement : self.Canvas.prototype.addElement,
@@ -234,6 +247,7 @@ $('new')({
                 this.width= width;
             if(height)
                 this.height= height;
+            this.opacity= 1;
             this.cursor= null;
             this._mouse= false;
             this.onmouseover= function(){};
@@ -292,7 +306,9 @@ $('new')({
             _render : function(context, canvas){
                 if(!this.hidden){
                     canvas.fillStyle= this.color;
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
                     canvas.fillRect(context.xOffset + this.x, context.yOffset + this.y, this.width, this.height);
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha + (1-this.opacity));
                 }
             }
         }]);
@@ -300,11 +316,39 @@ $('new')({
         this.Image= function(source, x, y, zLevel){
             RectShapeElement.apply(this, [x, y, null, null, zLevel]);
             this.source= source;
+            this._width= null;
+            this._height= null;
+            this.crop= null;
         };
         this.Image.prototype= new $$.Prototype([RectShapeElement, {
             _render : function(context, canvas){
-                if(!this.hidden)
-                    canvas.drawImage(this.source, context.xOffset + this.x, context.yOffset + this.y);
+                if(!this.hidden){
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
+                    if(this.crop){
+                        var sourceX= this.crop.left;
+                        var sourceY= this.crop.top;
+                        var sourceWidth= this.source.naturalWidth - this.crop.left - this.crop.right;
+                        var sourceHeight= this.source.naturalHeight - this.crop.top - this.crop.bottom;
+                        var targetX= context.xOffset + this.x;
+                        var targetY= context.yOffset + this.y;
+                        canvas.drawImage(this.source, sourceX, sourceY, sourceWidth, sourceHeight, targetX, targetY, this.width, this.height);
+                    }else{
+                        canvas.drawImage(this.source, context.xOffset + this.x, context.yOffset + this.y, this.width, this.height);
+                    }
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha + (1-this.opacity));
+                }
+            },
+            get width(){
+                return (this._width || this.source.naturalWidth || 0);
+            },
+            set width(width){
+                this._width= width;
+            },
+            get height(){
+                return (this._height || this.source.naturalHeight || 0);
+            },
+            set height(height){
+                this._height= height;
             }
         }]);
         
@@ -315,6 +359,7 @@ $('new')({
             this.font= '12px/15px sans-serif';
             this.color= '#000';
             this.aling= 'start';
+            this.opacity= 1;
             this.zLevel= zLevel || 0;
             this.cursor= null;
             this.textBaseline= 'top';
@@ -326,7 +371,9 @@ $('new')({
                     canvas.textAling= this.aling;
                     canvas.fillStyle= this.color;
                     canvas.textBaseline= 'top';
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
                     canvas.fillText(this.content, context.xOffset + this.x, context.yOffset + this.y);
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha + (1-this.opacity));
                 }
             },
             _checkMouse : function(){
@@ -343,5 +390,116 @@ $('new')({
         this.HitArea.prototype= new $$.Prototype([RectShapeElement, {
             _render : function(){}
         }]);
+        
+        this.ImageCrop= function(top, right, bottom, left){
+            this.top= top || 0;
+            this.right= right || 0;
+            this.bottom= bottom || 0;
+            this.left= left || 0;
+        };
+        
+//      animations
+        this.fadeOut= function(element, time, callback){
+            var timeOut= 20; // milliseconds
+            time*= 1000;     //convert to milliseconds
+            var updates= Math.round(time / timeOut);
+            var ammount= 1 / updates;
+            var update= function(){
+                updates--;
+                element.opacity-= ammount;
+                
+                if(updates > 0)
+                    $$.setTimeout(update, timeOut);
+                else if(callback){
+                    element.opacity= 0;
+                    callback();
+                }
+            };
+            element.opacity= 1;
+            update();
+        };
+        
+        this.fadeIn= function(element, time, callback){
+            var timeOut= 20; // milliseconds
+            time*= 1000;     //convert to milliseconds
+            var updates= Math.round(time / timeOut);
+            var ammount= 1 / updates;
+            var update= function(){
+                updates--;
+                element.opacity+= ammount;
+                
+                if(updates > 0)
+                    $$.setTimeout(update, timeOut);
+                else if(callback){
+                    element.opacity= 1;
+                    callback();
+                }
+            };
+            element.opacity= 0;
+            update();
+        };
+        
+        this.zoomIn= function(element, target, amount, time, callback){
+            if(!element instanceof self.Image){
+                $$.console.error('element is not a instance of Image');
+                return false;
+            }
+            var topAmount= Math.round((target[1] / 100) * amount);
+            var leftAmount= Math.round((target[0] / 100) * amount);
+            var bottomAmount= Math.round(((element.height - target[1]) / 100) * amount);
+            var rightAmount= Math.round(((element.width - target[0]) / 100) * amount);
+            time*= 1000; // to milliseconds
+            var timeOut= 20;
+            var updates= Math.round(time / timeOut);
+            var lot= 1 / updates;
+            var update= function(){
+                updates--;
+                element.crop.top+= topAmount * lot;
+                element.crop.right+= rightAmount * lot;
+                element.crop.bottom+= bottomAmount * lot;
+                element.crop.left+= leftAmount * lot;
+                
+                if(updates > 0){
+                    $$.setTimeout(update, timeOut);
+                }else if(callback){
+                    callback();
+                }
+            };
+            if(!element.crop)
+                element.crop= new self.ImageCrop();
+            update();
+        };
+        
+        this.zoomOut= function(element, target, amount, time, callback){
+            if(!element instanceof self.Image){
+                $$.console.error('element is not a instance of Image');
+                return false;
+            }
+            var topAmount= Math.round((target[1] / 100) * amount);
+            var leftAmount= Math.round((target[0] / 100) * amount);
+            var bottomAmount= Math.round(((element.height - target[1]) / 100) * amount);
+            var rightAmount= Math.round(((element.width - target[0]) / 100) * amount);
+            time*= 1000; // to milliseconds
+            var timeOut= 20;
+            var updates= Math.round(time / timeOut);
+            var lot= 1 / updates;
+            var update= function(){
+                updates--;
+                element.crop.top-= topAmount * lot;
+                element.crop.right-= rightAmount * lot;
+                element.crop.bottom-= bottomAmount * lot;
+                element.crop.left-= leftAmount * lot;
+                
+                if(updates > 0){
+                    $$.setTimeout(update, timeOut);
+                }else if(callback){
+                    element.crop= null;
+                    callback();
+                }
+            };
+            if(!element.crop)
+                element.crop= new self.ImageCrop(topAmount, rightAmount, bottomAmount, leftAmount);
+            update();
+        };
     }
 });
