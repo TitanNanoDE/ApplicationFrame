@@ -259,7 +259,8 @@ $('new')({
         };
         RectShapeElement.prototype= {
             _checkMouse : function(mouse, context){
-                if(mouse.x >= (context.xOffset + this.x) &&
+                if(!this.hidden && 
+                   mouse.x >= (context.xOffset + this.x) &&
                    mouse.x <= (context.xOffset + this.x +this.width) &&
                    mouse.y >= (context.yOffset + this.y) &&
                    mouse.y <= (context.yOffset + this.y + this.height) && 
@@ -287,7 +288,8 @@ $('new')({
                 }   
             },
             _checkClick : function(mouse, context){
-                if(mouse.x >= (context.xOffset + this.x) &&
+                if(!this.hidden && 
+                   mouse.x >= (context.xOffset + this.x) &&
                    mouse.x <= (context.xOffset + this.x +this.width) &&
                    mouse.y >= (context.yOffset + this.y) &&
                    mouse.y <= (context.yOffset + this.y + this.height)){
