@@ -131,8 +131,8 @@ $('new')({
                         loop.status= 'completed';
                     else
                         loop.status= 'error';
-                    this.busy= false;
-                    this.step= 0;
+                    loop.busy= false;
+                    loop.step= 0;
                 };
                 next();
             },
@@ -144,7 +144,7 @@ $('new')({
                     if(eval(condition)){
                         loop.step++;
                         loop.status= 'running';
-                        loop._l(next, exit);
+                        loop._l(i, next, exit);
                         eval(indexChange);
                     }else{
                         exit(1);
@@ -157,8 +157,8 @@ $('new')({
                         loop.status= 'completed';
                     else
                         loop.status= 'error';
-                    this.busy= false;
-                    this.step= 0;
+                    loop.busy= false;
+                    loop.step= 0;
                 };
                 next();
             }
