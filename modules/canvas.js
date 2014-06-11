@@ -126,7 +126,8 @@ $('new')({
         this.Canvas.prototype= {
             _render : function(){
                 if(this.isRunning){
-                    var context= new Context();                    
+                    var context= new Context();
+                    var start= Date.now();
                     this._context.clearRect(0, 0, this._dom.width, this._dom.height);
                     this._context.globalAlpha= 1;
                     layerRender.apply(this, [context, this._context]);
@@ -139,6 +140,7 @@ $('new')({
                     }
                     
                     var duration= (Date.now() - this._renderStart) / 1000;
+                    var renderTime= (Date.now() - start) / 1000;
                     this.fps=  1 / duration;
                     this.frames++;
                     var c= this;
@@ -146,8 +148,8 @@ $('new')({
 //                  fps lock
                     if(this.fpsLock){
                         var timeForFrame= 1 / this.maxFps;
-                        if(duration < timeForFrame){
-                            var timeOut= (timeForFrame - duration) * 1000;
+                        if(renderTime < timeForFrame){
+                            var timeOut= (timeForFrame - renderTime) * 1000;
                             this._renderStart= Date.now();
                             $$.setTimeout(function(){ $$.requestAnimationFrame(function(){ c._render(); }); }, timeOut);
                             return;
