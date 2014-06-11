@@ -29,11 +29,16 @@ $('escape').wrapper(function(){
         types.forEach(function(item){
             var x= item.prototype || item;
             for(var i in x){
-                prototype[i]= x[i];
+                if(x.__lookupGetter__(i) || x.__lookupSetter__(i)){
+                    prototype.__defineGetter__(i, x.__lookupGetter__(i));
+                    prototype.__defineSetter__(i, x.__lookupSetter__(i));
+                }else{
+                    prototype[i]= x[i];
                 }
-            });
+            }
+        });
         return prototype;
-        };
+    };
     
 /* --- forEach extension --- */
 var forEach= function(callback){
