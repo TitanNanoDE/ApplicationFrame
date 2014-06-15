@@ -1,4 +1,4 @@
-// connections.js v. 0.1 part of the Application Frame
+// connections.js v.0.1 part of the Application Frame
 
 $('new')({
     name :'connections',
