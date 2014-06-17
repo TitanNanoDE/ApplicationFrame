@@ -16,7 +16,7 @@ if [ "$BUILD_DIR" != "" ]
 then
 	rm -rf $BUILD_DIR
 	mkdir -p $BUILD_DIR
-	rsync -r ./ $BUILD_DIR --exclude '*.md' --exclude '*.sh'
+	rsync -r ./ $BUILD_DIR --exclude '*.md' --exclude '*.sh' --exclude '.git*'
 	cd $BUILD_DIR
 fi
 
@@ -39,5 +39,4 @@ if [ "$CLEAN" = "1" ]
 then
 	echo "clean up..."
 	find ./ -name README.md -delete
-	rm build.sh
 fi
