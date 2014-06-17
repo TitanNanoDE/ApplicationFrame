@@ -617,8 +617,8 @@ if(platform[2] == 'Web'){
     var isNotChromeURL= ($$.location.protocol != 'chrome:' && $$.location.protocol != 'resource:');
     
     var platformTests= {
-        storrage : isNotChromeURL && eval('$$.sessionStorage && $$.localStorage'),
-        indexedDB : isNotChromeURL && ($$.indexedDB),
+        storrage : isNotChromeURL && new Function('try{ return $$.sessionStorage && $$.localStorage }catch(e){ return false; }')(),
+        indexedDB : isNotChromeURL && new Function('try{ return $$.indexedDB }catch(e){ return false; }')(),
         notifications : ($$.Notification),
         renderFrame : ($$.requestAnimationFrame),
         audio : ($$.Audio),
