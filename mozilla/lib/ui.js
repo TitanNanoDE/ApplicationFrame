@@ -5,102 +5,73 @@ $_('addon').hook($$);
 
 $_('addon').modules({
     'self' : $$.require('sdk/self'),
-    'window' : $$.require('sdk/window/utils')
+    'window' : $$.require('sdk/window/utils'),
+    'worker' : $$.require('sdk/content/worker'),
+    'timers' : $$.require('sdk/timers')
 });
 
 $_('addon').module(function(){
     
+    var { setTimeout }= $_('timers');
+    var { Worker } = $_('worker');
+    
     $$.exports.Window= function(options){
-        var activeBrowserWindow= $_('window').getMostRecentBrowserWindow();    
-        
-        var url= $_('self').data.url('pages/release.html');
-        var features= {
-            height : options.height,
-            width : options.width,
-            left: activeBrowserWindow.screenX + (activeBrowserWindow.outerWidth / 2) - (options.width / 2),
-            top: activeBrowserWindow.screenY + (activeBrowserWindow.outerHeight / 2) - (options.height / 2),
-            chrome : !options.webView,
-            titlebar : !options.popup,
-            alwaysRaised : options.popup,
-            minimizable : !options.popup
-        };
-        
-//      open window
-        this._window= $_('window').open(url, { name : options.title, features : features });
-        
-//      hide popup form taskbar
-        if(options.popup)
-            $_('window').backgroundify(this._window, { close : true });
-        
-//      create communication
-        var  com= {
-            messageQueue : [],
-            handlers: [],
-            ready : false,
-            sandbox : this._window.document.xCo,
-            _init_ : function(){
-                this.ready= true;
-                var self= this;
-                console.log('pushing existing messages...');
-                this.messageQueue.forEach(function(item){
-                    self.push(item.type, item.content);
-                });
-                this.messageQueue= null;
-            },
-            push : function(type, content){
-                if(!this.ready)
-                    this.messageQueue.push({ type : type, content : content});
-                else{
-                    this.sandbox.in(type, content);
-                }
-            },
-            trigger : function(type, content){
-                this.messageQueue.forEach(function(item){
-                    if(item.type == type)
-                        item.handler(content);
-                });
-            }
-        };
-        this._window.document.xCo= {
-            'out' : function(name, data){
-                new Promise(function(){
-                    com.trigger(name, data);
-                }).then();
-            },
-            'in' : function(type, content){
-                new Promise(function(){
-                    console.log(window.self);
-                }).then();
-            },
-            start : function(){
-                console.log('starting communication...');
-                com._init_();
-            }
-        };
-        
-//      inject scripts
-        var document= window.document;
-        if(options.contentScriptFile){
-            if(options.contentScriptFile instanceof Array){
-                options.contentScriptFile.forEach(function(item){
-                    var script= document.body.appendChild(document.createElement('script'));
-                    script.src= item;
-                });
-            }else{
-                var script= document.body.appendChild(document.createElement('script'));
-                script.src= options.contentScriptFile;
-            }
-        }
+        this.options= options;
+		this._window= null;
     };
     
     $$.exports.Window.prototype= {
         port : {
+			_queue : [],
+			_worker : null,
             on : function(){
-                
+                if(!this._worker)
+                    this._queue.push(arguments);
+                else
+                    this._worker.port.on.apply(this._worker.port, arguments);
             },
             emit : function(){
-                
+                if(!this._worker)
+                    return false;
+                else       
+                    return this._worker.port.emit.apply(this._worker.port, arguments);
             }
-        }  
+        },
+        open : function(){
+		    var activeBrowserWindow= $_('window').getMostRecentBrowserWindow();    
+            var features= {
+                height : this.options.height,
+                width : this.options.width,
+                left: activeBrowserWindow.screenX + (activeBrowserWindow.outerWidth / 2) - (this.options.width / 2),
+                top: activeBrowserWindow.screenY + (activeBrowserWindow.outerHeight / 2) - (this.options.height / 2),
+                chrome : !this.options.webView,
+                titlebar : !this.options.popup,
+                alwaysRaised : this.options.popup,
+                minimizable : !this.options.popup
+            };
+            
+//          open window
+            var window= $_('window').open(this.options.url, { name : this.options.title, features : features });
+			this._window= window;
+            
+//          hide popup form taskbar
+//          if(options.popup)
+//              $_('window').backgroundify(this._window, { close : true });
+        
+//          create communication
+                var self= this;
+            setTimeout(function(){
+                self.port._worker= new Worker({
+                    window : window,
+                    contentScriptFile : self.options.contentScriptFile
+                });
+                self.port._queue.forEach(function(item){
+					self.port.on.apply(self.port, item);
+                });
+            }, 1);
+        },
+		close : function(){
+			this._window.close();
+		}
     };
 });
