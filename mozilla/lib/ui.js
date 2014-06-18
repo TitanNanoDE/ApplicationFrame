@@ -46,7 +46,7 @@ $_('addon').module(function(){
                 top: activeBrowserWindow.screenY + (activeBrowserWindow.outerHeight / 2) - (this.options.height / 2),
                 chrome : !this.options.webView,
                 titlebar : !this.options.popup,
-                alwaysRaised : this.options.popup,
+                alwaysRaised : this.options.modal,
                 minimizable : !this.options.popup
             };
             
