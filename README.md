@@ -8,7 +8,7 @@ The lib and modules folders contain different modules which aren't realy related
 
 Application Frame will be compatible with:
 
-- latest Google Chrome
+- latest Chromium
 - [1] latest Gecko Engine
 - latest Mozilla Add-on SDK
 - [X] latest Chromium Add-on Runtime
