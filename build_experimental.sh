@@ -43,10 +43,10 @@ fi
 if [ "$ENGINE" = "mozilla" ]
 then
 	echo "rearrange to add-on SDK file tree..."
-	cp -r ./mozilla/* ./
-	mv ./modules ./lib/modules
-	mv af.js ./lib/core.js
-	mv ./libs ./lib/libs
+	cp -r $BUILD_DIR/mozilla/* $BUILD_DIR/
+	mv $BUILD_DIR/modules $BUILD_DIR/lib/modules
+	mv $BUILD_DIR/af.js $BUILD_DIR/lib/core.js
+	mv $BUILD_DIR/libs $BUILD_DIR/lib/libs
 fi
 
 echo "remove unnecessary files..."
