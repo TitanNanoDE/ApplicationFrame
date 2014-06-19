@@ -53,10 +53,16 @@ foreach(@fileList){
 @fileList= grep(!/^.\/traceur-compiler(?!\.).*$/, @fileList);
 @fileList= grep(!/^.\/compiled(?!\.).*$/, @fileList);
 
+# create compiler dir
+if(not -e "$compilerPrefix"){
+	print "creating compiler directory...\n";
+	make_path($compilerPrefix);
+}
+
 # preparing closure compiler
 if(not -e "$compilerPrefix/closure-compiler/"){
 	print "cloning the closure-compiler source...\n";
-	print `cd $compilerPrefix && clone https://github.com/google/closure-compiler`;
+	print `cd $compilerPrefix && git clone https://github.com/google/closure-compiler`;
 }
 
 if(not -e "$compilerPrefix/closure-compiler/build/compiler.jar"){
@@ -69,10 +75,10 @@ if(not -e "$compilerPrefix/closure-compiler/compiler.jar"){
 	print `cp $compilerPrefix/closure-compiler/build/compiler.jar $compilerPrefix/closure-compiler/compiler.jar`;
 }
 
-# preparing closure compiler
+# preparing traceur compiler
 if(not -e "$compilerPrefix/traceur-compiler"){
 	print "cloning traceur-compiler...\n";
-	print `cd $compilerPrefix && clone https://github.com/google/traceur-compiler`;
+	print `cd $compilerPrefix && git clone https://github.com/google/traceur-compiler`;
 }
 
 if(not -e "$compilerPrefix/traceur-compiler/bin"){
