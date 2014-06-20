@@ -9,6 +9,11 @@
 ##	BUILD_DIR=path 		Use this to set your desired build directory
 ##	COMPILER_PREFIX=path	Use this if you want the compilers stored on a different location
 
+if [ -e ".buildconfig" ]
+then
+	source .buildconfig
+fi
+
 echo "engine: $ENGINE"
 echo "build dir: $BUILD_DIR"
 echo "compiler prefix: $COMPILER_PREFIX";
