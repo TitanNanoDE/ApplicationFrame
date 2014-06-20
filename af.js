@@ -2,7 +2,8 @@
 
 (function(){
     
-this.$$= this; "use strict"; 
+this.$$= this;
+'use strict'; 
   
 //default settings for the Application Frame Engine
 var settings= {
