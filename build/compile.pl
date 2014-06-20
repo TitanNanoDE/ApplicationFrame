@@ -95,8 +95,8 @@ foreach(@fileList){
 	
 	make_path($path);
 	print "compiling \"$originFile\" to \"$fileName\"...\n";
-	print `cd $compilerPrefix/traceur-compiler && ./traceur --experimental --script $originFile --out $tempFile`;
-	print `cd $compilerPrefix/closure-compiler && java -jar compiler.jar -O SIMPLE --language_in ECMASCRIPT5_STRICT --js $tempFile --js_output_file $fileName`;
+	print `cd $compilerPrefix/traceur-compiler && ./traceur --experimental --symbols=false --script $originFile --out $tempFile`;
+	print `cd $compilerPrefix/closure-compiler && java -jar compiler.jar -O SIMPLE --language_in ECMASCRIPT5 --js $tempFile --js_output_file $fileName`;
 	unlink($tempFile);
 }
 
