@@ -5,8 +5,8 @@
 ## it is recommended to run this script to compile the code to ECMAScript 5 and compress it.
 ## 
 ## Usage: 
-##	ENGINE=path 		Your selected engine  
-##	BUILD_DIR=path 		Use this to set your desired build directory
+##	ENGINE=path 			Your selected engine  
+##	BUILD_DIR=path 			Use this to set your desired build directory
 ##	COMPILER_PREFIX=path	Use this if you want the compilers stored on a different location
 
 if [ -e ".buildconfig" ]
