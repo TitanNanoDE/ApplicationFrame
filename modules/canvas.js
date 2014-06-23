@@ -183,6 +183,19 @@ $('new')({
                 this._context.textBaseline= 'top';
                 return this._context.measureText(textElement.content);
             },
+            measureTextWidth : function(textElement){
+                var c= this;
+                this._context.font= textElement.font;
+                this._context.textAling= textElement.aling;
+                this._context.fillStyle= textElement.color;
+                this._context.textBaseline= 'top';
+                var lines= textElement.content.split('\n');
+                var linesWidth= [];
+                lines.forEach(function(item){
+                    linesWidth.push(c._context.measureText(item).width);
+                });
+                return Math.max.apply(Math, linesWidth);
+            },
             measureTextHeight : function(text, lineHeight){
                 if(text !== '')
                     return text.split('\n').length * lineHeight;
@@ -360,9 +373,13 @@ $('new')({
             this.x= x;
             this.y= y;
             this.content= content;
-            this.font= '12px/15px sans-serif';
+            this.fontFamily= 'sans-serif';
+            this.fontSize= 12;
+            this._lineHeight= null;
+            this.fontStyle= '';
+            this.fontWeight= 'normal';
             this.color= '#000';
-            this.aling= 'start';
+            this.aling= 'left';
             this.opacity= 1;
             this.zLevel= zLevel || 0;
             this.cursor= null;
@@ -371,12 +388,27 @@ $('new')({
         this.TextBox.prototype= {
             _render : function(context, canvas){
                 if(!this.hidden){
+                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
                     canvas.font= this.font;
                     canvas.textAling= this.aling;
                     canvas.fillStyle= this.color;
                     canvas.textBaseline= 'top';
-                    canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
-                    canvas.fillText(this.content, context.xOffset + this.x, context.yOffset + this.y);
+                    
+                    if(this.aling == 'center'){
+                        var t= this;
+                        var lines= this.content.split('\n');
+                        var linesWidth= [];
+                        lines.forEach(function(item){
+                            linesWidth.push(canvas.measureText(item).width);
+                        });
+                        var largest= Math.max.apply(Math, linesWidth);
+                        lines.forEach(function(item, i){
+                            var dist= (largest - linesWidth[i]) / 2;
+                            canvas.fillText(item, context.xOffset + dist + t.x, context.yOffset + (t.lineHeight * i) + t.y);
+                        });
+                    }else{
+                        canvas.fillText(this.content, context.xOffset + this.x, context.yOffset + this.y);
+                    }
                     canvas.globalAlpha= verifyOpacity(canvas.globalAlpha + (1-this.opacity));
                 }
             },
@@ -385,6 +417,15 @@ $('new')({
             },
             _checkClick : function(){
                 return null;
+            },
+            get font(){
+                 return this.fontStyle+' '+this.fontWeight+' '+this.fontSize+'px/'+this.lineHeight+'px '+this.fontFamily;
+            },
+            get lineHeight(){
+                return (this._lineHeight) ? this._lineHeight : (this.fontSize + 6);
+            },
+            set lineHeight(value){
+                this._lineHeight= value;
             }
         };
         
