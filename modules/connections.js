@@ -13,7 +13,7 @@ $('new')({
         },
         functions : {
             request : function(url){
-                var { Promise } = $('classes');
+                var Promise = $('classes').Promise;
                 return new Promise(function(okay, fail){
                     var xhr= new $$.XMLHttpRequest();
                     xhr.onreadystatechange= function(){
@@ -40,7 +40,7 @@ $('new')({
         }
     },
     _init : function(me){
-        var { Promise } = $('classes');
+        var Promise = $('classes').Promise;
         me.classes.Socket.prototype= {
             get url(){
                 return this._url;

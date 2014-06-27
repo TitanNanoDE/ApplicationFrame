@@ -86,7 +86,7 @@ $('new')({
                 for(var i= c._elements.length-1; i >= 0; i--){
                     var element= c._elements[i]._checkMouse(mouse, context);
                     if(element){
-                        let style= element.cursor || c.cursor;
+                        var style= element.cursor || c.cursor;
                         if(this.style.getPropertyValue('cursor') != style)
                             this.style.setProperty('cursor', style);
                     }
@@ -231,7 +231,7 @@ $('new')({
                 context.addOffset(this.x, this.y);
                 sortElements(this, getZLevelMax(this));
                 for(var i= this._elements.length-1; i >= 0; i--){
-                    let item= this._elements[i]._checkMouse(mouse, context);
+                    var item= this._elements[i]._checkMouse(mouse, context);
                     if(item)    
                         element= item;
                 }

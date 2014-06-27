@@ -1,7 +1,4 @@
 // Function Hijack v0.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
-
-"use strict";
-
 $('new')({
     name : 'classes',
     object : {
@@ -26,7 +23,9 @@ $('new')({
         }
     },
     _init : function(me){
-        me.Hijack.prototype= {
+		"use strict";
+        
+		me.Hijack.prototype= {
             get object(){
                 return this._object;
             },
@@ -37,10 +36,10 @@ $('new')({
                     var traps= this._traps[funcName];
                     var target= this._object[funcName];
                     
-                    this._object[funcName]= function(...param){
-                        var result= target(...param);
+                    this._object[funcName]= function(){
+                        var result= target.apply(null, arguments);
                         traps.forEach(function(item){
-                            item(param);
+                            item(arguments);
                         });
                         return result;
                     };
