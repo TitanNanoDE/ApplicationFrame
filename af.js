@@ -1,8 +1,9 @@
 //Application Frame v0.1.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
+this.$$= this;
+
 (function(){
     
-this.$$= this;
 'use strict'; 
   
 //default settings for the Application Frame Engine
@@ -87,20 +88,30 @@ var ServiceScopeLocal= function(){
         lockOverride : false
     };
     this.properties= {
-        recive : function(name, callback){
+        listen : function(name, callback){
             $$.addEventListener('message', function(e){
                 if(e.data.name == name){
                     var id= e.data.id;
-                    var setAnswert= function(data){
-                        $$.postMessage({
-                            name : id,
-                            data : data
-                        });
+                    var setAnswer= function(data){
+                        $$.postMessage({ name : id, data : data });
                     };
-                    callback(e.data, setAnswert);
+                    callback(e.data.data, setAnswer);
                 }
             }, false);
-        }
+        },
+		talk : function(name, data){
+			$$.Promise(function(success){
+				var id= Date.now();
+				var listener= function(e){
+					if(e.data.name == id){
+						$$.removeEventListener('message', listener);
+						success(e.data.data);
+					}
+				};
+				$$.addEventListener('message', listener, false);
+				$$.postMessage({ name : name, id : id, data : data });
+			});
+		}
     };
     this.thread= null;
     this.override= function(newSettings){
@@ -115,44 +126,28 @@ var ServiceScopeRemote= function(name){
     this.name= name;
     this.type= 'serviceRemote';
     this.thread= null;
-    this.isReady= false;
-};
-ServiceScopeRemote.prototype= {
-    push : function(message){
-        var scope= this;
-        return new $$.Promise(function(setSuccess){
-            var id= Date.now();
-            message.id= id;
-            var listener= function(e){
-                if(e.data.name == id){
-                    this.removeEventListener('message');
-                    setSuccess(e.data);
-                }
-            };
-            scope.thread.addEventListener('message', listener, false);
-            scope.thread.postMessage(message);
-        });
-    },
-    pushStack : function(stack){
-        return this.push({
-            name : 'transferStack',
-            data : stack
-        });
-    }
-};
-    
-var WorkerStack= function(options){
-    this.action= null;
-    this.settings= null;
-    this.arguments= null;
-    this.call= null;
-    this.source= null;
-    for(var i in options){
-        if(i in this)
-            this[i]= options[i];
-    }
+    this._ready= false;
+	this.messageQueue= [];
 };
 	
+ServiceScopeRemote.prototype= {
+	get isReady(){
+		return this._ready;
+	},
+	set isReady(data){
+		this._ready= data;
+		if(data){
+			var self= this;
+			this.messageQueue.forEach(function(item){
+				self.thread.talk(item.name, item.data).then(function(data){
+					item.resolve(data);
+				});
+			});
+			this.messageQueue= [];
+		}
+	}
+};
+    
 var scopes= [];
 
 //all selectable items for the $ selector.
@@ -434,39 +429,38 @@ var prepareScope= function(item){
                     scope.thread= new $$.Worker(engine.workerEngineSource);
                     var source= '$$.__main__= ' + source.toString();
                     source= new $$.Blob([source], { type : 'text/javascript' });
-                    var firstStage= new WorkerStack({
-                        action : 'initThread',
-                        settings : scope.settings,
-                        source : $$.URL.createObjectURL(source)
-                    });
-                    scope.pushStack(firstStage).then(function(){
+					source= $$.URL.createObjectURL(source);
+                    this.talk('init', source).then(function(){
                         scope.isReady= true;
+						source= $$.URL.revokeObjectURL(source);
                     });
                 },
-                call : function(name, argumentS){
-                    if(scope.isReady){
-                        return new $$.Promise(function(setSuccess){
-                            scope.callStack({
-                                action : 'callFunction',
-                                call : name,
-                                arguments : argumentS
-                            }).then(function(answert){
-                                setSuccess(answert.functionResult);
-                            }); 
-                        });
-                    }
+                talk : function(name, data){
+					if(name != 'init' && !scope.isReady){
+						return new $$.Promise(function(success){
+							scope.messageQueue.push({ name : name, data : data, resolve : success });
+						});
+					}else{
+						return new $$.Promise(function(success){
+							var id= Date.now();
+							var listener= function(e){
+								if(e.data.name == id){
+									scope.thread.removeEventListener('message', listener);
+									success(e.data.data);
+								}	
+							};
+							scope.thread.addEventListener('message', listener, false);
+							scope.thread.postMessage({ name : name, id : id, data : data });
+						});
+					}
                 },
-                recive : function(name, callback){
+                listen : function(name, callback){
                     var listener= function(e){
                         if(e.data.name == name){
-                            scope.thread.removeEventListener('message', listener, false);
-                            var setAnswert= function(message){
-                                scope.thread.postMessage({
-                                    name : e.data.id,
-                                    data : message
-                                });
-                            callback(e.data.data, setAnswert);
+                            var setAnswer= function(message){
+                                scope.thread.postMessage({ name : e.data.id, data : message });
                             };
+							callback(e.data.data, setAnswer);
                         }
                     };
                     scope.thread.addEventListener('message', listener, false);
@@ -704,19 +698,13 @@ if(platform[2] == 'Web' || platform[2] == 'Worker'){
         engine.type= 'Worker';
         var scope= new ServiceScopeLocal();
         scopes.push(scope);
-        scope.properties.recive('transferStack', function(e, setAnswert){
-            if(e.data.action == 'initThread'){
-                $$.importScripts(e.data.source);
-                $_('engine').override(e.data.settings);
-                scope.thread= $$.__main__;
-                engine.threadQueue.push(scope);
-                $$.console.log('sending answert...');
-                setAnswert({
-                    status : true,
-                    statusText : 'success'
-                });
-            }
-        });
+        scope.properties.listen('init', function(source, setAnswert){
+			$$.importScripts(source);
+            scope.thread= $$.__main__;
+            engine.threadQueue.push(scope);
+            $$.console.log('starting worker...');
+            setAnswert();
+    	});
     }
     
 }else if(platform[2] == 'MozillaAddonSDK'){
