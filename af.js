@@ -284,7 +284,12 @@ var items= {
         talk : function(type, message){
             if($$ != $$.self){
                 return new $$.Promise(function(okay){
-                    var id= Date.now() + '-' + parseInt(Math.random() * 10);
+					var id= 0;
+					do{
+						id= Date.now() + '-' + parseInt(Math.random() * 100);
+					}while(id == engine.lastAddonComId);
+					engine.lastAddonComId= id;
+					
                     var ready= function(e){
                         $$.self.port.removeListener(ready);
                         okay(e);
@@ -557,6 +562,7 @@ var engine = {
         },
 		isRunning : false 
     },
+	lastAddonComId : 0,
     pushListeners : [],
     launchQueue : [],
     exit : function(){}
