@@ -1,5 +1,3 @@
-/* global $ */
-
 $('escape').wrapper(function(){
 
 	var instance= Date.now() + '::' + Math.round(Math.random() * 200);
