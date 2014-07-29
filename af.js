@@ -100,8 +100,8 @@ var ServiceScopeLocal= function(){
             }, false);
         },
 		talk : function(name, data){
-			$$.Promise(function(success){
-				var id= Date.now();
+			return new $$.Promise(function(success){
+				var id= createUniqueId();
 				var listener= function(e){
 					if(e.data.name == id){
 						$$.removeEventListener('message', listener);
@@ -126,26 +126,8 @@ var ServiceScopeRemote= function(name){
     this.name= name;
     this.type= 'serviceRemote';
     this.thread= null;
-    this._ready= false;
+    this.isReady= false;
 	this.messageQueue= [];
-};
-	
-ServiceScopeRemote.prototype= {
-	get isReady(){
-		return this._ready;
-	},
-	set isReady(data){
-		this._ready= data;
-		if(data){
-			var self= this;
-			this.messageQueue.forEach(function(item){
-				self.thread.talk(item.name, item.data).then(function(data){
-					item.resolve(data);
-				});
-			});
-			this.messageQueue= [];
-		}
-	}
 };
     
 var scopes= [];
@@ -430,8 +412,14 @@ var prepareScope= function(item){
                     var source= '$$.__main__= ' + source.toString();
                     source= new $$.Blob([source], { type : 'text/javascript' });
 					source= $$.URL.createObjectURL(source);
+					var self= this;
                     this.talk('init', source).then(function(){
                         scope.isReady= true;
+						scope.messageQueue.forEach(function(item){
+							self.talk(item.name, item.data).then(function(data){
+								item.resolve(data);
+							});
+						});
 						source= $$.URL.revokeObjectURL(source);
                     });
                 },
@@ -442,7 +430,7 @@ var prepareScope= function(item){
 						});
 					}else{
 						return new $$.Promise(function(success){
-							var id= Date.now();
+							var id= createUniqueId();
 							var listener= function(e){
 								if(e.data.name == id){
 									scope.thread.removeEventListener('message', listener);
@@ -522,6 +510,12 @@ var preProcesse= function(func){
 	
 	return new Function(func);
 	};
+	
+var createUniqueId= function(){
+	var time = Date.now();
+	while (time == Date.now());
+	return Date.now();
+};
 	
 // Engine
 //the engine hash, holds private flags, arrays and functions.
@@ -700,10 +694,8 @@ if(platform[2] == 'Web' || platform[2] == 'Worker'){
         scopes.push(scope);
         scope.properties.listen('init', function(source, setAnswert){
 			$$.importScripts(source);
-            scope.thread= $$.__main__;
-            engine.threadQueue.push(scope);
+            $$.__main__.apply(scope.properties, [setAnswert]);
             $$.console.log('starting worker...');
-            setAnswert();
     	});
     }
     
