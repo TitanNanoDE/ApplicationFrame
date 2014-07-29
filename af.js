@@ -260,13 +260,8 @@ var items= {
     addon : {
         talk : function(type, message){
             if($$ != $$.self){
-                return new $$.Promise(function(okay){
-					var id= 0;
-					do{
-						id= Date.now() + '-' + parseInt(Math.random() * 100);
-					}while(id == engine.lastAddonComId);
-					engine.lastAddonComId= id;
-					
+                return new $$.Promise(function(okay){	
+                    var id= createUniqueId();
                     var ready= function(e){
                         $$.self.port.removeListener(ready);
                         okay(e);
@@ -385,7 +380,7 @@ var prepareScope= function(item){
                     return {
                         talk : function(type, message){
                             return new $$.Promise(function(okay){
-                                var id= Date.now() + '-' + parseInt(Math.random() * 10);
+                                var id= createUniqueId();
                                 worker.port.on(id, function ready(e){
                                     worker.port.removeListener(ready);
                                     okay(e);
