@@ -4,18 +4,19 @@ $('new')({
     name :'connections',
     object : {
         classes : {
-            Socket : function(type, url){
+            Socket : function(type, url, options){
                 this._type= type;
                 this._url= url;
                 this._lastMessage= null;
                 this._open= false;
+                this._options= options;
             }
         },
         functions : {
-            request : function(url){
+            request : function(url, options){
                 var Promise = $('classes').Promise;
                 return new Promise(function(okay, fail){
-                    var xhr= new $$.XMLHttpRequest();
+                    var xhr= new $$.XMLHttpRequest(options);
                     xhr.onreadystatechange= function(){
                         if(this.readyState == 4){
                             if(this.status == 200)
@@ -56,7 +57,7 @@ $('new')({
             
             push : function(message){
                 var self= this;
-                var xhr= new $$.XMLHttpRequest();
+                var xhr= new $$.XMLHttpRequest(this._options);
                 return new Promise(function(setValue, setError){
                     xhr.onreadystatechange= function(){
                         if(this.readyState == 4){
