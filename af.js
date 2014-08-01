@@ -1,6 +1,6 @@
 //Application Frame v0.1.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
-this.$$= this;
+var $$= this;
 
 (function(){
     
@@ -404,9 +404,9 @@ var prepareScope= function(item){
             return {
                 main : function(source){
                     scope.thread= new $$.Worker(engine.workerEngineSource);
-                    var source= '$$.__main__= ' + source.toString();
-                    source= new $$.Blob([source], { type : 'text/javascript' });
-					source= $$.URL.createObjectURL(source);
+//                    var source= '$$.__main__= ' + source.toString();
+//                    source= new $$.Blob([source], { type : 'text/javascript' });
+//					source= $$.URL.createObjectURL(source);
 					var self= this;
                     this.talk('init', source).then(function(){
                         scope.isReady= true;
@@ -688,9 +688,9 @@ if(platform[2] == 'Web' || platform[2] == 'Worker'){
         var scope= new ServiceScopeLocal();
         scopes.push(scope);
         scope.properties.listen('init', function(source, setAnswert){
+            $$.console.log('starting worker...');
 			$$.importScripts(source);
             $$.__main__.apply(scope.properties, [setAnswert]);
-            $$.console.log('starting worker...');
     	});
     }
     
