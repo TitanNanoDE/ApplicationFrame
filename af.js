@@ -632,7 +632,7 @@ if(platform[2] == 'Web'){
         arrayBuffer : ($$.ArrayBuffer),
         webSocket : ($$.WebSocket),
         computedStyle : ($$.getComputedStyle),
-        deviceOrientation : ($$.DeviceOrientationEvent),
+        deviceOrientation : ($$.DeviceOrientationEvent)
 //        spread : (function(){try{ return eval("var x; x= [1, 2, 3], (function(x, y, z){})(...x), true;"); }catch(e){ return false; }})()
     };
     
