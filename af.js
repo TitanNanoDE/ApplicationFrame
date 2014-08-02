@@ -1,6 +1,12 @@
 //Application Frame v0.1.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
-this.$$= this;
+if(this === (window || global))
+	this.$$= this;
+else if(global)
+	global.$$= global;
+else if(window)
+	window.$$= window;
+
 
 (function(){
     
