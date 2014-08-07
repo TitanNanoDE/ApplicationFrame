@@ -1,12 +1,10 @@
 //Application Frame v0.1.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
-if(this === (window || global))
-	this.$$= this;
-else if(global)
-	global.$$= global;
-else if(window)
-	window.$$= window;
 
+if(typeof global != 'undefined')
+	global.$$= global;
+else if(typeof this != 'undefined')
+	this.$$= this;
 
 (function(){
     
