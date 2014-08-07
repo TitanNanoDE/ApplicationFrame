@@ -410,9 +410,11 @@ var prepareScope= function(item){
             return {
                 main : function(source){
                     scope.thread= new $$.Worker(engine.workerEngineSource);
-                    var source= '$$.__main__= ' + source.toString();
-                    source= new $$.Blob([source], { type : 'text/javascript' });
-					source= $$.URL.createObjectURL(source);
+					if(typeof source == "function"){
+						var source= '$$.__main__= ' + source.toString();
+                    	source= new $$.Blob([source], { type : 'text/javascript' });
+						source= $$.URL.createObjectURL(source);
+					}
 					var self= this;
                     this.talk('init', source).then(function(){
                         scope.isReady= true;
