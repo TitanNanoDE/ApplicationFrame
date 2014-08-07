@@ -616,7 +616,7 @@ if(platform[2] == 'Web'){
     
     var platformTests= {
         storrage : isNotChromeURL && (function(){try{ return $$.sessionStorage && $$.localStorage; }catch(e){ return false; }})(),
-        indexedDB : isNotChromeURL & (function(){try{ return $$.indexedDB; }catch(e){ return false; }})(),
+        indexedDB : isNotChromeURL && (function(){try{ return $$.indexedDB; }catch(e){ return false; }})(),
         notifications : ($$.Notification),
         renderFrame : ($$.requestAnimationFrame),
         audio : ($$.Audio),
