@@ -12,27 +12,15 @@ else if(typeof this != 'undefined')
   
 //default settings for the Application Frame Engine
 var settings= {
-//  the coreLock option locks the settings and prevents from overwriteing
-//  the coreLock is disabled for default	
     coreLock : false,
-//  the masterApplication option defines the name of the app which should get master privileges.
-//  for default no app name is set.	
     masterApplication : null,
-//  the render mode defines how to handle the different tasks. 
-//  default means all apps and services running in the main thread.
 	renderMode : 'default',
-//  turn on preprocessing, to use Application Frame specific syntax.
 	preProcessing : false,
-//  if turned on, only one application can be runned at once.	
     singleApplicationMode : false,
-//  when enabled the engine checks if the runtime environment supports all required APIs.
-//  If any dependencies couldn't be found, the user will be forwarded to crashPage.
 	support : true,
-//  defines the page to which the engine forwards, if there is a unsolved dependency.
 	crashPage : 'about:blank',
-// gives the main application the possibility to access the engine object (only available in node)
     grantRoot : false
-	};	
+};	
 	
 // Classes
 // this class defines a new application scope
