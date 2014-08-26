@@ -25,4 +25,4 @@ Developers with special Focus for support of an application:
 
 ==================================
 
-Application Frame 0.1-preview http://github.com/TitanNano/ApplicationFrame
+Application Frame 0.1 https://github.com/TitanNano/ApplicationFrame/tree/v0.1
