@@ -19,12 +19,12 @@ $('new')({
                 if(this.type == HashEvent.ADD){
                     engine.hash.actions.forEach(function(item){
                         if(item.path == path && item.enter)
-                            item.enter();
+                            item.enter(path);
                     });
                 }else if(this.type == HashEvent.LOST){
                     engine.hash.actions.forEach(function(item){
                         if(item.path == path && item.exit)
-                            item.exit();
+                            item.exit(path);
                     });
                 }else{
                     $$.console.error('unknown HashEvent type!');
