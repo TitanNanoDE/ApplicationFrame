@@ -53,7 +53,7 @@ $('new')({
 //          find lost elements
             var difference= false;
             var path= '';
-            for(var i= 0; i < engine.hash.path; i++){
+            for(var i= 0; i < engine.hash.path.length; i++){
                 path+= '/' + engine.hash.path[i];
                         
                 if(difference)
