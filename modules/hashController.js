@@ -7,24 +7,40 @@ $('new')({
     constructor : function(engine){
         engine.hash= {
             actions : [],
-            path : []
+            path : [],
+            overrides : {}
         };
         
 //      Classes
         var HashEvent= function(type, path){
             this.type= type;
             this.path= path;
-            this.trigger= function(){
+            this.trigger= function(count){
                 var path= this.path;
                 if(this.type == HashEvent.ADD){
                     engine.hash.actions.forEach(function(item){
-                        if(item.path == path && item.enter)
+                        if(item.path == path && item.enter && (!item.persistent || !item.active)){
                             item.enter(path);
+                            if(item.persistent) item.active= true;
+                        }
                     });
                 }else if(this.type == HashEvent.LOST){
                     engine.hash.actions.forEach(function(item){
-                        if(item.path == path && item.exit)
-                            item.exit(path);
+                        if(item.path == path && item.exit){
+                            if(!item.persistent || count == 1){
+                               item.exit(path);
+                               if(item.persistent){
+                                  var old= path.split('/');
+                                  old.pop();
+                                  delete engine.hash.overrides[old.join('/')];
+                                  item.active= false;
+                               }
+                            }else{
+                               var old= path.split('/');
+                               old.pop();
+                               engine.hash.overrides[old.join('/')]= path;
+                            }
+                        }
                     });
                 }else{
                     $$.console.error('unknown HashEvent type!');
@@ -36,7 +52,7 @@ $('new')({
         HashEvent.LOST= 1;
         
         $$.addEventListener('hashchange', function(){
-            if($$.location.hash == "")
+            if($$.location.hash === "")
                 var hashPath= ('#!/').split('/');
             else
                 var hashPath= $$.location.hash.split('/');
@@ -48,8 +64,12 @@ $('new')({
             }
             hashPath.shift();
             
+//          save new path
+            $$.localStorage.setItem('af.hash.backup', '/'+hashPath.join('/'));
+            
 //          compare old and new paths
-            var events= [];
+            var events_lost= [];
+            var events_add= [];
 //          find lost elements
             var difference= false;
             var path= '';
@@ -57,15 +77,27 @@ $('new')({
                 path+= '/' + engine.hash.path[i];
                         
                 if(difference)
-                    events.push(new HashEvent(HashEvent.LOST, path));
+                    events_lost.push(new HashEvent(HashEvent.LOST, path));
                 else if(engine.hash.path[i] == hashPath[i])
                     continue;
                 else if(engine.hash.path[i] != hashPath[i]){
                     difference= true;
-                    events.push(new HashEvent(HashEvent.LOST, path));
+                    events_lost.push(new HashEvent(HashEvent.LOST, path));
                 }
             }
-            events.reverse();
+            
+            events_lost.reverse();
+            events_lost.forEach(function(item){
+                item.trigger(events_lost.length);
+            });
+            
+//          check for overrides
+            path= '/' + hashPath.join('/');
+            if(engine.hash.overrides[path]){
+                $$.location.hash= '#!' + engine.hash.overrides[path];
+                return;
+            }
+            
 //          find new elements
             path= '';
             difference= false;
@@ -73,17 +105,17 @@ $('new')({
                 path+= '/' + hashPath[i];
                 
                 if(difference)
-                    events.push(new HashEvent(HashEvent.ADD, path));
+                    events_add.push(new HashEvent(HashEvent.ADD, path));
                 else if(hashPath[i] == engine.hash.path[i])
                     continue;
                 else if(hashPath[i] != engine.hash.path[i]){
                     difference= true;
-                    events.push(new HashEvent(HashEvent.ADD, path));
+                    events_add.push(new HashEvent(HashEvent.ADD, path));
                 }
             }
             
-            events.forEach(function(item){
-                item.trigger();
+            events_add.forEach(function(item){
+                item.trigger(events_add.length);
             });
             
             engine.hash.path= hashPath;
@@ -95,13 +127,13 @@ $('new')({
             }
         });
 
-        this.mount= function(path, enter, exit){
+        this.mount= function(path, enter, exit, persistent){
             if(path instanceof Array)
                 path.forEach(function(item){
-                    engine.hash.actions.push({path : item, enter : enter, exit : exit});
+                    engine.hash.actions.push({path : item, enter : enter, exit : exit, persistent : persistent, active : false });
                 });
             else
-                engine.hash.actions.push({path : path, enter : enter, exit : exit});
+                engine.hash.actions.push({path : path, enter : enter, exit : exit, persistent : persistent, active : false });
             return true;
         };
         
@@ -127,6 +159,15 @@ $('new')({
         this.trigger= function(){
             var e= new $$.Event('hashchange');
             $$.dispatchEvent(e);
+        };
+        
+        this.restore= function(){
+            var hash= $$.localStorage.getItem('af.hash.backup');
+            var hashString= '#!' + $$.localStorage.getItem('af.hash.backup');
+            if(hash && hashString != $$.location.hash)
+                $$.location.hash= hashString;
+            else
+                this.trigger();
         };
     }
 });
