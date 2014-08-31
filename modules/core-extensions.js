@@ -48,9 +48,16 @@ var forEach= function(callback){
     };
 
 // if your required list type isn't here just add it
-$$.Array.prototype.forEach= forEach;
-if($$.NodeList && !$$.NodeList.forEach) $$.NodeList.prototype.forEach= forEach;
-if($$.navigator && $$.navigator.isTouch && !$$.TouchList.forEach) $$.TouchList.prototype.forEach= forEach;
+if($$.Array && !$$.Array.prototype.forEach) $$.Array.prototype.forEach= forEach;
+if($$.NodeList && !$$.NodeList.prototype.forEach) $$.NodeList.prototype.forEach= forEach;
+if($$.navigator && $$.navigator.isTouch && !$$.TouchList.prototype.forEach) $$.TouchList.prototype.forEach= forEach;
+	
+/* --- array last extension --- */
+var ArrayLast= function(){
+	return this[this.length -1];
+};
+	
+if($$.Array && !$$.Array.prototype.last) $$.Array.prototype.last= ArrayLast;
     
 /* --- DOM Node extensions --- */
 if($$.Node){
