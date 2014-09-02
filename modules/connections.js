@@ -109,10 +109,27 @@ $('new')({
                
                return new $$.Promise(function(success, failed){
                    var response= (new OAuthRequest('GET', url, data, self)).send();
-                   response.then(success);
+                   response.then(function(data){
+					   success(data.responseText);
+				   });
                    response.catch(failed);
                });
            },
+		   
+		   download : function(url, notDefaultHost){
+			   var self= this;
+			   
+			   return new $$.Promise(function(success, failed){
+				  var request= new OAuthRequest('GET', url, null, self, notDefaultHost);
+				  request.responseType= 'blob';
+				  var response= request.send();
+				   
+				  response.then(function(data){
+					  success(data.response);
+				  });
+				  response.catch(failed);
+			   });
+		   },
            
            requestToken : function(url, callback_url){
                var self= this;
@@ -123,7 +140,7 @@ $('new')({
                    var response= request.send();
                    
                    response.then(function(data){
-                       var data= data.split('&');
+                       var data= data.responseText.split('&');
                        self._token= data[0].split('=')[1];
                        self._tokenSecred= data[1].split('=')[1];
                        
@@ -143,7 +160,7 @@ $('new')({
                    var response= request.send();
                    
                    response.then(function(data){
-                       var data= data.split('&');
+                       var data= data.responseText.split('&');
                        self._token= data[0].split('=')[1];
                        self._tokenSecred= data[1].split('=')[1];
                        
@@ -164,12 +181,11 @@ $('new')({
            }
        };
         
-       var OAuthRequest= function(method, url, data, client){
-           $$.console.log(client._host + url);
+       var OAuthRequest= function(method, url, data, client, notDefaultHost){
            this._client= client;
            this._data= data;
            this._method= method;
-           this._url= client._host + url;
+		   this.responseType= '';
            this.oauthHeader= {
                'oauth_consumer_key' : client._key,
                'oauth_nonce' : createOAuthNonce(),
@@ -177,6 +193,12 @@ $('new')({
                'oauth_timestamp' : $$.Date.now().toString().substr(0, 10),
                'oauth_version' : '1.0'
            };
+		   
+		   if(!notDefaultHost)
+			   this._url= client._host + url;
+		   else
+			   this._url= url;
+		   
            if(client._token !== '') this.oauthHeader.oauth_token= client._token;
        };
        
@@ -197,16 +219,21 @@ $('new')({
                
                if(this._method == 'POST')
                    xhr.open(this._method, this._url, true);
-               else
+               else if(data !== '')
                    xhr.open(this._method, this._url + '?' + data, true);
+			   else
+				   xhr.open(this._method, this._url, true);
                
                xhr.setRequestHeader('Authorization', createOAuthHeader(this.oauthHeader));
+			   
+			   if(this.responseType !== '')
+				   xhr.responseType= this.responseType;
                
                return new $$.Promise(function(success, failed){
                    xhr.onreadystatechange= function(){
                       if(this.readyState == 4){
                           if(this.status == 200){
-                              success(this.responseText);
+                              success(this);
                           }else{
                               failed(this.status +' - ' + this.statusText);
                           }
