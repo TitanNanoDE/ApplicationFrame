@@ -42,6 +42,7 @@ var ApplicationScope= function(name){
 	this.thread= null;
 	this.worker= null;
 	this.setterListeners= [];
+	this.modules= [];
     this.override= function(newSettings){
         if(!thisScope.settings.lockOverride){
             for(var i in newSettings)
@@ -318,6 +319,15 @@ var prepareScope= function(item){
                         engine.threadQueue.push(scope);
                     }
                 },
+				'module' : {
+					value : function(name, f){
+						var request= new Promise(f);
+						scope.modules.push(request);
+						request.then(function(value){
+							scope.properties[name]= value;
+						});
+					}
+				},
                 get : {
                     value : function(name){
                         if(scope.settings.allowGetters && scope.properties[name]){
@@ -525,8 +535,14 @@ var engine = {
 			if(!this.isRunning){
 				this.isRunning= true;
 				if(settings.renderMode == 'default'){
-					scope.thread.apply(scope.properties, [scope]);
+					if(scope.modules.length > 0){
+						$$.Promise.all(scope.modules).then(function(){
+							scope.thread.apply(scope.properties, [scope]);
+						});
+					}else{
+						scope.thread.apply(scope.properties, [scope]);
 					}
+				}
 				
 				if(this.queue.length > 0){
 					var n= this.queue[0]; this.queue.shift();
