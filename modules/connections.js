@@ -87,7 +87,31 @@ $('new')({
                         xhr.send();
                     }
                 });
-            }
+            },
+			
+			request : function(url, message){
+                var self= this;
+                var xhr= new $$.XMLHttpRequest(this._options);
+                return new Promise(function(setValue, setError){
+                    xhr.onreadystatechange= function(){
+                        if(this.readyState == 4){
+                            if(this.status == 200){
+                                setValue(this.responseText);
+                            }else{
+                                setError({status : this.status, statusText : this.statusText});
+                            }
+                        self._lastMessage= this.statusText;
+                        }
+                    };
+                    if(self._type == me.classes.Socket.HTTP_POST){
+                        xhr.open('POST', self._url + url,  true);
+                        xhr.send(message);
+                    }else if(self._type == me.classes.Socket.HTTP_GET){
+                        xhr.open('GET', self._url + url + '?' + message, true);
+                        xhr.send();
+                    }
+                });
+			}
         };
        me.classes.Socket.HTTP_GET= 'http_get';
        me.classes.Socket.HTTP_POST= 'http_post';
@@ -99,7 +123,9 @@ $('new')({
                
                return new $$.Promise(function(success, failed){
                    var response= (new OAuthRequest('POST', url, data, self)).send();
-                   response.then(success);
+                   response.then(function(data){
+					   success(data.responseText);
+				   });
                    response.catch(failed);
                });
            },
@@ -178,7 +204,11 @@ $('new')({
            
            isLoggedIn : function(){
                return (this._token !== '');
-           }
+           },
+		   
+		   exposeToken : function(){
+			   return [this._token, this._tokenSecred];
+		   }
        };
         
        var OAuthRequest= function(method, url, data, client, notDefaultHost){
@@ -217,9 +247,7 @@ $('new')({
                    });
                }
                
-               if(this._method == 'POST')
-                   xhr.open(this._method, this._url, true);
-               else if(data !== '')
+               if(data !== '')
                    xhr.open(this._method, this._url + '?' + data, true);
 			   else
 				   xhr.open(this._method, this._url, true);
@@ -235,7 +263,10 @@ $('new')({
                           if(this.status == 200){
                               success(this);
                           }else{
-                              failed(this.status +' - ' + this.statusText);
+                              failed({
+								  status : this.status +' - ' + this.statusText,
+								  nextTry : this.getResponseHeader('X-Rate-Limit-Reset')
+							  });
                           }
                       }  
                    };
