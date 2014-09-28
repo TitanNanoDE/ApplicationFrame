@@ -8,498 +8,240 @@ else if(typeof this != 'undefined')
 
 (function(){
     
-'use strict'; 
-  
-//default settings for the Application Frame Engine
-var settings= {
-    coreLock : false,
-    masterApplication : null,
-	renderMode : 'default',
-	preProcessing : false,
-    singleApplicationMode : false,
-	support : true,
-	crashPage : 'about:blank',
-    grantRoot : false
-};	
+'use strict'; 	
+	
+//Variables
+var asiStorage= new $$.WeakMap();
 	
 // Classes
 // this class defines a new application scope
 var ApplicationScope= function(name){
-	var thisScope= this;
+	var self= this;
 	this.name= name;
 	this.type= 'application';
-	this.settings= {
-		allowSetters : true,
-		allowGetters : true,
-		lockOverride : false,
-		autoLock : true
-    };
-	this.properties=  { 
-        addSetterListener : function(key, callback){
-			thisScope.setterListeners.push({key : key, callback : callback});
-        }
+	this.public= new ApplicationScopeInterface(this);
+	this.private=  { 
+		public : this.public,
+		onprogress : function(f){
+			self.listeners.push({ type : 'porgress', listener : f });
+		}
     };
 	this.thread= null;
-	this.worker= null;
-	this.setterListeners= [];
-    this.override= function(newSettings){
-        if(!thisScope.settings.lockOverride){
-            for(var i in newSettings)
-                if(thisScope.settings[i]) thisScope.settings[i]= newSettings[i];
-            if(!newSettings.hasOwnProperty('lockOverride') && thisScope.settings.autoLock) thisScope.settings.lockOverride= true;
-        }
-    };
+	this.workers= [];
+	this.listeners= [];
 };
-    
+
+ApplicationScope.prototype= {
+	getListeners : function(type){
+		var list= [];
+		
+		list.emit= function(value){
+			this.forEach(function(item){
+				item.listener(value);	
+			});
+		};
+		this.listeners.forEach(function(item){
+			if(item.type === type)
+				list.push(item);
+		});
+		return list;
+	}
+};
+
+// this class defines a new application scope interface
+var ApplicationScopeInterface= function(scope){
+	asiStorage.set(this, scope);
+};
+	
+ApplicationScopeInterface.prototype= {
+	on : function(type, listener){
+		var scope= asiStorage.get(this);
+		scope.listeners.push({ type : type, listener : listener });
+	},
+	thread : function(f){
+		var scope= asiStorage.get(this);
+		scope.workers.push(new ScopeWorker(f));	
+	},
+	main : function(f){
+		var scope= asiStorage.get(this);
+		scope.thread= f;
+		scope.thread.apply(scope.private);
+	},
+	terminate : function(type){
+		var scope= asiStorage.get(this);
+		scope.getListeners('terminate').emit(type);
+	}
+};
+  
+// this class defines a new mozilla addon scope
 var MozillaAddonScope = function(){
-    var thisScope= this;
     this.name= "addon";
     this.type= 'addon';
-    this.settings= {
-        sdkPrefix : false,
-        contentPrefixChar : '*',
-        contentPrefix : false,
-        fastExport : true
-    };
-    this.defaultProperties= {};
-    this.modules= {};
-    this.global= null;
     this.thread= null;
-    this.override= function(newSettings){
-        for(var i in newSettings)
-            if(thisScope.settings[i]) thisScope.settings[i]= newSettings[i];
-    };
+	this.public= new MozillaAddonScopeInterface(this);
 };
-    
-var ServiceScopeLocal= function(){
-    var thisScope= this;
-    this.name= 'serviceLocal';
-    this.type= 'service';
-    this.settings= {
-        allowSubWorkers : true,
-        lockOverride : false
-    };
-    this.properties= {
-        listen : function(name, callback){
-            $$.addEventListener('message', function(e){
-                if(e.data.name == name){
-                    var id= e.data.id;
-                    var setAnswer= function(data){
-                        $$.postMessage({ name : id, data : data });
-                    };
-                    callback(e.data.data, setAnswer);
-                }
-            }, false);
-        },
-		talk : function(name, data){
+	
+// this	class defines a new mozilla addon scope interface
+var MozillaAddonScopeInterface= function(scope){
+	asiStorage.set(this, scope);
+};
+	
+MozillaAddonScopeInterface.prototype= {
+	create : function(thread){
+		var scope= asiStorage.get(this);
+		scope.thread= thread;
+		engine.threadQueue.push(scope);
+	},
+	'module' : function(f){
+		var scope= asiStorage.get(this);
+		f.apply(scope.global.exports);
+	},
+	modules : function(depsObject){
+		var scope= asiStorage.get(this);
+		for (var i in depsObject){
+			if(!scope.modules[i])
+				scope.modules[i]= depsObject[i];
+		}
+	},
+	hook : function(globalObject){
+		var scope= asiStorage.get(this);
+		scope.global= globalObject;
+	},
+	dataURL : function(path){
+		var prefixURI= $$.require('@loader/options').prefixURI;
+			return (prefixURI + 'af/lib/') + (path || '');
+		},
+	talkTo : function(worker){
+		return {
+			talk : function(type, message){
+				return new $$.Promise(function(okay){
+					var id= createUniqueId();
+					worker.port.on(id, function ready(e){
+						worker.port.removeListener(ready);
+						okay(e);
+					});
+					worker.port.emit(type, { id : id, message : message });
+				});
+			},
+			listen : function(type, callback){
+				worker.port.on(type, function(e){
+					var id= e.id;
+					callback(e.message, function(message){
+						worker.port.emit(id, message); 
+					});
+				});
+			}
+		};
+	}
+};
+
+// this class defines a new service scope
+var ServiceScope= function(){
+	this.thread= null;
+	this.private= {};
+	this.isReady= false;
+	this.messageQueue= [];
+	this.public= new ServiceScopeInterface(this);
+};
+	
+// this class defines a new service scope loader
+var ServiceScopeInterface= function(scope){
+	asiStorage.set(this, scope);
+};
+	
+ServiceScopeInterface.prototype= {
+	talk : function(name, data){
+		var scope= asiStorage.get(this);
+		
+		if(name != 'init' && !scope.isReady){
+			return new $$.Promise(function(success){
+				scope.messageQueue.push({ name : name, data : data, resolve : success });
+			});
+		}else{
 			return new $$.Promise(function(success){
 				var id= createUniqueId();
 				var listener= function(e){
 					if(e.data.name == id){
-						$$.removeEventListener('message', listener);
+						scope.thread.removeEventListener('message', listener);
 						success(e.data.data);
 					}
 				};
-				$$.addEventListener('message', listener, false);
-				$$.postMessage({ name : name, id : id, data : data });
+				scope.thread.addEventListener('message', listener, false);
+				scope.thread.postMessage({ name : name, id : id, data : data });
 			});
 		}
-    };
-    this.thread= null;
-    this.override= function(newSettings){
-        if(!thisScope.settings.lockOverride){
-            for(var i in newSettings)
-                if(this.settings[i] && !this.settings.lockOverride) thisScope.settings[i]= newSettings[i];
-        }
-    };
-};
-    
-var ServiceScopeRemote= function(name){
-    this.name= name;
-    this.type= 'serviceRemote';
-    this.thread= null;
-    this.isReady= false;
-	this.messageQueue= [];
-};
-    
-var scopes= [];
-
-//all selectable items for the $ selector.
-var items= {
-	application : {
-		'new' : function(name){
-			var exists= false;
-			scopes.forEach(function(item){
-				if(item.name == name) exists= true;
-				});
-				
-			if(!exists && !engine.isApplicationLimit){
-				scopes.push(new ApplicationScope(name));
-                if(scopes.length < 1) engine.mainApplication= scopes[scopes.length-1];
-				if(settings.singleApplicationMode) engine.isApplicationLimit= true;
-                if(settings.masterApplication == scopes[scopes.length-1].name) 
-                    engine.mainApplication= scopes[scopes.length-1];
-			}else
-                $$.console.log("application or service \""+name+"\" already exists!!");
-				
+	},
+	listen : function(name, callback){
+		var scope= asiStorage.get(this);
+    	scope.addEventListener('message', function(e){
+        	if(e.data.name == name){
+            	var id= e.data.id;
+                var setAnswer= function(data){
+                	scope.postMessage({ name : id, data : data });
+				};
+				callback(e.data.data, setAnswer);
 			}
-		},
-    service : {
-        'new' : function(name){
-            var exists= false;
-            scopes.forEach(function(item){
-                if(item.name == name) exists= true;
-            });
-            
-            if(!exists){
-                scopes.push(new ServiceScopeRemote(name));
-            }else
-                $$.console.log("application or service \""+name+"\" already exists!!");
-        },
-        setEngine : function(src){
-            engine.workerEngineSource= src;
-        }
-    },
-    'new' : function(settings){
-        var object = {};
-        if(settings.hasOwnProperty('constructor')){
-            object= new settings.constructor(engine);
-        }else if(settings.builder && settings.nameSpace){
-            engine[settings.nameSpace]= {};
-            object= function(){
-				return settings.builder(engine[settings.nameSpace], this.arguments);
-			};
-        }else if(settings.builder){
-            object= settings.builder;
-        }else{
-            object= settings.object;
-        }
-        
-        if(settings.name && !items[settings.name])
-            items[settings.name]= object;
-        else
-            $$.console.error("No or ilegall name!");
-        if(settings._init){
-            if(settings.nameSpace)
-                settings._init(engine[settings.nameSpace], settings.object);
-            else
-                settings._init(settings.object);
-            }
-        if(settings.nameSpace)
-            return engine[settings.nameSpace];
-        return null;
-        },
-    queue : {
-        push : function(object){
-            var push= function(){
-                this.count++;
-                if(this.type.length && this.count == this.type.length){
-                    this.action();
-                    engine.launchQueue.splice(engine.launchQueue.indexOf(this), 1);
-                }else if(!this.type.length){
-                    this.action();
-                    engine.launchQueue.splice(engine.launchQueue.indexOf(this), 1);
-                }
-            };
-            
-            if(typeof object == 'object'){
-                object.push= push;
-                engine.launchQueue.push(object);
-                return true;
-            }else{
-                $$.console.error('The launch queue only accepts launch objects!');
-                return false;
-            }
-        },
-        trigger : function(type){
-            engine.launchQueue.forEach(function(i){
-                if(i.type == type) i.push();
-            });
-        }
-    },
-    dom : {
-        select : function(query){
-            return $$.document.querySelector(query);
-        },
-        selectAll : function(query){
-            return $$.document.querySelectorAll(query);
-        },
-        append : function(element, target){
-            return target.appendChild(element);    
-        },
-        create : function(elementName){
-            return $$.document.createElement(elementName);
-        },
-        entryPoint : function(entryPoint){
-            return {
-                select : function(query){
-                    return entryPoint.querySelector(query);
-                },
-                selectAll : function(query){
-                    return entryPoint.querySelectorAll(query);
-                }
-            };
-        }
-    },
-    escape : {
-        wrapper : function(sub){
-            if(sub())
-                return true;
-            else
-                return false;
-        }
-    },
-    addon : {
-        talk : function(type, message){
-            if($$ != $$.self){
-                return new $$.Promise(function(okay){	
-                    var id= createUniqueId();
-                    var ready= function(e){
-                        $$.self.port.removeListener(ready);
-                        okay(e);
-                    };
-                    $$.console.log(id);
-                    $$.self.port.on(id, ready, false);
-                    $$.self.port.emit(type, { id : id, message : message });
-                });
-            }else{
-                $$.console.error('Not available in this context!!');
-            }
-        },
-        listen : function(type, callback){
-            if($$ != $$.self){
-                $$.self.port.on(type, function(e){
-                    var id= e.id;
-                    callback(e.message, function(message){
-                        $$.self.port.emit(id, message); 
-                    });
-                });
-            }else{
-                $$.console.error('Not available in this context!!');
-            }
-        }
-    }
-};
-    
-//selects a item of the items hash.
-var selector= function(name){
-	if(items[name])
-		return items[name];
-	else
-		$$.console.error('unknown selector!!');
-        return null;
-	};
-
-var handleEvents= function(scope, key){
-    scope.setterListeners.forEach(function(item){
-        if(item.key == key)
-        item.callback(scope.properties[key]);
-    });
-};
-    
-var findScope= function(name){
-    for(var i=0; i < scopes.length; i++){
-        if(scopes[i].name == name)
-            return scopes[i];
-    }
-    return null;
+		}, false);
+	},
+	main : function(source){
+		var scope= asiStorage.get(this);
+		
+		scope.thread= new $$.SharedWorker(engine.shared.serviceLoader+'?'+scope.name);
+		if(typeof source == "function"){
+			var source= '$$.main= ' + source.toString();
+            source= new $$.Blob([source], { type : 'text/javascript' });
+			source= $$.URL.createObjectURL(source);
+		}
+		scope.thread.talk('init', source).then(function(){
+			scope.isReady= true;
+			scope.messageQueue.forEach(function(item){
+				scope.thread.talk(item.name, item.data).then(function(data){
+					item.resolve(data);
+				});
+			});
+//			source= $$.URL.revokeObjectURL(source);
+		});
+	}
 };
 
-var prepareScope= function(item){
-    if(item){
-//      return a application scope
-        if(item.type == 'application'){
-            var scope= item;
-            return Object.create(scope.properties, {
-                main : {
-                    value : function(thread){
-                        scope.thread= (settings.preProcessing) ? preProcesse(thread) : thread;
-                        if(scope.settings.autoLock) scope.settings.isLocked= true;
-                        engine.threadQueue.push(scope);
-                    }
-                },
-                get : {
-                    value : function(name){
-                        if(scope.settings.allowGetters && scope.properties[name]){
-                            handleEvents(scope, name);
-                            return scope.properties[name];
-                        }else{
-                            return null;
-                        }
-                    }
-                },
-                set : {
-                    value : function(name, value){
-                        if(scope.settings.allowSetters && scope.properties[name]){
-                            scope.properties[name]= value;
-                            handleEvents(scope, name);
-                            return true;
-                        }else{
-                            return false;
-                        }
-                    }
-                },
-                override : {
-                    value : scope.override
-                }
-            });
-                
-        }else if(item.type == 'addon'){
-//          return a addon scope (at the moment only mozilla)
-            var scope= item;
-            return {
-                create : function(thread){
-                    scope.thread= thread;
-                    engine.threadQueue.push(scope);
-                },
-                'module' : function(f){
-                    f.apply(scope.global.exports);
-                },
-                modules : function(depsObject){
-                    for (var i in depsObject){
-                        if(!scope.modules[i])
-                            scope.modules[i]= depsObject[i];
-                    }
-                },
-                hook : function(globalObject){
-                    scope.global= globalObject;
-                },
-                dataURL : function(path){
-                    var prefixURI= $$.require('@loader/options').prefixURI;
-                    return (prefixURI + 'af/lib/') + (path || '');
-                },
-                talkTo : function(worker){
-                    return {
-                        talk : function(type, message){
-                            return new $$.Promise(function(okay){
-                                var id= createUniqueId();
-                                worker.port.on(id, function ready(e){
-                                    worker.port.removeListener(ready);
-                                    okay(e);
-                                });
-                                worker.port.emit(type, { id : id, message : message });
-                            });
-                        },
-                        listen : function(type, callback){
-                            worker.port.on(type, function(e){
-                                var id= e.id;
-                                callback(e.message, function(message){
-                                    worker.port.emit(id, message); 
-                                });
-                            });
-                        }
-                    };
-                }
-            };
-        }else if(item.type == 'serviceRemote'){
-            var scope= item;
-            return {
-                main : function(source){
-                    scope.thread= new $$.Worker(engine.workerEngineSource);
-					if(typeof source == "function"){
-						var source= '$$.__main__= ' + source.toString();
-                    	source= new $$.Blob([source], { type : 'text/javascript' });
-						source= $$.URL.createObjectURL(source);
-					}
-					var self= this;
-                    this.talk('init', source).then(function(){
-                        scope.isReady= true;
-						scope.messageQueue.forEach(function(item){
-							self.talk(item.name, item.data).then(function(data){
-								item.resolve(data);
-							});
-						});
-						source= $$.URL.revokeObjectURL(source);
-                    });
-                },
-                talk : function(name, data){
-					if(name != 'init' && !scope.isReady){
-						return new $$.Promise(function(success){
-							scope.messageQueue.push({ name : name, data : data, resolve : success });
-						});
-					}else{
-						return new $$.Promise(function(success){
-							var id= createUniqueId();
-							var listener= function(e){
-								if(e.data.name == id){
-									scope.thread.removeEventListener('message', listener);
-									success(e.data.data);
-								}	
-							};
-							scope.thread.addEventListener('message', listener, false);
-							scope.thread.postMessage({ name : name, id : id, data : data });
-						});
-					}
-                },
-                listen : function(name, callback){
-                    var listener= function(e){
-                        if(e.data.name == name){
-                            var setAnswer= function(message){
-                                scope.thread.postMessage({ name : e.data.id, data : message });
-                            };
-							callback(e.data.data, setAnswer);
-                        }
-                    };
-                    scope.thread.addEventListener('message', listener, false);
-                }
-            };
-        }else 
-            return null;
-    }else{
-        return null;
-    }
-};
-
-//the scope selector selects an application or service from the scopes array.
-var scopeSelector = function(name){
-    
-//  special handling for the application key
-	if(name == 'application'){
-        if(engine.mainApplication){
-            name= engine.mainApplication.name;
-            return prepareScope(engine.mainApplication);
-        }else{
-            throw 'Can not access "application"! No main application is set!';
-        }
-        
-//  special handling for the eninge key
-	}else if(name == 'engine'){
-		return {
-			override : function(newSettings){
-				if(!settings.coreLock){
-						for(var i in newSettings){
-                            if(settings[i] !== undefined) settings[i]= newSettings[i];
-						}
-					}
-				},
-			stop : function(){
-				$$.location.replace(settings.crashPage);
-				},
-            requestRoot : function(scope){
-                if( (engine.type == 'Node') && (scope == engine.mainApplication.properties) ){
-                    scope.engine= engine;
-                    return true;
-                }else{
-                    return false;
-                    }
-                }
-			};
-    }else if(engine.type == 'MozAddon' && findScope('addon').modules[name]){
-        return findScope('addon').modules[name];
-	}else{
-//      default handling for all other keys
-        return prepareScope(findScope(name));
-    }
-};
-
-//preprocesses source from any function.
-var preProcesse= function(func){
-	func= func.toString();
-	func= func.substring(func.indexOf('{')+1, func.lastIndexOf('}'));
+// this class defines a new scope worker
+var ScopeWorker= function(f, scope){
+	var self= this;
 	
-	return new Function(func);
-	};
+	this.scope= scope;
+	this.thread= f;
+	this.promise= new $$.Promise(function(done){
+		self.thread.addEventListener('message', function(e){
+			if(e.data.name == 'af-worker-done')
+				done(e.data.data);
+		}, false);
+	});
+	this.progressListeners= [];
 	
+	this.thread.addEventListener('message', function(e){
+		if(e.data.name == 'af-worker-progress')
+			self.progressListners.forEach(function(item){
+				item(e.data.data);
+			});
+	}, false);
+};
+
+// this class defines a new scope worker interface
+var ScopeWorkerInterface= function(scope){
+	asiStorage.set(this, scope);
+};
+	
+ScopeWorkerInterface.prototype= {
+	then : function(f){
+		return asiStorage.get(this).promise.then(f);
+	},
+	onprogress : function(f){
+		asiStorage.get(this).progressListeners.push(f);
+	}
+};
+
+// Functions
+// this function creates a new unique id
 var createUniqueId= function(){
 	var time = Date.now();
 	while (time == Date.now());
@@ -509,41 +251,104 @@ var createUniqueId= function(){
 // Engine
 //the engine hash, holds private flags, arrays and functions.
 var engine = {
-	isApplicationLimit : false,
-	mainApplication : null,
-	name : 'unknown',
-    version : '1',
-    platform : 'unknown',
-    arch : 'x32',
-    type : 'Web',
-	activeThreads : 0,
-    workerEngineSource : null,
-	domUpdates : [],
-	threadQueue : {
-		queue : [],
-		push : function(scope){
-			if(!this.isRunning){
-				this.isRunning= true;
-				if(settings.renderMode == 'default'){
-					scope.thread.apply(scope.properties, [scope]);
-					}
+	shared : {
+		serviceLoader : '',
+		renderModes : ['default'],
+		selectorIndex : {
+			addon : (function(){
+				var self= {};
 				
-				if(this.queue.length > 0){
-					var n= this.queue[0]; this.queue.shift();
-					this.push(n);
+				self.talk= function(type, message){
+            		if($$ != $$.self){
+						return new $$.Promise(function(okay){	
+							var id= createUniqueId();
+							var ready= function(e){
+								$$.self.port.removeListener(ready);
+                        		okay(e);
+							};
+							$$.console.log(id);
+							$$.self.port.on(id, ready, false);
+							$$.self.port.emit(type, { id : id, message : message });
+                		});
+            		}else{
+						$$.console.error('Not available in this context!!');
+            		}
+        		};
+				
+				self.listen= function(type, callback){
+					if($$ != $$.self){
+						$$.self.port.on(type, function(e){
+							var id= e.id;
+							callback(e.message, function(message){
+								$$.self.port.emit(id, message); 
+							});
+                		});
+            		}else{
+						$$.console.error('Not available in this context!!');
+					}
+				};
+				
+				if($$ != $$.self)
+					return self;
+				else
+					return null;
+			})(),
+			applications : {
+				'new' : function(name){
+					engine.pushScope(new ApplicationScope(name));
 				}
-				this.isRunning= false;
-			}else{
-				this.queue.push(scope);
-            }
-        },
-		isRunning : false 
-    },
-	lastAddonComId : 0,
-    pushListeners : [],
-    launchQueue : [],
-    exit : function(){}
-	};
+			},
+			services : {
+				'new' : function(name){
+					engine.pushScope(new ServiceScope(name));
+				},
+				setLoaderModule : function(url){
+					engine.shared.serviceLoader= url; 
+				}
+			},
+			escape : {
+				wrapper : function(source){
+					return source();	
+				}
+			},
+			system : {
+				
+			}
+		}
+	},
+	options : {
+		applicationName : '',
+		renderMode : 'default',
+		override : 'false'
+	},
+	info : {
+		name : 'unknown',
+    	version : '1',
+    	platform : 'unknown',
+    	arch : 'x32',
+    	type : 'Web'
+	},
+	itemLibrary : {},
+	scopeList : {},
+	getLibraryItem : function(name){
+		return engine.itemLibrary[name];
+	},
+	pushScope : function(scope){
+		if(!this.scopeList[scope.name] && scope.name != "application")
+			this.scopeList[scope.name]= scope;
+		else
+			$$.console.error('a scope with this name does already exist!');
+	},
+	getScope : function(name){
+		if(name == 'application')
+			name= engine.settings.applicationName;
+		
+		if(engine.scopeList[name])
+			return engine.scopeList[name];
+		else
+			$$.console.error('scope does not exist!');
+	}
+};
 
 // get the current Platform
 var platform= null;    
@@ -673,24 +478,12 @@ if(platform[2] == 'Web' || platform[2] == 'Worker'){
     engine.type= 'Web';
     
 //  publish APIs
-    $$.$= selector;
-    $$.$_= scopeSelector;
-
-// worker additions
-    if(platform[2] == 'Worker'){
-        engine.type= 'Worker';
-        var scope= new ServiceScopeLocal();
-        scopes.push(scope);
-        scope.properties.listen('init', function(source, setAnswert){
-			$$.importScripts(source);
-            $$.__main__.apply(scope.properties, [setAnswert]);
-            $$.console.log('starting worker...');
-    	});
-    }
+    $$.$= engine.getLibraryItem;
+    $$.$_= engine.getScope;
     
 }else if(platform[2] == 'MozillaAddonSDK'){
 //  create new Addon Scope
-    scopes.push(new MozillaAddonScope());
+    engine.pushScope(new MozillaAddonScope());
     engine.name= platform[0];
     engine.version= platform[1];
     engine.platform= platform[2];
@@ -698,8 +491,8 @@ if(platform[2] == 'Web' || platform[2] == 'Worker'){
 //    $$.require('af/addonCore.js'); // <--- does not exist yet. Not sure if it is really needed
     
 //  publish APIs
-    $$.exports.$= selector;
-    $$.exports.$_= scopeSelector;
+    $$.exports.$= engine.getLibraryItem;
+    $$.exports.$_= engine.getScope;
     
 }else if(platform[2] == 'Node'){
     engine.name= platform[0];
@@ -709,8 +502,8 @@ if(platform[2] == 'Web' || platform[2] == 'Worker'){
     engine.type= 'Node';
 
 //  publish APIs
-    $$.$= selector;
-    $$.$_= scopeSelector;
+    $$.$= engine.getLibraryItem;
+    $$.$_= engine.getScope;
 }
     
 })();
