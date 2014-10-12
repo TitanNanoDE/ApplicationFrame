@@ -51,6 +51,19 @@ $('new')({
         }
     },
     _init : function(me){
+		var encode= function(text){
+			text= $$.encodeURIComponent(text);
+			
+			text= text.replace(/\!/g, '%21');
+			text= text.replace(/\~/g, '%7E');
+			text= text.replace(/\*/g, '%2A');
+			text= text.replace(/\'/g, '%27');
+			text= text.replace(/\(/g, '%28');
+			text= text.replace(/\)/g, '%29');
+			
+			return text;
+		};
+		
         var Promise = $('classes').Promise;
         me.classes.Socket.prototype= {
             get url(){
@@ -235,20 +248,24 @@ $('new')({
        OAuthRequest.prototype= {
            send : function(){
                var self= this;
-               var data= '';
+               var dataGet= '';
+			   var dataPost= '';
                var xhr= new $$.XMLHttpRequest(this._client._options);
                
                this.oauthHeader.oauth_signature= createOAuthSignature(this.oauthHeader, this._data, this._method, this._url, this._client._secred, this._client._tokenSecred);
                
                if(this._data){
                    $$.Object.keys(this._data).forEach(function(item){
-                       if(data.length > 0) data+= '&';
-                       data+= item + '=' + $$.encodeURIComponent(self._data[item]);
+                       if(dataGet.length > 0) dataGet+= '&';
+					   if(dataPost.length > 0) dataPost+= '&';
+					   
+  					   dataPost+= item + '=' + self._data[item];
+                       dataGet+= item + '=' + encode(self._data[item]);
                    });
                }
                
-               if(data !== '')
-                   xhr.open(this._method, this._url + '?' + data, true);
+               if(dataGet !== '')
+                   xhr.open(this._method, this._url + '?' + dataGet, true);
 			   else
 				   xhr.open(this._method, this._url, true);
                
@@ -272,7 +289,7 @@ $('new')({
                    };
                    
                    if(self._method == 'POST')
-                       xhr.send(data);
+                       xhr.send(dataGet);
                    else
                        xhr.send();
                });
@@ -285,12 +302,12 @@ $('new')({
            var base= '';
                
            $$.Object.keys(header).forEach(function(item){
-               hash[$$.encodeURIComponent(item)]= $$.encodeURIComponent(header[item]);
+               hash[encode(item)]= encode(header[item]);
            });
                
            if(data){
                $$.Object.keys(data).forEach(function(item){
-                   hash[$$.encodeURIComponent(item)]= $$.encodeURIComponent(data[item]); 
+                   hash[encode(item)]= encode(data[item]); 
                });
            }
                
@@ -299,7 +316,7 @@ $('new')({
                raw+= item+'='+hash[item];
            });
                
-           base+= method + '&' + $$.encodeURIComponent(url) + '&' + $$.encodeURIComponent(raw);
+           base+= method + '&' + encode(url) + '&' + encode(raw);
            var key= secred + '&' + tokenSecred;
            
 //           console.log(raw);
@@ -315,7 +332,7 @@ $('new')({
            var header= '';
            $$.Object.keys(object).sort().forEach(function(item){
                if(header.length > 0) header+= ',';
-               header+= item+'="'+ $$.encodeURIComponent(object[item]) +'"';
+               header+= item+'="'+ encode(object[item]) +'"';
            });
            return 'OAuth ' + header;
        };
