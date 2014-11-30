@@ -37,12 +37,13 @@ var ApplicationScope= function(name){
 	this.properties=  { 
         addSetterListener : function(key, callback){
 			thisScope.setterListeners.push({key : key, callback : callback});
-        }
+        },
+        modules : new Catalog()
     };
+    this.modules= [];
 	this.thread= null;
 	this.worker= null;
 	this.setterListeners= [];
-	this.modules= [];
     this.override= function(newSettings){
         if(!thisScope.settings.lockOverride){
             for(var i in newSettings)
@@ -121,6 +122,35 @@ var ServiceScopeRemote= function(name){
     this.thread= null;
     this.isReady= false;
 	this.messageQueue= [];
+};
+    
+var Catalog= function(){
+    this._listeners= [];
+};
+
+Catalog.prototype.on= function(event, listener){
+    var self= this;
+    return new $$.Promise(function(success){
+        self._listeners.push({ event : event, listener : listener, success : success });
+    });
+};
+    
+Catalog.prototype.add= function(key, value){
+    this[key]= value;
+    var object= this;
+    this._listeners.forEach(function(item){
+       if(item.event == 'available'){
+            var ready= 0;
+            item.listener.forEach(function(item){
+                if(Object.keys(object).indexOf(item) > -1)
+                    ready++;
+            });
+            
+            if(ready == item.listener.length){
+                item.success();
+            }
+       } 
+    });
 };
     
 var scopes= [];
@@ -309,8 +339,9 @@ var findScope= function(name){
 var prepareScope= function(item){
     if(item){
 //      return a application scope
+        var scope= null;
         if(item.type == 'application'){
-            var scope= item;
+            scope= item;
             return Object.create(scope.properties, {
                 main : {
                     value : function(thread){
@@ -320,11 +351,19 @@ var prepareScope= function(item){
                     }
                 },
 				'module' : {
-					value : function(name, f){
-						var request= new Promise(f);
-						scope.modules.push(request);
+					value : function(name, dependencies, f){
+						var request= new $$.Promise(function(success, failure){
+                            if(dependencies.length > 0){
+                                scope.properties.modules.on('available', dependencies).then(function(){
+                                    f(scope.properties, success, failure); 
+                                });
+                            }else{
+                                f(scope.properties, success, failure);
+                            }
+                        });
+                        scope.modules.push(request);
 						request.then(function(value){
-							scope.properties[name]= value;
+							scope.properties.modules.add(name, value);
 						});
 					}
 				},
@@ -356,7 +395,7 @@ var prepareScope= function(item){
                 
         }else if(item.type == 'addon'){
 //          return a addon scope (at the moment only mozilla)
-            var scope= item;
+            scope= item;
             return {
                 create : function(thread){
                     scope.thread= thread;
@@ -402,12 +441,12 @@ var prepareScope= function(item){
                 }
             };
         }else if(item.type == 'serviceRemote'){
-            var scope= item;
+            scope= item;
             return {
                 main : function(source){
                     scope.thread= new $$.Worker(engine.workerEngineSource);
 					if(typeof source == "function"){
-						var source= '$$.__main__= ' + source.toString();
+						source= '$$.__main__= ' + source.toString();
                     	source= new $$.Blob([source], { type : 'text/javascript' });
 						source= $$.URL.createObjectURL(source);
 					}
@@ -612,11 +651,13 @@ Tests for Web platforms.
 If any test fails Application Frame will quit but at the moment only a notification in the console will be shown.
 */
     
+var platformTests= null;
+    
 if(platform[2] == 'Web'){
 //  workaround for XUL Runner error while testing the storage and indexedDB features. They are both not avaiable, so the whole app runs in to an error while testing.
     var isNotChromeURL= ($$.location.protocol != 'chrome:' && $$.location.protocol != 'resource:');
     
-    var platformTests= {
+    platformTests= {
         storrage : isNotChromeURL && (function(){try{ return $$.sessionStorage && $$.localStorage; }catch(e){ return false; }})(),
         indexedDB : isNotChromeURL && (function(){try{ return $$.indexedDB; }catch(e){ return false; }})(),
         notifications : ($$.Notification),
@@ -648,17 +689,17 @@ if(platform[2] == 'Web'){
     
 }else if(platform[2] == 'Worker'){
 //  at the moment there are no known platform tests for the 'Worker' platform.
-    var platformTests= {};
+    platformTests= {};
     
 // Tests for the Mozilla Add-on SDK
 }else if(platform[2] == 'MozillaAddonSDK'){
 //  at the moment there are no known platform tests for the 'Mozilla Add-on SDK' platform.
-    var platformTests= {};
+    platformTests= {};
 
 // Tests for the Node.js runtime or something like that
 }else if(platform[2] == 'Node'){
 //  at the moment there are no known platform tests for the 'Node' platform.
-    var platformTests= {};
+    platformTests= {};
     }
 
 //check if any test failed
