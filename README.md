@@ -1,4 +1,4 @@
-Application Frame [![Build Status](https://travis-ci.org/TitanNanoDE/ApplicationFrame.svg?branch=master)](https://travis-ci.org/TitanNano/ApplicationFrame)
+Application Frame [![Build Status](https://travis-ci.org/TitanNanoDE/ApplicationFrame.svg?branch=master)](https://travis-ci.org/TitanNanoDE/ApplicationFrame)
 =================================
 
 Application Frame is a small JavaScript Framework / Library at a realy early alpha stage. 
