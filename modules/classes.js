@@ -7,13 +7,7 @@ $('new')({
             this._traps= {};
         },
         Promise : function(promis){
-            this._pr= promis;
-            this._fu= [];
-            this._re= [];
-            this._is= false;
-            this._st= 0;
-            this._res= null;
-            this._a= false;
+            this._p= new $$.Promise(promis);
         },
         AsyncLoop : function(loop){
             this._l= loop;
@@ -48,65 +42,20 @@ $('new')({
             }
         };
         me.Promise.prototype= {
-            then : function(onFulfilled, onRejected){
-                var self= this;
-                if(!this._is){
-                    if(onFulfilled)
-                        this._fu.push(onFulfilled);
-                    if(onRejected)
-                        this._re= onRejected;
-                }else{
-                    if(this._st == 2 && onFulfilled)
-                        onFulfilled(this._res);
-                    else if(this._st == 1 && onRejected)
-                        onRejected(this._res);
-                }
-                if(!this._a){
-                    var res= function(x){
-                        self.resolve(x);
-                    };
-                    var rej= function(x){
-                        self.reject(x);
-                    };
-                    this._a= true;
-                    this._pr(res, rej);
-                }
+            then : function(){
+                this._p.then.apply(this._p, arguments);
                 return this;
             },
             'catch' : function(onRejected){
-                if(!this._is){
-                    if(onRejected)
-                        this._re.push(onRejected);
-                }else{
-                    if(this._st == 1 && onRejected)
-                        onRejected(this._res);
-                }
+                this._p.catch.apply(this._p, arguments);
                 return this;
             },
             resolve : function(value){
-                if(!this._is){
-                    var self= this;
-                    this._a= true;
-                    this._res= value;
-                    this._is= true;
-                    this._st= 2;
-                    this._fu.forEach(function(item){
-                        item(self._res);
-                    });
-                }
+                this._p.resolve.apply(this._p, arguments);
                 return this;
             },
             reject : function(reason){
-                if(!this._is){
-                    var self= this;
-                    this._a= true;
-                    this._res= reason;
-                    this._is= true;
-                    this._st= 1;
-                    this._re.forEach(function(item){
-                        item(self._res); 
-                    });
-                }
+                this._p.resolve.apply(this._p, arguments);
                 return this;
             }
         };
