@@ -118,9 +118,10 @@ $('new')({
                     };
                     if(self._type == me.classes.Socket.HTTP_POST){
                         xhr.open('POST', self._url + url,  true);
+                        xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=UTF-8');
                         xhr.send(message);
                     }else if(self._type == me.classes.Socket.HTTP_GET){
-                        xhr.open('GET', self._url + url + '?' + message, true);
+                        xhr.open('GET', self._url + url + (message ? '?' + message : ''), true);
                         xhr.send();
                     }
                 });
