@@ -283,7 +283,9 @@ $('new')({
                           }else{
                               failed({
 								  status : this.status +' - ' + this.statusText,
-								  nextTry : this.getResponseHeader('X-Rate-Limit-Reset')
+                                  error : this.responseText,
+								  nextTry : this.getResponseHeader('X-Rate-Limit-Reset'),
+                                  remainingTrys : this.getResponseHeader('x-rate-limit-remaining')
 							  });
                           }
                       }  
