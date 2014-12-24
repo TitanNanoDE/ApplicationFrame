@@ -86,5 +86,7 @@ if($$.Node){
         });  
     };
 }
+
+$$. TouchList.prototype.indexOf= Array.prototype.indexOf;
     
 });
