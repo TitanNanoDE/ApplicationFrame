@@ -263,13 +263,18 @@ var cloneObject= function(object){
 };
 
 var userAgentParser= function(userAgentString){
-	var str= '';
 	var items= [];
 	var current= '';
 	var enabled= true;
-	for(var i in userAgentString){
+	var version= '';
+	var engines= ['Gecko', 'AppleWebKit', 'Firefox', 'Safari', 'Chrome', 'OPR', 'Trident'];
+	var found= [];
+	var record= {};
+
+	for(var i= 0; i < userAgentString.length; i++){
 		if(userAgentString[i] == ' ' && enabled){
 			items.push(current);
+			current= '';
 		}else if(userAgentString[i] == '('){
 			enabled= false;
 		}else if(userAgentString[i] == ')'){
@@ -278,14 +283,66 @@ var userAgentParser= function(userAgentString){
 			current+= userAgentString[i];
 		}
 	}
-	var record= {};
+	items.push(current);
+
 	items.forEach(function(item){
-		if(item.indexOf('/') > -1){
-			record[item.split('/')[0]]= item.split('/')[1];
-		}else if(item.indexOf(';') > -1){
+		if(item.indexOf(';') > -1){
 			record.platform= item;
+		}else if(item.indexOf('/') > -1){
+			item= item.split('/');
+			if(item[0] == 'Version'){
+				version= item[1];
+			}else{
+				item.push(engines.indexOf(item[0]));
+				found.push(item);
+			}
 		}
 	});
+
+	console.log(found);
+	if(found.length == 1){
+		record.engine= found[0][0];
+		record.engineVersion= found[0][1];
+	}else if(found.length > 1){
+		found.sort(function(a, b){
+			if(a[2] < b[2])
+				return 0;
+			else
+				return 1;
+		});
+		console.log(found);
+		record.engine= found[found.length-1][0];
+		record.engineVersion= found[found.length-1][1];
+	}else{
+		record.engine= 'unknown';
+		record.engineVersion= '1';
+	}
+
+	record.arch= 'x32';
+
+	record.platform.substring(1, record.platform.length-2).split('; ').forEach(function(item){
+		if(item.indexOf('OS X') > -1){
+			record.platform= item;
+			record.arch= 'x64';
+		}else if(item.indexOf('Windows') > -1){
+			record.platform= item;
+		}else if(item.indexOf('Linux') > -1){
+			record.platform= item;
+		}else if(item.indexOf('WOW64') > -1 || item.indexOf('Win64') > -1 || item.indexOf('x64') > -1){
+			record.arch= 'x64';
+		}else if(item.indexOf('/') > -1){
+			if(engines.indexOf(item.split('/')[0]) > -1){
+				record.engine= item.indexOf('/')[0];
+				record.engineVersion= item.indexOf('/')[1];
+			}
+		}
+	});
+
+	if(version !== ''){
+		record.engineVersion= version;
+	}
+
+	return record;
 };
 
 // Engine
@@ -400,11 +457,11 @@ var engine = {
 		override : 'false'
 	},
 	info : {
-		name : 'unknown',
-    	version : '1',
+		engine : 'unknown',
+    	engineVersion : '1',
     	platform : 'unknown',
     	arch : 'x32',
-    	type : 'Web'
+    	type : 'unknown'
 	},
 	scopeList : {},
 	getLibraryItem : function(name){
@@ -431,83 +488,45 @@ var engine = {
 var platform= null;    
 
 // find out which engine is used
-if ($$.navigator && !$$.importScripts){
-    platform= $$.navigator.userAgent;
-//              Mozilla
-    platform=   (((platform.indexOf('Gecko/') > -1) && 'Gecko '+platform.substring(platform.indexOf('rv:')+3, platform.indexOf(')')) ) || false) ||
-//              Google / Apple / Opera
-                (((platform.indexOf('AppleWebKit') > -1) && platform.substring(platform.indexOf('AppleWebKit'), platform.lastIndexOf('(')-1).replace(/\//, ' ')) || false) ||      
-//              Microsoft
-                (((platform.indexOf('Trident/') > -1) && platform.substring(platform.indexOf('Trident/'), platform.indexOf(';', platform.indexOf('Trident/'))).replace(/\//, ' ')) || false) ||
-//              Unknown
-                'unknown platform';
-    platform= platform.split(' ');
-    platform.push('Web');
+if ($$.navigator){
+	engine.info.type= 'Web';
+	objectReplace.apply(engine.info, userAgentParser(navigator.userAgent));
 
-// check if we are in a Worker
-}else if($$.navigator && $$.importScripts){
-    platform= $$.navigator.userAgent;
-//              Mozilla
-    platform=   (((platform.indexOf('Gecko/') > -1) && 'Gecko '+platform.substring(platform.indexOf('rv:')+3, platform.indexOf(')')) ) || false) ||
-//              Google / Apple / Opera
-                (((platform.indexOf('AppleWebKit') > -1) && platform.substring(platform.indexOf('AppleWebKit'), platform.lastIndexOf('(')-1).replace(/\//, ' ')) || false) ||      
-//              Microsoft
-                (((platform.indexOf('Trident/') > -1) && platform.substring(platform.indexOf('Trident/'), platform.indexOf(';', platform.indexOf('Trident/'))).replace(/\//, ' ')) || false) ||
-//              Unknown
-                'unknown platform';
-    platform= platform.split(' ');
-    platform.push('Worker');
+//  publish APIs
+    $$.$= engine.getLibraryItem;
+    $$.$_= engine.getScope;
+
+//  check if touchscreen is supported
+    $$.navigator.isTouch= 'ontouchstart' in $$;
     
 // check if current platform is the Mozilla Add-on runtime
 }else if($$.exports && $$.require && $$.module){
     var system= $$.require('sdk/system');
-    platform= [system.name, system.version, 'MozillaAddonSDK'];
+	objectReplace.apply(engine.info, {
+		engine : system.name,
+		engineVersion : system.version,
+		platform : system.platform + ' ' + system.platformVersion,
+		type : 'MozillaAddonSDK',
+		arch : system.architecture
+	});
 
-// check if current platform is the Node.js runtime
-}else if($$.process && $$.process.versions && $$.process.env && $$.process.pid){
-    platform= ['Node.js', $$.process.versions.node, 'Node'];
-    }
-    
-//  set platform type
-engine.type= platform[2];
-    
-// setup environment
-if(platform[2] == 'Web' || platform[2] == 'Worker'){
-//  check if touchscreen is supported
-    $$.navigator.isTouch= 'ontouchstart' in $$;
-    engine.name= platform[0];
-    engine.version= platform[1];
-    engine.platform= $$.navigator.userAgent.substring($$.navigator.userAgent.indexOf('(')+1, $$.navigator.userAgent.indexOf(';'));
-    engine.arch= $$.navigator.userAgent.substring($$.navigator.userAgent.indexOf(';')+2, $$.navigator.userAgent.indexOf(';', $$.navigator.userAgent.indexOf(';')+1));
-    engine.type= 'Web';
-    
-//  publish APIs
-    $$.$= engine.getLibraryItem;
-    $$.$_= engine.getScope;
-    
-}else if(platform[2] == 'MozillaAddonSDK'){
-//  create new Addon Scope
-    engine.pushScope(new MozillaAddonScope());
-    engine.name= platform[0];
-    engine.version= platform[1];
-    engine.platform= platform[2];
-    engine.type= 'MozAddon';
-//    $$.require('af/addonCore.js'); // <--- does not exist yet. Not sure if it is really needed
-    
 //  publish APIs
     $$.exports.$= engine.getLibraryItem;
     $$.exports.$_= engine.getScope;
-    
-}else if(platform[2] == 'Node'){
-    engine.name= platform[0];
-    engine.version= platform[1];
-    engine.platform= $$.process.platform;
-    engine.arch= $$.process.arch;
-    engine.type= 'Node';
+
+// check if current platform is the Node.js runtime
+}else if($$.process && $$.process.versions && $$.process.env && $$.process.pid){
+    objectReplace.apply(engine.info, {
+		engine : $$.process.name,
+		engineVersion : $$.process.versions.node,
+		platform : $$.process.platform,
+		arch : $$.process.arch,
+		type : 'Node'
+	});
 
 //  publish APIs
     $$.$= engine.getLibraryItem;
     $$.$_= engine.getScope;
 }
-    
+
 })();
