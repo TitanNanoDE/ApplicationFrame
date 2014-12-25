@@ -186,9 +186,9 @@ ServiceScopeInterface.prototype= {
 	main : function(source){
 		var scope= asiStorage.get(this);
 		
-		scope.thread= new $$.SharedWorker(engine.shared.serviceLoader+'?'+scope.name);
+		scope.thread= new $$.ServiceWorker(engine.shared.serviceLoader+'?'+scope.name);
 		if(typeof source == "function"){
-			var source= '$$.main= ' + source.toString();
+			source= '$$.main= ' + source.toString();
             source= new $$.Blob([source], { type : 'text/javascript' });
 			source= $$.URL.createObjectURL(source);
 		}
