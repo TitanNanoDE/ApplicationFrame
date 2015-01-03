@@ -88,5 +88,6 @@ if($$.Node){
 }
 
 if($$.TouchList) $$.TouchList.prototype.indexOf= Array.prototype.indexOf;
+if($$.TouchList) $$.TouchList.prototype.find= Array.prototype.find;
     
 });
