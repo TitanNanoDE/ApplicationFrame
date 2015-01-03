@@ -87,6 +87,6 @@ if($$.Node){
     };
 }
 
-$$. TouchList.prototype.indexOf= Array.prototype.indexOf;
+if($$.TouchList) $$.TouchList.prototype.indexOf= Array.prototype.indexOf;
     
 });
