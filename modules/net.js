@@ -1,10 +1,10 @@
 // net.js v0.2 part of the Application Frame
 
-$('system').export({
+'use strict';
+
+export default {
 	net : (function(){
-		
-		var Promise = $('classes').Promise;
-		
+
 		var Socket= function(type, url, options){
 			this._type= type;
 			this._url= url;
@@ -56,7 +56,6 @@ $('system').export({
     	Socket.HTTP= 'http_post';
         
 		var request= function(url, options){
-			var Promise = $('classes').Promise;
 			return new Promise(function(okay, fail){
 				var xhr= new $$.XMLHttpRequest(options);
 				xhr.onreadystatechange= function(){
@@ -87,5 +86,6 @@ $('system').export({
 			request : request,
 			require : require
 		};
+
     })()
-});
+};

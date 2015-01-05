@@ -87,15 +87,18 @@ $('escape').wrapper(function(){
             this.lastUpdate= now;
             this.cursorY+= this.cursorSpeed * timeout;
             var newStretch= stretching(this.cursorY);
-            
+            var stretchDelta= null;
+			var block= null;
+			var margin= null;
+
             if(this.direction == OverScrollData.DOWN){
-                var stretchDelta= Math.abs(newStretch - parseInt($$.getComputedStyle(this.target.firstElementChild).marginTop.replace('px', '')));
-                var block= this.target.firstElementChild;
-                var margin= 'marginTop';
+                stretchDelta= Math.abs(newStretch - parseInt($$.getComputedStyle(this.target.firstElementChild).marginTop.replace('px', '')));
+                block= this.target.firstElementChild;
+                margin= 'marginTop';
             }else if(this.direction == OverScrollData.UP){
-                var stretchDelta= Math.abs(newStretch - parseInt($$.getComputedStyle(this.target.lastElementChild).marginBottom.replace('px', '')));
-                var block= this.target.lastElementChild;
-                var margin= 'marginBottom';
+                stretchDelta= Math.abs(newStretch - parseInt($$.getComputedStyle(this.target.lastElementChild).marginBottom.replace('px', '')));
+                block= this.target.lastElementChild;
+                margin= 'marginBottom';
                 }
             
             if(this.cursorSpeed === 0 || stretchDelta <= 1){
@@ -214,6 +217,7 @@ $('escape').wrapper(function(){
         
 //      invert movement direction to scroll direction
         var change= movement * -1;
+		var sData= null;
 
 //      if the scrolled element is still grabbed
         if(isGrabbed){
@@ -225,7 +229,7 @@ $('escape').wrapper(function(){
                     overScrollMeta.push(new OverScrollData(target, OverScrollData.DOWN, 0, 0));
                     target._physicalID= overScrollMeta.length - 1;
                     }
-                var sData= overScrollMeta[target._physicalID];
+                sData= overScrollMeta[target._physicalID];
                 sData.cursorY+= Math.abs(change);
                 target.firstElementChild.style.marginTop= stretching(sData.cursorY)+'px';
                 target.scrollTop= 0;
@@ -236,7 +240,7 @@ $('escape').wrapper(function(){
                     overScrollMeta.push(new OverScrollData(target, OverScrollData.UP, 0, 0));
                     target._physicalID= overScrollMeta.length - 1;
                     }
-                var sData= overScrollMeta[target._physicalID];
+                sData= overScrollMeta[target._physicalID];
                 sData.cursorY+= Math.abs(change);
                 target.lastElementChild.style.marginBottom= stretching(sData.cursorY)+'px';
                 target.scrollTop= target.scrollTopMax;
@@ -245,7 +249,7 @@ $('escape').wrapper(function(){
 //      if the object was released
         }else{
             if(target._physicalID > -1 && overScrollMeta[target._physicalID]){
-                var sData= overScrollMeta[target._physicalID];
+                sData= overScrollMeta[target._physicalID];
                 sData.lastUpdate= new Date().getTime();
                 sData.release();
                 }
@@ -256,6 +260,7 @@ $('escape').wrapper(function(){
         
 //      invert movement direction to scroll direction
         var change= movement * -1;
+		var sData= null;
 
 //      if the scrolled element is still grabbed
         if(isGrabbed){
@@ -267,7 +272,7 @@ $('escape').wrapper(function(){
                     overScrollMeta.push(new OverScrollData(target, OverScrollData.DOWN, 0, 0));
                     target._physicalID= overScrollMeta.length - 1;
                     }
-                var sData= overScrollMeta[target._physicalID];
+                sData= overScrollMeta[target._physicalID];
                 sData.cursorX+= Math.abs(change);
                 target.firstElementChild.style.marginLeft= stretching(sData.cursorX)+'px';
                 target.scrollLeft= 0;
@@ -278,7 +283,7 @@ $('escape').wrapper(function(){
                     overScrollMeta.push(new OverScrollData(target, OverScrollData.UP, 0, 0));
                     target._physicalID= overScrollMeta.length - 1;
                     }
-                var sData= overScrollMeta[target._physicalID];
+                sData= overScrollMeta[target._physicalID];
                 sData.cursorX+= Math.abs(change);
                 target.lastElementChild.style.marginRight= stretching(sData.cursorX)+'px';
                 target.scrollLeft= target.scrollLeftMax;
@@ -287,7 +292,7 @@ $('escape').wrapper(function(){
 //      if the object was released
         }else{
             if(target._physicalID > -1 && overScrollMeta[target._physicalID]){
-                var sData= overScrollMeta[target._physicalID];
+                sData= overScrollMeta[target._physicalID];
                 sData.lastUpdate= new Date().getTime();
                 sData.release();
                 }

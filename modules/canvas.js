@@ -1,8 +1,10 @@
 // canvas.js v. 0.1 part of the Application Frame
 
-$('new')({
-    name :'canvas',
-    constructor : function(){
+export default {
+	'canvas' : (function(){
+
+		'use strict';
+
         var self= this;
         
 //      Functions
@@ -546,5 +548,11 @@ $('new')({
                 element.crop= new self.ImageCrop(topAmount, rightAmount, bottomAmount, leftAmount);
             update();
         };
-    }
-});
+    })(),
+
+	config : {
+		author : 'Jovan Gerodetti',
+		main : 'canvas',
+		version : '1.1'
+	}
+};
