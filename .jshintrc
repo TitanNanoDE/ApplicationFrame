@@ -1,6 +1,11 @@
 {
 	"evil" : true,
+	"esnext" : true,
+	"globalstrict" : true,
+	"strict" : false,
+	"debug" : true,
+	"browser" : true,
 	"globals" : {
-		"$$" : false
+		"global" : false
 	}
 }
