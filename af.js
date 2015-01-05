@@ -1,14 +1,8 @@
 //Application Frame v0.1.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
+'use strict';
 
-if(typeof global != 'undefined')
-	global.$$= global;
-else if(typeof this != 'undefined')
-	this.$$= this;
-
-(function(){
-    
-'use strict'; 	
+export var $$= (typeof global != 'undefined' ? window : global);
 	
 //Variables
 var asiStorage= new $$.WeakMap();
@@ -65,7 +59,7 @@ ApplicationScopeInterface.prototype= {
 	main : function(f){
 		var scope= asiStorage.get(this);
 		scope.thread= f;
-		scope.thread.apply(scope.private);
+		engine.ready.then(scope.thread.bind(scope.private));
 	},
 	terminate : function(type){
 		var scope= asiStorage.get(this);
@@ -98,10 +92,10 @@ MozillaAddonScopeInterface.prototype= {
 	},
 	modules : function(depsObject){
 		var scope= asiStorage.get(this);
-		for (var i in depsObject){
-			if(!scope.modules[i])
-				scope.modules[i]= depsObject[i];
-		}
+		Object.keys(depsObject).forEach(key => {
+			if(!scope.modules[key])
+				scope.modules[key]= depsObject[key];
+		});
 	},
 	hook : function(globalObject){
 		var scope= asiStorage.get(this);
@@ -244,7 +238,7 @@ ScopeWorkerInterface.prototype= {
 // this function creates a new unique id
 var createUniqueId= function(){
 	var time = Date.now();
-	while (time == Date.now());
+	while (time == Date.now()){}
 	return Date.now();
 };
 	
@@ -299,7 +293,7 @@ var userAgentParser= function(userAgentString){
 		}
 	});
 
-	console.log(found);
+	$$.console.log(found);
 	if(found.length == 1){
 		record.engine= found[0][0];
 		record.engineVersion= found[0][1];
@@ -310,7 +304,7 @@ var userAgentParser= function(userAgentString){
 			else
 				return 1;
 		});
-		console.log(found);
+		$$.console.log(found);
 		record.engine= found[found.length-1][0];
 		record.engineVersion= found[found.length-1][1];
 	}else{
@@ -424,6 +418,9 @@ var engine = {
 		applications : {
 			'new' : function(name){
 				engine.pushScope(new ApplicationScope(name));
+				return {
+					name : name
+				};
 			}
 		},
 		services : {
@@ -448,6 +445,23 @@ var engine = {
 			},
 			shared : function(){
 				return engine.shared;
+			},
+			import : function(...modules){
+				engine.ready= new Promise(function(ready){
+					Promise.all(modules.map(m => System.import(m))).then(modules => modules.forEach(m => {
+						if('config' in m){
+							if(m.config.main){
+								if(!(m.config.main in engine.itemLibrary)){
+									engine.itemLibrary[m.config.main]= m[m.config.main];
+								}else{
+									$$.console.warn('an other version of "'+ m.config.main +'" is already loaded!');
+								}
+							}else{
+								$$.console.error('couldn\'t find main in module config!');
+							}
+						}
+					}));
+				});
 			}
 		}
 	},
@@ -465,7 +479,11 @@ var engine = {
 	},
 	scopeList : {},
 	getLibraryItem : function(name){
-		return engine.itemLibrary[name];
+		if(typeof name == 'string'){
+			return engine.itemLibrary[name];
+		}else{
+			return engine.itemLibrary[name.name];
+		}
 	},
 	pushScope : function(scope){
 		if(!this.scopeList[scope.name] && scope.name != "application")
@@ -481,7 +499,8 @@ var engine = {
 			return engine.scopeList[name];
 		else
 			$$.console.error('scope does not exist!');
-	}
+	},
+	ready : new Promise.resolve()
 };
 
 // get the current Platform
@@ -491,10 +510,6 @@ var platform= null;
 if ($$.navigator){
 	engine.info.type= 'Web';
 	objectReplace.apply(engine.info, userAgentParser(navigator.userAgent));
-
-//  publish APIs
-    $$.$= engine.getLibraryItem;
-    $$.$_= engine.getScope;
 
 //  check if touchscreen is supported
     $$.navigator.isTouch= 'ontouchstart' in $$;
@@ -510,10 +525,6 @@ if ($$.navigator){
 		arch : system.architecture
 	});
 
-//  publish APIs
-    $$.exports.$= engine.getLibraryItem;
-    $$.exports.$_= engine.getScope;
-
 // check if current platform is the Node.js runtime
 }else if($$.process && $$.process.versions && $$.process.env && $$.process.pid){
     objectReplace.apply(engine.info, {
@@ -523,10 +534,8 @@ if ($$.navigator){
 		arch : $$.process.arch,
 		type : 'Node'
 	});
-
-//  publish APIs
-    $$.$= engine.getLibraryItem;
-    $$.$_= engine.getScope;
 }
 
-})();
+//  publish APIs
+export var $= engine.getLibraryItem;
+export var $_= engine.getScope;
