@@ -10,8 +10,8 @@ var apply= function(target, features){
 
 var dom= function(item){
 
-	var append= function(element, target){
-		return target.appendChild(element);
+	var append= function(element){
+		return this.appendChild(element);
 	};
 
 	var classes= function(...classes){
@@ -24,7 +24,7 @@ var dom= function(item){
 			else if(item.substr(0, 1) == '+')
 				add.push(item.substr(1));
 			else
-				add.push(item.substr(1));
+				add.push(item);
 		});
 
 		remove.forEach(item => {
@@ -55,9 +55,9 @@ var dom= function(item){
 					current[key]= properties[key];
 			});
 
-			this.cssText= Object.keys(current).map(key => key + ':' + current[key]).join(';');
+			this.style.cssText= Object.keys(current).map(key => key + ':' + current[key]).join(';');
 		}else{
-			this.cssText= Object.keys(properties).map(key => key + ':' + properties[key]).join(';');
+			this.style.cssText= Object.keys(properties).map(key => key + ':' + properties[key]).join(';');
 		}
 	};
 
