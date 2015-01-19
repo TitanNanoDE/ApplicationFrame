@@ -27,18 +27,20 @@ $('new')({
                         }
                     });
                 }else if(this.type == HashEvent.LOST){
+                    var old= "";
+                    
                     engine.hash.actions.forEach(function(item){
                         if(item.path == path && item.exit){
                             if(!item.persistent || count == 1){
                                item.exit(fullPath);
                                if(item.persistent){
-                                  var old= path.split('/');
+                                  old= path.split('/');
                                   old.pop();
                                   delete engine.hash.overrides[old.join('/')];
                                   item.active= false;
                                }
                             }else{
-                               var old= path.split('/');
+                               old= path.split('/');
                                old.pop();
                                engine.hash.overrides[old.join('/')]= path;
                             }
@@ -54,10 +56,12 @@ $('new')({
         HashEvent.LOST= 1;
         
         $$.addEventListener('hashchange', function(){
+            var hashPath= null;
+            
             if($$.location.hash === "")
-                var hashPath= ('#!/').split('/');
+                hashPath= ('#!/').split('/');
             else
-                var hashPath= $$.location.hash.split('/');
+                hashPath= $$.location.hash.split('/');
             
 //          check hash path
             if(hashPath[0] != '#!'){
@@ -105,7 +109,7 @@ $('new')({
             path= '';
             fullPath= '/' + hashPath.join('/');
             difference= false;
-            for(var i= 0; i < hashPath.length; i++){
+            for(i= 0; i < hashPath.length; i++){
                 path+= '/' + hashPath[i];
                 
                 if(difference)
