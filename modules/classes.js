@@ -14,7 +14,17 @@ $('new')({
             this.busy= false;
             this.step= 0;
             this.status= 'notstarted';
-        }
+        },
+		URL : function(urlString){
+			this._h= '';
+			this._p= '';
+			this._pa= '';
+			this._u= '';
+			this._pat= '';
+			this._hr= urlString;
+			
+			this.parse(urlString);
+		}
     },
     _init : function(me){
 		"use strict";
@@ -60,7 +70,7 @@ $('new')({
             }
         };
         me.AsyncLoop.prototype= {
-            'while' : function(condition, $){
+            'while' : function(condition){
                 this.busy= true;
                 var loop= this;
 				
@@ -141,5 +151,99 @@ $('new')({
                 next();
             }
         };
+		
+		me.URL.prototype= {
+			parse : function(urlString){
+//				parse URL
+				if(urlString.indexOf('//')){
+					this._p= urlString.substring(0, urlString.indexOf('//'));
+					urlString.substr(urlString.indexOf('//')+2);
+				}
+				
+				var hostPart= urlString.substring(0, urlString.indexOf('/'));
+				urlString= urlString.substr(urlString.indexOf('/'));
+				if(hostPart.indexOf('@')){
+					var userPart= hostPart.split('@')[0];
+					this._h= hostPart.split('@')[1];
+					this._u= userPart.split(':')[0];
+					this._pa= userPart.split(':')[1] || '';
+				}
+				this._h= hostPart;
+				this._pat= urlString;
+			},
+			
+			asemble : function(){
+				var path= '';
+				if(this._p !== '')
+					path+= this._p+'//';
+				
+				if(this._u !== ''){
+					path+= this._u;
+					path+= (this._pa !== '') ? ':'+this._pa+'@' : '@';
+				}
+				
+				if(this._h)
+					path+= this._h;
+				
+				if(this._pat)
+					path+= this._pat;
+				
+				this._hr= path;
+			},
+			
+			get protocol(){
+				return this._p;
+			},
+			
+			set protocol(value){
+				this._p=value;
+				this.asemble();
+			},
+			
+			get host(){
+				return this._h;
+			},
+			
+			set host(value){
+				this._h= value;
+				this.asemble();
+			},
+			
+			get username(){
+				return this._u;
+			},
+			
+			set username(value){
+				this._u= value;
+				this.asemble();
+			},
+			
+			get password(){
+				return this._pa;
+			},
+			
+			set password(value){
+				this._pa= value;
+				this.asemble();
+			},
+			
+			get path(){
+				return this._pat;
+			},
+			
+			set path(value){
+				this._pat= value;
+				this.asemble();
+			},
+			
+			get href(){
+				return this._hr;	
+			},
+			
+			set href(value){
+				this._hr= value;
+				this.parse(this._hr);
+			}
+		};
     }
 });
