@@ -65,6 +65,7 @@ $('new')({
 		};
 		
         var Promise = $('classes').Promise;
+		var URL= $('classes').URL;
         me.classes.Socket.prototype= {
             get url(){
                 return this._url;
@@ -156,12 +157,13 @@ $('new')({
                });
            },
 		   
-		   download : function(url, notDefaultHost){
+		   download : function(url){
 			   var self= this;
 			   
 			   return new $$.Promise(function(success, failed){
-				  var request= new OAuthRequest('GET', url, null, self, notDefaultHost);
+				  var request= new OAuthRequest('GET', url, null, self);
 				  request.responseType= 'blob';
+				   request.addQuery= false;
 				  var response= request.send();
 				   
 				  response.then(function(data){
@@ -170,7 +172,23 @@ $('new')({
 				  response.catch(failed);
 			   });
 		   },
-           
+		   
+		   upload : function(url, blob, onprogress){
+			   var self= this;
+
+			   return new $$.Promise(function(success, failed){
+				   var data= new $$.FormData();
+				   data.append('media', blob);
+				   var request= new OAuthRequest('POST', url, data, self);
+				   request.useDataInSignature= false;
+				   request.encodeData= false;
+				   request.addQuery= false;
+				   request.send(onprogress).then(function(data){
+					   success(data.responseText);
+				   }, failed);
+			   });
+		   },
+		   
            requestToken : function(url, callback_url){
                var self= this;
                
@@ -180,7 +198,7 @@ $('new')({
                    var response= request.send();
                    
                    response.then(function(data){
-                       var data= data.responseText.split('&');
+                       data= data.responseText.split('&');
                        self._token= data[0].split('=')[1];
                        self._tokenSecred= data[1].split('=')[1];
                        
@@ -200,7 +218,7 @@ $('new')({
                    var response= request.send();
                    
                    response.then(function(data){
-                       var data= data.responseText.split('&');
+                       data= data.responseText.split('&');
                        self._token= data[0].split('=')[1];
                        self._tokenSecred= data[1].split('=')[1];
                        
@@ -225,11 +243,14 @@ $('new')({
 		   }
        };
         
-       var OAuthRequest= function(method, url, data, client, notDefaultHost){
+       var OAuthRequest= function(method, url, data, client){
            this._client= client;
            this._data= data;
            this._method= method;
 		   this.responseType= '';
+		   this.useDataInSignature= true;
+		   this.encodeData= true;
+		   this.addQuery= true;
            this.oauthHeader= {
                'oauth_consumer_key' : client._key,
                'oauth_nonce' : createOAuthNonce(),
@@ -237,43 +258,55 @@ $('new')({
                'oauth_timestamp' : $$.Date.now().toString().substr(0, 10),
                'oauth_version' : '1.0'
            };
-		   
-		   if(!notDefaultHost)
-			   this._url= client._host + url;
-		   else
-			   this._url= url;
-		   
+		   this.headers= {};		   
+		   url= new URL(url);
+		   if(url.host === ''){
+			  url.host= this._client._host;
+		   }
+		   this._url= url.href;
            if(client._token !== '') this.oauthHeader.oauth_token= client._token;
        };
        
        OAuthRequest.prototype= {
-           send : function(){
+           send : function(onUploadProgress, onDownloadProgress){
                var self= this;
                var dataGet= '';
 			   var dataPost= '';
                var xhr= new $$.XMLHttpRequest(this._client._options);
                
-               this.oauthHeader.oauth_signature= createOAuthSignature(this.oauthHeader, this._data, this._method, this._url, this._client._secred, this._client._tokenSecred);
+               this.oauthHeader.oauth_signature= createOAuthSignature(this.oauthHeader, (this.useDataInSignature ? this._data : null), this._method, this._url, this._client._secred, this._client._tokenSecred);
                
-               if(this._data){
+               if(this._data && !(this._data instanceof $$.FormData)){
                    $$.Object.keys(this._data).forEach(function(item){
                        if(dataGet.length > 0) dataGet+= '&';
 					   if(dataPost.length > 0) dataPost+= '&';
 					   
   					   dataPost+= item + '=' + self._data[item];
                        dataGet+= item + '=' + encode(self._data[item]);
-                   });
-               }
+				   });
+			   }else if(this._data instanceof $$.FormData){
+				   dataPost= this._data;
+			   }
                
-               if(dataGet !== '')
+               if(dataGet !== '' && this.addQuery)
                    xhr.open(this._method, this._url + '?' + dataGet, true);
 			   else
 				   xhr.open(this._method, this._url, true);
                
                xhr.setRequestHeader('Authorization', createOAuthHeader(this.oauthHeader));
 			   
+			   Object.keys(this.headers).forEach(function(key){
+				   xhr.setRequestHeader(key, this.headers[key]);
+			   }.bind(this));
+			   
 			   if(this.responseType !== '')
 				   xhr.responseType= this.responseType;
+			   
+			   if(onUploadProgress)
+				   xhr.upload.onprogress= onUploadProgress;
+			   
+			   if(onDownloadProgress)
+				   xhr.onprogress= onDownloadProgress;
                
                return new $$.Promise(function(success, failed){
                    xhr.onreadystatechange= function(){
@@ -290,9 +323,11 @@ $('new')({
                           }
                       }  
                    };
+				   
+				   console.log(self._url);
                    
                    if(self._method == 'POST')
-                       xhr.send(dataGet);
+                       xhr.send((this.encodeData ? dataGet : dataPost));
                    else
                        xhr.send();
                });
