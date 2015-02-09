@@ -10,7 +10,7 @@ var { Prototype } = classes;
 // Functions
 var getZLevelMax= function(element){
     var max= 0;
-    element._elements.forEach(function(item){
+    element._elements.forEach(item => {
         if(item.zLevel > max)
             max= item.zLevel;
     });
@@ -33,7 +33,7 @@ var layerRender= function(context, canvas){
 //          sortElements
     var zLevel_max= getZLevelMax(this);
     sortElements(this, zLevel_max);
-    this._elements.forEach(function(item){
+    this._elements.forEach(item => {
         item._render(context, canvas);
     });
 };
@@ -194,9 +194,7 @@ Canvas.prototype= {
         this._context.textBaseline= 'top';
         var lines= textElement.content.split('\n');
         var linesWidth= [];
-        lines.forEach(function(item){
-            linesWidth.push(c._context.measureText(item).width);
-        });
+        lines.forEach(item => linesWidth.push(c._context.measureText(item).width));
         return Math.max.apply(Math, linesWidth);
     },
     measureTextHeight : function(text, lineHeight){
@@ -401,11 +399,9 @@ TextBox.prototype= {
                 var t= this;
                 var lines= this.content.split('\n');
                 var linesWidth= [];
-                lines.forEach(function(item){
-                    linesWidth.push(canvas.measureText(item).width);
-                });
+                lines.forEach(item => linesWidth.push(canvas.measureText(item).width));
                 var largest= Math.max.apply(Math, linesWidth);
-                lines.forEach(function(item, i){
+                lines.forEach((item, i) => {
                     var dist= (largest - linesWidth[i]) / 2;
                     canvas.fillText(item, context.xOffset + dist + t.x, context.yOffset + (t.lineHeight * i) + t.y);
                 });
