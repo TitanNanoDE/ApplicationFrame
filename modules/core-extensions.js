@@ -18,8 +18,6 @@ var apply= function(){
 	if($$.TouchList && !$$.TouchList.prototype.find) $$.TouchList.prototype.find= Array.prototype.find;
 };
 
-export default {
-	coreExtension : {
-		apply : apply
-	}
+export var coreExtension = {
+    apply : apply
 };

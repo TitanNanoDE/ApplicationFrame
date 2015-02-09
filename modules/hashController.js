@@ -178,12 +178,10 @@ var interface_ = {
 	}
 };
 
-export default {
-	hash : interface_,
+export var hash = interface_;
 
-	config : {
-		main : 'hash',
-		version : 'v1.1',
-		author : 'Jovan Gerodetti'
-	}
+export var config = {
+    main : 'hash',
+    version : 'v1.1',
+    author : 'Jovan Gerodetti'
 };

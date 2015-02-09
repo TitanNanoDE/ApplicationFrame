@@ -8,7 +8,7 @@ var apply= function(target, features){
 	});
 };
 
-var dom= function(item){
+export var dom= function(item){
 
 	var append= function(element){
 		return this.appendChild(element);
@@ -115,13 +115,9 @@ dom.create= function(elementName){
 	return dom(document.createElement(elementName));
 };
 
-export default {
-	dom : dom,
-
-	config : {
-		author : 'Jovan Gerodetti',
-		main : 'dom',
-		version : 'v1.0',
-		name : 'DOM manipulation Module'
-	}
+export var config = {
+    author : 'Jovan Gerodetti',
+    main : 'dom',
+    version : 'v1.0',
+    name : 'DOM manipulation Module'
 };

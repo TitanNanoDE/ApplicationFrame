@@ -6,7 +6,7 @@ module.exports = function(grunt) {
     grunt.initConfig({
         transpile: {
             main: {
-                type: "amd", // or "amd" or "yui"
+                type: "amd",
                 files: [{
                     expand: true,
                     src: ['af.js', 'modules/*.js'],

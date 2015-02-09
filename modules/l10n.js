@@ -67,14 +67,13 @@ if($$.document.readyState == 'complete')
 else
     $$.addEventListener('load', onready, false);
 
-export default {
-    l10n : {
-        _ : translate
-    },
-	config : {
-		author : 'Jovan Gerodetti',
-		main : 'l10n',
-		version : 'v1.0',
-		name : 'Localisation Module'
-	}
+export var l10n = {
+    _ : translate
+};
+
+export var config = {
+    author : 'Jovan Gerodetti',
+    main : 'l10n',
+    version : 'v1.0',
+    name : 'Localisation Module'
 };
