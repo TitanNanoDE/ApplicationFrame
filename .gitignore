@@ -1,3 +1,5 @@
 .project
 .buildconfig
 *-compiler/
+node_modules/
+dist/

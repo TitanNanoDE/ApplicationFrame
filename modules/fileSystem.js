@@ -2,6 +2,7 @@
 
 "use strict";
 
+var $$= (typeof window !== 'undefined') ? window : global;
 var db;
 var request= $$.indexedDB.open("pf.filesystem", 2);
 
@@ -153,20 +154,18 @@ var getFileListSince= function(args, callback){
 	});
 };
 
-export default {
-	fileSystem : {
-		saveFileTo : saveFileTo,
-		openFile : openFile,
-		removeFile : removeFile,
-		getStaticFilePointerFromPath : getStaticFilePointerFromPath,
-		getFileList : getFileList,
-		getFileListSince : getFileList,
-		TNFile : TNFile
-	},
+export var fileSystem = {
+    saveFileTo : saveFileTo,
+    openFile : openFile,
+    removeFile : removeFile,
+    getStaticFilePointerFromPath : getStaticFilePointerFromPath,
+    getFileList : getFileList,
+    getFileListSince : getFileList,
+    TNFile : TNFile
+};
 
-	config : {
-		main : 'fileSystem',
-		author : 'Jovan Gerodetti',
-		version : 'v1.1'
-	}
+export var config = {
+    main : 'fileSystem',
+    author : 'Jovan Gerodetti',
+    version : 'v1.1'
 };

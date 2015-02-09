@@ -1,5 +1,5 @@
 // ApplicationFrame Classes v1.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
-'use strict';
+"use strict";
 		
 var AsyncLoop= function(loop){
 	this._l= loop;
@@ -95,16 +95,14 @@ var Prototype= function(types){
 	return prototype;
 };
 
-export default {
-	classes : {
-		AsyncLoop : AsyncLoop,
-		EventManager : EventManager,
-		Prototype : Prototype
-	},
+export var classes = {
+    AsyncLoop : AsyncLoop,
+    EventManager : EventManager,
+    Prototype : Prototype
+};
 
-	config : {
-		main : 'classes',
-		author : 'Jovan Gerodetti',
-		version : 'v1.1'
-	}
+export var config = {
+    main : 'classes',
+    author : 'Jovan Gerodetti',
+    version : 'v1.1'
 };

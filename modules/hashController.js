@@ -1,6 +1,8 @@
 //Hash Controller - v0.1 copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
-'use strict';
+"use strict";
+
+var $$= (typeof window !== 'undefined') ? window : global;
 
 var hash= {
 	actions : [],
@@ -42,7 +44,7 @@ var HashEvent= function(type, path){
 				}
 			});
 		}else{
-			console.error('unknown HashEvent type!');
+			$$.console.error('unknown HashEvent type!');
 		}
 	};
 };
@@ -106,7 +108,7 @@ var interface_ = {
 
 //          check hash path
 			if(hashPath[0] != '#!'){
-				console.error('error in your hash path!');
+				$$.console.error('error in your hash path!');
 				return false;
 			}
 			hashPath.shift();

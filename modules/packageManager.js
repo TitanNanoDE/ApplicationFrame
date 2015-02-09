@@ -2,48 +2,69 @@
 
 'use strict';
 
-$('new')({
-    name : 'packages',
-    constructor : function(){
-        this.unpack= function(pack){
-            pack.files.forEach(function(item, index){
-                if(item.content.length === item.length){
-                    var buffer= $$.lib.b64.decode(item.content);
-                    var blob= new $$.Blob([buffer], { type : item.type });
-                    var file= new $$.TNFile(item.path.substring(item.path.lastIndexOf('/')+1, item.path.indexOf('.')), item.path.substr(item.path.indexOf('.')+1), blob);
-                    file.saveTo({path : 'packages/'+pack.name+item.path.substring(0, item.path.lastIndexOf('/')+1)});
-                }else{
-                    throw 'Failed to unpack "'+pack.name+'": wrong length for item '+index+'!!';
-                }
-            });
+import { b64 } from 'modules/base64';
+import { classes } from 'modules/classes';
+import { fileSystem } from 'modules/fileSystem';
+
+var { Prototype, EventManager } = classes;
+var { TNFile } = fileSystem;
+
+export var packages = {
+    unpack : function(pack){
+        pack.files.forEach(function(item, index){
+            if(item.content.length === item.length){
+                var buffer= b64.decode(item.content);
+                var blob= new Blob([buffer], { type : item.type });
+                var file= new TNFile(item.path.substring(item.path.lastIndexOf('/')+1, item.path.indexOf('.')), item.path.substr(item.path.indexOf('.')+1), blob);
+                file.saveTo({path : 'packages/'+pack.name+item.path.substring(0, item.path.lastIndexOf('/')+1)});
+            }else{
+                throw 'Failed to unpack "'+pack.name+'": wrong length for item '+index+'!!';
+            }
+        });
+    },
+    Package : function(name){
+        new Prototype(this, [EventManager]);
+        var object= this;
+        this.name= name;
+        this.files= [];
+        this.fileCount= 0;
+        this.ready=  true;
+        var queue= [];
+        var setReady= function(){
+            object.ready= true;
+            var event= new CustomEvent('ready');
+            object.dispatchEvent(event);
         };
-        this.Package= function(name){
-            $$.prototyping(this, [$$.EventManager]);
-            var object= this;
-            this.name= name;
-            this.files= [];
-            this.fileCount= 0;
-            this.ready=  true;
-            var queue= [];
-            var setReady= function(){
-                object.ready= true;
-                var event= new $$.CustomEvent('ready');
-                object.dispatchEvent(event);
-            };
-            var setWorking= function(){
-                object.ready= false;
-                var event= new $$.CustomEvent('working');
-                object.dispatchEvent(event);
-            };
-            var loop= function(){
-                setWorking();
-                var item= queue.shift();
-                if(typeof item.object === "string"){
+        var setWorking= function(){
+            object.ready= false;
+            var event= new CustomEvent('working');
+            object.dispatchEvent(event);
+        };
+        var loop= function(){
+            setWorking();
+            var item= queue.shift();
+            if(typeof item.object === "string"){
+                var block= {
+                    path : this.path,
+                    content : btoa(object),
+                    type : "text/plain",
+                    length : btoa(object).length
+                };
+                object.files.push(block);
+                if(queue.length > 0){
+                    loop();
+                }else{
+                    setReady();
+                }
+            }else if(item.object instanceof Blob){
+                var reader= new FileReader();
+                reader.onloadend= function(event){
+                    var content= event.target.result.substring(event.target.result.indexOf(',')+1);
                     var block= {
-                        path : this.path,
-                        content : $$.btoa(object),
-                        type : "text/plain",
-                        length : $$.btoa(object).length
+                        path : item.path,
+                        content : content,
+                        type : event.target.result.substring(event.target.result.indexOf(':')+1, event.target.result.indexOf(';')-1),
+                        length: content.length
                     };
                     object.files.push(block);
                     if(queue.length > 0){
@@ -51,65 +72,55 @@ $('new')({
                     }else{
                         setReady();
                     }
-                }else if(item.object instanceof $$.Blob){
-                    var reader= new $$.FileReader();
-                    reader.onloadend= function(event){
-                        var content= event.target.result.substring(event.target.result.indexOf(',')+1);
-                        var block= {
-                            path : item.path,
-                            content : content,
-                            type : event.target.result.substring(event.target.result.indexOf(':')+1, event.target.result.indexOf(';')-1),
-                            length: content.length
-                        };
-                        object.files.push(block);
-                        if(queue.length > 0){
-                            loop();
-                        }else{
-                            setReady();
-                        }
-                    };
-                    reader.readAsDataURL(item.object);
-                }
-            };
-            this.push= function(object, path){
-                queue.push({object : object, path : path});
-                if(this.ready){
-                    loop();
-                }
-            };
+                };
+                reader.readAsDataURL(item.object);
+            }
         };
-        
-        this.pack= function(pack){
-           if(pack.ready){
-               delete(pack.ready);
-               delete(pack.progress);
-               delete(pack.onready);
-               delete(pack.onprogress);
-               pack.fileCount= pack.files.length;
-               return JSON.stringify(pack, null, '  ');
-           }else{
-               $$.console.warn("Package \""+pack.name+"\" is not read!!");
-           }
+        this.push= function(object, path){
+            queue.push({object : object, path : path});
+            if(this.ready){
+                loop();
+            }
         };
-		
-        this.get= function(pack, relativePath, callback){
-            $('fileSystem').getStaticFilePointerFromPath({path : 'packages/'+pack+relativePath}, callback);
+    },
+    pack : function(pack){
+        if(pack.ready){
+            delete(pack.ready);
+            delete(pack.progress);
+            delete(pack.onready);
+            delete(pack.onprogress);
+            pack.fileCount= pack.files.length;
+            return JSON.stringify(pack, null, '  ');
+        }else{
+            console.warn("Package \""+pack.name+"\" is not read!!");
+        }
+    },
+
+    get : function(pack, relativePath, callback){
+        fileSystem.getStaticFilePointerFromPath({path : 'packages/'+pack+relativePath}, callback);
+    },
+
+    download : function(path){
+        var request= new XMLHttpRequest();
+        request.open('GET', path, true);
+        var manager= this;
+        request.onreadystatechange= function(){
+            if(request.readyState == 4){
+                var pack= JSON.parse(request.responseText);
+                manager.unpack(pack);
+            }
         };
-        
-        this.download= function(path){
-            var request= new $$.XMLHttpRequest();
-            request.open('GET', path, true);
-            var manager= this;
-            request.onreadystatechange= function(){
-                if(request.readyState == 4){
-                    var pack= JSON.parse(request.responseText);
-                    manager.unpack(pack);
-                }
-            };   
-            request.send();
-        };
+        request.send();
     }
-});
+};
+
+export var config = {
+    author : 'Jovan Gerodetti',
+    main : 'packages',
+    version : 'v1.0',
+    name : 'Packages Manager Module'
+};
+
 /*
 example package
 

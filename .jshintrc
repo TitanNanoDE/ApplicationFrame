@@ -5,7 +5,9 @@
 	"strict" : false,
 	"debug" : true,
 	"browser" : true,
+    "devel" : true,
 	"globals" : {
-		"global" : false
+		"global" : false,
+        "System" : false
 	}
 }

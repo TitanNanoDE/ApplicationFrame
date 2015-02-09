@@ -1,8 +1,8 @@
 //Application Frame v0.1.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
 
-'use strict';
+"use strict";
 
-export var $$= (typeof global != 'undefined' ? window : global);
+export var $$= (typeof global != 'undefined') ? window : global;
 	
 //Variables
 var asiStorage= new $$.WeakMap();

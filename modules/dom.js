@@ -1,6 +1,6 @@
 // dom.js v0.1 part of the Application Frame
 
-'use strict';
+"use strict";
 
 var apply= function(target, features){
 	Object.keys(features).forEach(function(key){
