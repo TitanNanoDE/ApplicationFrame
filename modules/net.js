@@ -1,4 +1,9 @@
-// net.js v0.2 part of the Application Frame
+/*****************************************************************
+ * net.js v0.2  part of the ApplicationFrame                     *
+ * © copyright by Jovan Gerodetti (TitanNano.de)                 *
+ * The following Source is licensed under the Appache 2.0        *
+ * License. - http://www.apache.org/licenses/LICENSE-2.0         *
+ *****************************************************************/
 
 'use strict';
 

@@ -1,4 +1,9 @@
-//fileSystem v0.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
+/*****************************************************************
+ * fileSystem.js v1.1  part of the ApplicationFrame              *
+ * © copyright by Jovan Gerodetti (TitanNano.de)                 *
+ * The following Source is licensed under the Appache 2.0        *
+ * License. - http://www.apache.org/licenses/LICENSE-2.0         *
+ *****************************************************************/
 
 "use strict";
 

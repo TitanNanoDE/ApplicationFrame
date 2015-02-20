@@ -1,6 +1,6 @@
-//default core extensions for the default Application Frame modules - copyright by TitanNano / Jovan Gerodetti - http://www.titannano.de
+// core extensions for the default ApplicationFrame modules - copyright by TitanNano / Jovan Gerodetti - http://www.titannano.de
 
-var apply= function(){
+var apply= function($$){
 	"use strict";
 
 // 	if your required list type isn't here just add it

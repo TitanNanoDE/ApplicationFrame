@@ -1,5 +1,9 @@
-//Hash Controller - v0.1 copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
-
+/*****************************************************************
+ * Hash Controller v1.1  part of the ApplicationFrame            *
+ * © copyright by Jovan Gerodetti (TitanNano.de)                 *
+ * The following Source is licensed under the Appache 2.0        *
+ * License. - http://www.apache.org/licenses/LICENSE-2.0         *
+ *****************************************************************/
 "use strict";
 
 var $$= (typeof window !== 'undefined') ? window : global;

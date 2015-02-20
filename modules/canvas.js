@@ -1,5 +1,9 @@
-// canvas.js v. 0.1 part of the Application Frame
-
+/*****************************************************************
+ * Canvas.js v1.1  part of the ApplicationFrame                  *
+ * © copyright by Jovan Gerodetti (TitanNano.de)                 *
+ * The following Source is licensed under the Appache 2.0        *
+ * License. - http://www.apache.org/licenses/LICENSE-2.0         *
+ *****************************************************************/
 "use strict";
 
 import { classes } from 'modules/classes';
