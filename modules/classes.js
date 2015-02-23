@@ -1,4 +1,10 @@
-// ApplicationFrame Classes v1.1 © copyright by TitanNano / Jovan Gerodetti - titannano.de
+/*****************************************************************
+ * Classes.js v1.1  part of the ApplicationFrame                 *
+ * © copyright by Jovan Gerodetti (TitanNano.de)                 *
+ * The following Source is licensed under the Appache 2.0        *
+ * License. - http://www.apache.org/licenses/LICENSE-2.0         *
+ *****************************************************************/
+
 "use strict";
 		
 var AsyncLoop= function(loop){
@@ -9,56 +15,31 @@ var AsyncLoop= function(loop){
 };
 
 AsyncLoop.prototype= {
-	'while' : function(condition){
-		this.busy= true;
-		var loop= this;
-		var next= function(){
-			if(eval(condition)){
-				loop.step++;
-				loop.status= 'running';
-				loop._l(next, exit);
-			}else{
-				exit(1);
-			}
-		};
-		var exit= function(status){
-			if(status === 0)
-				loop.status= 'canceled';
-			else if(status > 0)
-				loop.status= 'completed';
-			else
-				loop.status= 'error';
-			loop.busy= false;
-			loop.step= 0;
-		};
-		next();
-	},
-	'for' : function(startIndex, condition, indexChange){
-		this.busy= true;
-		var loop= this;
-		var i= startIndex;
-		var next= function(){
-			if(eval(condition)){
-				loop.step++;
-				loop.status= 'running';
-				loop._l(i, next, exit);
-				eval(indexChange);
-			}else{
-				exit(1);
-			}
-		};
-		var exit= function(status){
-			if(status === 0)
-				loop.status= 'canceled';
-			else if(status > 0)
-				loop.status= 'completed';
-			else
-				loop.status= 'error';
-			loop.busy= false;
-			loop.step= 0;
-		};
-		next();
-	}
+    run : function(){
+        this.busy= true;
+        var loop= this;
+        return new Promise(function(success){
+            var next= function(){
+                loop.step++;
+                loop.status= 'running';
+                loop._l(next, exit);
+            };
+
+            var exit= function(status){
+                if(status === 0)
+                    loop.status= 'canceled';
+                else if(status > 0)
+                    loop.status= 'completed';
+                else
+                    loop.status= 'error';
+                loop.busy= false;
+                loop.step= 0;
+                success(loop);
+            };
+
+            next();
+        });
+    }
 };
 
 var EventManager= function(){
@@ -71,7 +52,7 @@ var EventManager= function(){
 		});
 	};
 	this.dispatchEvent= function(event){
-		listeners.forEach(function(item){
+		listeners.forEach(item => {
 			if(item.type === event.type){
 				item.listener(event);
 			}
