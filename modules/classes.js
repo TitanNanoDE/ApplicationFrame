@@ -71,10 +71,58 @@ var Prototype= function(...types){
 	return prototype;
 };
 
+var AsyncQueue= function(processor){
+    this.queue=  [];
+    this.active= false;
+    this.processor= processor;
+
+    return this.push.bind(this);
+};
+
+AsyncQueue.prototype= {
+    next : function(){
+        if(this.queue.length > 0){
+            this.integrate(...this.queue.shift());
+            this.next();
+        }else{
+            this.active= false;
+        }
+    },
+    push : function(...args){
+        var self= this;
+		return new Promise(function(done){
+            args.push(done);
+            this.queue.push(args);
+
+            if(!this.active){
+                this.active= true;
+                this.next();
+            }
+		}.bind(this)).then(value => self.next());
+	}
+};
+
+var Accessor= function(){
+    this.privateMap= new WeakMap();
+};
+
+Accessor.prototype= {
+    attributes : function(target, object){
+        if(!object){
+            return { public : target, private : this.privateMap.get(target) };
+        }else{
+            this.privateMap.set(target, object);
+            return { public : target, private : object };
+        }
+    }
+};
+
 export var classes = {
     AsyncLoop : AsyncLoop,
+    AsyncQueue : AsyncQueue,
     EventManager : EventManager,
-    Prototype : Prototype
+    Prototype : Prototype,
+    Accessor : Accessor
 };
 
 export var config = {
