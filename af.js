@@ -192,34 +192,36 @@ var items= {
         }
     },
     'new' : function(settings){
-        var object = {};
-        if(settings.hasOwnProperty('constructor')){
-            object= new settings.constructor(engine);
-        }else if(settings.builder && settings.nameSpace){
-            engine[settings.nameSpace]= {};
-            object= function(){
-				return settings.builder(engine[settings.nameSpace], this.arguments);
-			};
-        }else if(settings.builder){
-            object= settings.builder;
-        }else{
-            object= settings.object;
-        }
+		engine.deviceReady.then(function(){
+			var object = {};
+        	if(settings.hasOwnProperty('constructor')){
+				object= new settings.constructor(engine);
+			}else if(settings.builder && settings.nameSpace){
+				engine[settings.nameSpace]= {};
+				object= function(){
+					return settings.builder(engine[settings.nameSpace], this.arguments);
+				};
+			}else if(settings.builder){
+				object= settings.builder;
+			}else{
+				object= settings.object;
+			}
         
-        if(settings.name && !items[settings.name])
-            items[settings.name]= object;
-        else
-            $$.console.error("No or ilegall name!");
-        if(settings._init){
-            if(settings.nameSpace)
-                settings._init(engine[settings.nameSpace], settings.object);
-            else
-                settings._init(settings.object);
-            }
-        if(settings.nameSpace)
-            return engine[settings.nameSpace];
-        return null;
-        },
+        	if(settings.name && !items[settings.name])
+				items[settings.name]= object;
+			else
+				$$.console.error("No or ilegall name!");
+        	if(settings._init){
+				if(settings.nameSpace)
+					settings._init(engine[settings.nameSpace], settings.object);
+            	else
+					settings._init(settings.object);
+			}
+        	if(settings.nameSpace)
+            	return engine[settings.nameSpace];
+			return null;
+		});
+	},
     queue : {
         push : function(object){
             var push= function(){
@@ -353,13 +355,15 @@ var prepareScope= function(item){
 				'module' : {
 					value : function(name, dependencies, f){
 						var request= new $$.Promise(function(success, failure){
-                            if(dependencies.length > 0){
-                                scope.properties.modules.on('available', dependencies).then(function(){
-                                    f(scope.properties, success, failure); 
-                                });
-                            }else{
-                                f(scope.properties, success, failure);
-                            }
+							engine.deviceReady.then(function(){
+								if(dependencies.length > 0){
+									scope.properties.modules.on('available', dependencies).then(function(){
+										f(scope.properties, success, failure); 
+                                	});
+                            	}else{
+									f(scope.properties, success, failure);
+								}
+							});
                         });
                         scope.modules.push(request);
 						request.then(function(value){
@@ -573,20 +577,22 @@ var engine = {
 		push : function(scope){
 			if(!this.isRunning){
 				this.isRunning= true;
-				if(settings.renderMode == 'default'){
-					if(scope.modules.length > 0){
-						$$.Promise.all(scope.modules).then(function(){
+				engine.deviceReady.then(function(){
+					if(settings.renderMode == 'default'){
+						if(scope.modules.length > 0){
+							$$.Promise.all(scope.modules).then(function(){
+								scope.thread.apply(scope.properties, [scope]);
+							});
+						}else{
 							scope.thread.apply(scope.properties, [scope]);
-						});
-					}else{
-						scope.thread.apply(scope.properties, [scope]);
+						}
 					}
-				}
 				
-				if(this.queue.length > 0){
-					var n= this.queue[0]; this.queue.shift();
-					this.push(n);
-				}
+					if(this.queue.length > 0){
+						var n= this.queue[0]; this.queue.shift();
+						this.push(n);
+					}
+				}.bind(this));
 				this.isRunning= false;
 			}else{
 				this.queue.push(scope);
@@ -597,6 +603,13 @@ var engine = {
 	lastAddonComId : 0,
     pushListeners : [],
     launchQueue : [],
+	deviceReady : new Promise(function(ready){
+		if($$.cordova){
+			$$.document.addEventListener('deviceready', ready, false);
+		}else{
+			ready();
+		}
+	}),
     exit : function(){}
 	};
 
@@ -609,7 +622,7 @@ if ($$.navigator && !$$.importScripts){
 //              Mozilla
     platform=   (((platform.indexOf('Gecko/') > -1) && 'Gecko '+platform.substring(platform.indexOf('rv:')+3, platform.indexOf(')')) ) || false) ||
 //              Google / Apple / Opera
-                (((platform.indexOf('AppleWebKit') > -1) && platform.substring(platform.indexOf('AppleWebKit'), platform.lastIndexOf('(')-1).replace(/\//, ' ')) || false) ||      
+                (((platform.indexOf('AppleWebKit') > -1) && (platform= platform.substring(platform.indexOf('AppleWebKit'))) && platform.substring(0, platform.indexOf('(')-1).replace(/\//, ' ')) || false) ||      
 //              Microsoft
                 (((platform.indexOf('Trident/') > -1) && platform.substring(platform.indexOf('Trident/'), platform.indexOf(';', platform.indexOf('Trident/'))).replace(/\//, ' ')) || false) ||
 //              Unknown
@@ -623,7 +636,7 @@ if ($$.navigator && !$$.importScripts){
 //              Mozilla
     platform=   (((platform.indexOf('Gecko/') > -1) && 'Gecko '+platform.substring(platform.indexOf('rv:')+3, platform.indexOf(')')) ) || false) ||
 //              Google / Apple / Opera
-                (((platform.indexOf('AppleWebKit') > -1) && platform.substring(platform.indexOf('AppleWebKit'), platform.lastIndexOf('(')-1).replace(/\//, ' ')) || false) ||      
+                (((platform.indexOf('AppleWebKit') > -1) && (platform= platform.substring(platform.indexOf('AppleWebKit'))) && platform.substring(0, platform.indexOf('(')-1).replace(/\//, ' ')) || false) ||      
 //              Microsoft
                 (((platform.indexOf('Trident/') > -1) && platform.substring(platform.indexOf('Trident/'), platform.indexOf(';', platform.indexOf('Trident/'))).replace(/\//, ' ')) || false) ||
 //              Unknown

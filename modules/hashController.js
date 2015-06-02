@@ -12,31 +12,35 @@ $('new')({
         };
         
 //      Classes
-        var HashEvent= function(type, path){
+        var HashEvent= function(type, path, fullPath){
             this.type= type;
             this.path= path;
+            this.fullPath= fullPath;
             this.trigger= function(count){
                 var path= this.path;
+                var fullPath= this.fullPath;
                 if(this.type == HashEvent.ADD){
                     engine.hash.actions.forEach(function(item){
                         if(item.path == path && item.enter && (!item.persistent || !item.active)){
-                            item.enter(path);
+                            item.enter(fullPath);
                             if(item.persistent) item.active= true;
                         }
                     });
                 }else if(this.type == HashEvent.LOST){
+                    var old= "";
+                    
                     engine.hash.actions.forEach(function(item){
                         if(item.path == path && item.exit){
                             if(!item.persistent || count == 1){
-                               item.exit(path);
+                               item.exit(fullPath);
                                if(item.persistent){
-                                  var old= path.split('/');
+                                  old= path.split('/');
                                   old.pop();
                                   delete engine.hash.overrides[old.join('/')];
                                   item.active= false;
                                }
                             }else{
-                               var old= path.split('/');
+                               old= path.split('/');
                                old.pop();
                                engine.hash.overrides[old.join('/')]= path;
                             }
@@ -52,10 +56,12 @@ $('new')({
         HashEvent.LOST= 1;
         
         $$.addEventListener('hashchange', function(){
+            var hashPath= null;
+            
             if($$.location.hash === "")
-                var hashPath= ('#!/').split('/');
+                hashPath= ('#!/').split('/');
             else
-                var hashPath= $$.location.hash.split('/');
+                hashPath= $$.location.hash.split('/');
             
 //          check hash path
             if(hashPath[0] != '#!'){
@@ -73,16 +79,17 @@ $('new')({
 //          find lost elements
             var difference= false;
             var path= '';
+            var fullPath= '/' + engine.hash.path.join('/');
             for(var i= 0; i < engine.hash.path.length; i++){
                 path+= '/' + engine.hash.path[i];
                         
                 if(difference)
-                    events_lost.push(new HashEvent(HashEvent.LOST, path));
+                    events_lost.push(new HashEvent(HashEvent.LOST, path, fullPath));
                 else if(engine.hash.path[i] == hashPath[i])
                     continue;
                 else if(engine.hash.path[i] != hashPath[i]){
                     difference= true;
-                    events_lost.push(new HashEvent(HashEvent.LOST, path));
+                    events_lost.push(new HashEvent(HashEvent.LOST, path, fullPath));
                 }
             }
             
@@ -100,17 +107,18 @@ $('new')({
             
 //          find new elements
             path= '';
+            fullPath= '/' + hashPath.join('/');
             difference= false;
-            for(var i= 0; i < hashPath.length; i++){
+            for(i= 0; i < hashPath.length; i++){
                 path+= '/' + hashPath[i];
                 
                 if(difference)
-                    events_add.push(new HashEvent(HashEvent.ADD, path));
+                    events_add.push(new HashEvent(HashEvent.ADD, path, fullPath));
                 else if(hashPath[i] == engine.hash.path[i])
                     continue;
                 else if(hashPath[i] != engine.hash.path[i]){
                     difference= true;
-                    events_add.push(new HashEvent(HashEvent.ADD, path));
+                    events_add.push(new HashEvent(HashEvent.ADD, path, fullPath));
                 }
             }
             
