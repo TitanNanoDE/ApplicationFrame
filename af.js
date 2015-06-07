@@ -2,23 +2,12 @@
 
 "use strict";
 
+import { Make } from 'util/make';
+
 export var $$= (typeof global != 'undefined') ? window : global;
 	
 //Variables
 var scopes= new $$.WeakMap();
-
-var Make = function(object, prototype) {
-    if(arguments.length < 2){
-        prototype = object;
-        object = {};
-    }
-
-    Object.setPrototye(object, prototype);
-
-    var make = prototype.make || prototype._make || function(){};
-
-    return make.bind(object);
-};
 
 // Prototypes
 
@@ -619,4 +608,3 @@ if ($$.navigator){
 //  publish APIs
 export var $= Engine.getLibraryItem;
 export var $_= Engine.getScope;
-export var Make = Make;
