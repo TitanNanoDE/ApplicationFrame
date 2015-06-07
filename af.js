@@ -5,27 +5,60 @@
 export var $$= (typeof global != 'undefined') ? window : global;
 	
 //Variables
-var asiStorage= new $$.WeakMap();
-	
-// Classes
-// this class defines a new application scope
-var ApplicationScope= function(name){
-	var self= this;
-	this.name= name;
-	this.type= 'application';
-	this.public= new ApplicationScopeInterface(this);
-	this.private=  { 
-		public : this.public,
-		onprogress : function(f){
-			self.listeners.push({ type : 'porgress', listener : f });
-		}
-    };
-	this.thread= null;
-	this.workers= [];
-	this.listeners= [];
+var scopes= new $$.WeakMap();
+
+var Make = function(object, prototype) {
+    if(arguments.length < 2){
+        prototype = object;
+        object = {};
+    }
+
+    Object.setPrototye(object, prototype);
+
+    var make = prototype.make || prototype._make || function(){};
+
+    return make.bind(object);
 };
 
-ApplicationScope.prototype= {
+// Prototypes
+
+var Interface = {
+
+    _make : function(scope){
+        scopes.set(this, scope);
+
+        this._make = null;
+    }
+
+};
+
+// this prototype defines a new application scope
+var ApplicationScope = {
+    name : null,
+    type : 'application',
+    public : null,
+    private : null,
+    thread : null,
+    workers : null,
+    listeners : null,
+
+    _make : function(name){
+        var self= this;
+
+        this.name= name;
+        this.public= Make(ApplicationScopeInterface)(this);
+        this.private=  {
+            public : this.public,
+            onprogress : function(f){
+                self.listeners.push({ type : 'progress', listener : f });
+            }
+        };
+        this.workers= [];
+        this.listeners= [];
+
+        this._make = null;
+    },
+
 	getListeners : function(type){
 		var list= [];
 		
@@ -34,78 +67,97 @@ ApplicationScope.prototype= {
 				item.listener(value);	
 			});
 		};
+
 		this.listeners.forEach(function(item){
 			if(item.type === type)
 				list.push(item);
 		});
+
 		return list;
 	}
 };
 
-// this class defines a new application scope interface
-var ApplicationScopeInterface= function(scope){
-	asiStorage.set(this, scope);
-};
+// this prototype defines a new application scope interface
 	
-ApplicationScopeInterface.prototype= {
+var ApplicationScopeInterface = Make({
+
 	on : function(type, listener){
-		var scope= asiStorage.get(this);
-		scope.listeners.push({ type : type, listener : listener });
+		var scope= scopes.get(this);
+
+        scope.listeners.push({ type : type, listener : listener });
 	},
+
 	thread : function(f){
-		var scope= asiStorage.get(this);
-		scope.workers.push(new ScopeWorker(f));	
+		var scope= scopes.get(this);
+
+        scope.workers.push(new ScopeWorker(f));
 	},
+
 	main : function(f){
-		var scope= asiStorage.get(this);
-		scope.thread= f;
-		engine.ready.then(scope.thread.bind(scope.private));
+		var scope= scopes.get(this);
+
+        scope.thread= f;
+		Engine.ready.then(scope.thread.bind(scope.private));
 	},
+
 	terminate : function(type){
-		var scope= asiStorage.get(this);
-		scope.getListeners('terminate').emit(type);
+		var scope= scopes.get(this);
+
+        scope.getListeners('terminate').emit(type);
 	}
-};
+}, Interface);
   
-// this class defines a new mozilla addon scope
-var MozillaAddonScope = function(){
-    this.name= "addon";
-    this.type= 'addon';
-    this.thread= null;
-	this.public= new MozillaAddonScopeInterface(this);
+// this prototype defines a new mozilla addon scope
+var MozillaAddonScope = {
+    name : 'addon',
+    type : 'addon',
+	public : null,
+
+    _make : function(){
+        this.public = Make(MozillaAddonScopeInterface)(this);
+
+        var self = this;
+        this.private=  {
+            public : this.public,
+            onprogress : function(f){
+                self.listeners.push({ type : 'progress', listener : f });
+            }
+        };
+
+        this._make = null;
+    }
 };
 	
-// this	class defines a new mozilla addon scope interface
-var MozillaAddonScopeInterface= function(scope){
-	asiStorage.set(this, scope);
-};
-	
-MozillaAddonScopeInterface.prototype= {
-	create : function(thread){
-		var scope= asiStorage.get(this);
-		scope.thread= thread;
-		engine.threadQueue.push(scope);
-	},
-	'module' : function(f){
-		var scope= asiStorage.get(this);
-		f.apply(scope.global.exports);
-	},
+// this	prototype defines a new mozilla addon scope interface
+
+var MozillaAddonScopeInterface = Make({
+
+	create : ApplicationScopeInterface.main,
+
+	'module' : ApplicationScopeInterface.module,
+
 	modules : function(depsObject){
-		var scope= asiStorage.get(this);
-		Object.keys(depsObject).forEach(key => {
+		var scope= scopes.get(this);
+
+        Object.keys(depsObject).forEach(key => {
 			if(!scope.modules[key])
 				scope.modules[key]= depsObject[key];
 		});
 	},
+
 	hook : function(globalObject){
-		var scope= asiStorage.get(this);
-		scope.global= globalObject;
+		var scope= scopes.get(this);
+
+        scope.global= globalObject;
 	},
-	dataURL : function(path){
+
+    dataURL : function(path){
 		var prefixURI= $$.require('@loader/options').prefixURI;
-			return (prefixURI + 'af/lib/') + (path || '');
-		},
-	talkTo : function(worker){
+
+        return (prefixURI + 'af/lib/') + (path || '');
+    },
+
+    talkTo : function(worker){
 		return {
 			talk : function(type, message){
 				return new $$.Promise(function(okay){
@@ -127,114 +179,135 @@ MozillaAddonScopeInterface.prototype= {
 			}
 		};
 	}
-};
+}, Interface);
 
-// this class defines a new service scope
-var ServiceScope= function(){
-	this.thread= null;
-	this.private= {};
-	this.isReady= false;
-	this.messageQueue= [];
-	this.public= new ServiceScopeInterface(this);
+// this prototype defines a new service scope
+var ServiceScope = {
+	thread : null,
+	isReady : false,
+	messageQueue : null,
+	public : null,
+
+    _make : function(){
+        this.public = Make(ServiceScopeInterface)(this);
+        this.messageQueue = [];
+
+        this._make = null;
+    }
 };
 	
-// this class defines a new service scope loader
-var ServiceScopeInterface= function(scope){
-	asiStorage.set(this, scope);
-};
+// this prototype defines a new service scope loader
 	
-ServiceScopeInterface.prototype= {
+var ServiceScopeInterface = Make({
+
 	talk : function(name, data){
-		var scope= asiStorage.get(this);
+		var scope= scopes.get(this);
 		
 		if(name != 'init' && !scope.isReady){
 			return new $$.Promise(function(success){
 				scope.messageQueue.push({ name : name, data : data, resolve : success });
 			});
+
 		}else{
 			return new $$.Promise(function(success){
 				var id= createUniqueId();
 				var listener= function(e){
-					if(e.data.name == id){
+					if(e.data.id == id){
 						scope.thread.removeEventListener('message', listener);
 						success(e.data.data);
 					}
 				};
-				scope.thread.addEventListener('message', listener, false);
+
+                scope.thread.addEventListener('message', listener, false);
 				scope.thread.postMessage({ name : name, id : id, data : data });
 			});
 		}
 	},
+
 	listen : function(name, callback){
-		var scope= asiStorage.get(this);
-    	scope.addEventListener('message', function(e){
+		var scope= scopes.get(this);
+
+        scope.addEventListener('message', function(e){
         	if(e.data.name == name){
             	var id= e.data.id;
                 var setAnswer= function(data){
-                	scope.postMessage({ name : id, data : data });
+                	scope.postMessage({ id : id, data : data });
 				};
 				callback(e.data.data, setAnswer);
 			}
 		}, false);
 	},
+
 	main : function(source){
-		var scope= asiStorage.get(this);
+		var scope= scopes.get(this);
 		
-		scope.thread= new $$.ServiceWorker(engine.shared.serviceLoader+'?'+scope.name);
-		if(typeof source == "function"){
+		scope.thread= new $$.ServiceWorker(Engine.shared.serviceLoader+'?'+scope.name);
+
+        if(typeof source == "function"){
 			source= '$$.main= ' + source.toString();
             source= new $$.Blob([source], { type : 'text/javascript' });
 			source= $$.URL.createObjectURL(source);
 		}
-		scope.thread.talk('init', source).then(function(){
+
+        scope.thread.talk('init', source).then(function(){
 			scope.isReady= true;
 			scope.messageQueue.forEach(function(item){
 				scope.thread.talk(item.name, item.data).then(function(data){
 					item.resolve(data);
 				});
 			});
+
+            scope.messageQueue = null;
 //			source= $$.URL.revokeObjectURL(source);
 		});
 	}
+}, Interface);
+
+// this prototype defines a new scope worker
+var ScopeWorker = {
+    scope : null,
+    thread : null,
+    progressListeners : null,
+    promise : null,
+	
+    _make : function(f, scope){
+        var self= this;
+
+        this.scope= scope;
+        this.thread= new $$.Worker(Engine.shared.threadLoader);
+        this.thread.postMessage({ name : 'init', func : f });
+        this.progressListeners= [];
+
+        this.promise= new $$.Promise(function(done){
+            self.thread.addEventListener('message', function(e){
+                if(e.data.name == 'af-worker-done')
+                    done(e.data.data);
+            }, false);
+        });
+
+        this.thread.addEventListener('message', function(e){
+            if(e.data.name == 'af-worker-progress')
+                self.progressListners.forEach(function(item){
+                    item(e.data.data);
+                });
+        }, false);
+    }
 };
 
-// this class defines a new scope worker
-var ScopeWorker= function(f, scope){
-	var self= this;
+// this prototype defines a new scope worker interface
 	
-	this.scope= scope;
-	this.thread= f;
-	this.promise= new $$.Promise(function(done){
-		self.thread.addEventListener('message', function(e){
-			if(e.data.name == 'af-worker-done')
-				done(e.data.data);
-		}, false);
-	});
-	this.progressListeners= [];
-	
-	this.thread.addEventListener('message', function(e){
-		if(e.data.name == 'af-worker-progress')
-			self.progressListners.forEach(function(item){
-				item(e.data.data);
-			});
-	}, false);
-};
-
-// this class defines a new scope worker interface
-var ScopeWorkerInterface= function(scope){
-	asiStorage.set(this, scope);
-};
-	
-ScopeWorkerInterface.prototype= {
+var ScopeWorkerInterface = Make({
 	then : function(f){
-		return asiStorage.get(this).promise.then(f);
+		return scopes.get(this).promise.then(f);
 	},
+
 	onprogress : function(f){
-		asiStorage.get(this).progressListeners.push(f);
+		scopes.get(this).progressListeners.push(f);
 	}
-};
+}, Interface);
 
 // Functions
+
 // this function creates a new unique id
 var createUniqueId= function(){
 	var time = Date.now();
@@ -244,7 +317,8 @@ var createUniqueId= function(){
 	
 var objectReplace= function(update){
 	var self= this;
-	$$.Object.keys(update).forEach(function(item){
+
+    $$.Object.keys(update).forEach(function(item){
 		if(typeof update[item] == 'object' && !$$.Array.isArray(update[item]) && update[item] !== null)
 			objectReplace.apply(self[item], [update[item]]);
 		else
@@ -326,10 +400,12 @@ var userAgentParser= function(userAgentString){
 			record.arch= 'x64';
 		}else if(item.indexOf('/') > -1){
 			if(engines.indexOf(item.split('/')[0]) > -1){
-				record.engine= item.indexOf('/')[0];
-				record.engineVersion= item.indexOf('/')[1];
+				record.engine= item.split('/')[0];
+				record.engineVersion= item.split('/')[1];
 			}
-		}
+		}else if(item.indexOf(':') < 0){
+            record.platform = item;
+        }
 	});
 
 	if(version !== ''){
@@ -341,14 +417,14 @@ var userAgentParser= function(userAgentString){
 
 // Engine
 //the engine hash, holds private flags, arrays and functions.
-var engine = {
+var Engine = {
 	shared : {
 		serviceLoader : '',
 		renderModes : ['default'],
-		feature : {
+		features : {
 			chromeLevel : ($$.location.protocol == 'chrome:' || $$.location.protocol == 'resource:'),
-			storrage : !engine.features.chromeLevel && (function(){try{ return $$.sessionStorage && $$.localStorage; }catch(e){ return false; }})(),
-			indexedDB : !engine.features.chromeLevel && (function(){try{ return $$.indexedDB; }catch(e){ return false; }})(),
+			storrage : !Engine.features.chromeLevel && (function(){try{ return $$.sessionStorage && $$.localStorage; }catch(e){ return false; }})(),
+			indexedDB : !Engine.features.chromeLevel && (function(){try{ return $$.indexedDB; }catch(e){ return false; }})(),
         	notifications : ($$.Notification) || false,
         	renderFrame : ($$.requestAnimationFrame) || false,
         	audio : ($$.Audio) || false,
@@ -415,44 +491,48 @@ var engine = {
 			else
 				return null;
 		})(),
+
 		applications : {
 			'new' : function(name){
-				engine.pushScope(new ApplicationScope(name));
+				Engine.pushScope(new ApplicationScope(name));
 				return {
 					name : name
 				};
 			}
 		},
+
 		services : {
 			'new' : function(name){
-				engine.pushScope(new ServiceScope(name));
+				Engine.pushScope(new ServiceScope(name));
 			},
 			setLoaderModule : function(url){
-				engine.shared.serviceLoader= url;
+				Engine.shared.serviceLoader= url;
 			}
 		},
+
 		wrap : function(source){
 			return new Promise(function(done){
 				done(source.apply({}));
 			});
 		},
+
 		system : {
 			settings : function(settings){
-				objectReplace.apply(engine.options, settings);
+				objectReplace.apply(Engine.options, settings);
 			},
 			info : function(){
-				return cloneObject(engine.info);
+				return cloneObject(Engine.info);
 			},
 			shared : function(){
-				return engine.shared;
+				return Engine.shared;
 			},
 			import : function(...modules){
-				engine.ready= new Promise(function(ready){
+				Engine.ready= new Promise(function(ready){
 					Promise.all(modules.map(m => System.import(m))).then(modules => modules.forEach(m => {
 						if('config' in m){
 							if(m.config.main){
-								if(!(m.config.main in engine.itemLibrary)){
-									engine.itemLibrary[m.config.main]= m[m.config.main];
+								if(!(m.config.main in Engine.itemLibrary)){
+									Engine.itemLibrary[m.config.main]= m[m.config.main];
 								}else{
 									$$.console.warn('an other version of "'+ m.config.main +'" is already loaded!');
 								}
@@ -480,9 +560,9 @@ var engine = {
 	scopeList : {},
 	getLibraryItem : function(name){
 		if(typeof name == 'string'){
-			return engine.itemLibrary[name];
+			return Engine.itemLibrary[name];
 		}else{
-			return engine.itemLibrary[name.name];
+			return Engine.itemLibrary[name.name];
 		}
 	},
 	pushScope : function(scope){
@@ -493,10 +573,10 @@ var engine = {
 	},
 	getScope : function(name){
 		if(name == 'application')
-			name= engine.settings.applicationName;
+			name= Engine.settings.applicationName;
 		
-		if(engine.scopeList[name])
-			return engine.scopeList[name];
+		if(Engine.scopeList[name])
+			return Engine.scopeList[name];
 		else
 			$$.console.error('scope does not exist!');
 	},
@@ -508,8 +588,8 @@ var platform= null;
 
 // find out which engine is used
 if ($$.navigator){
-	engine.info.type= 'Web';
-	objectReplace.apply(engine.info, userAgentParser(navigator.userAgent));
+	Engine.info.type= 'Web';
+	objectReplace.apply(Engine.info, userAgentParser(navigator.userAgent));
 
 //  check if touchscreen is supported
     $$.navigator.isTouch= 'ontouchstart' in $$;
@@ -517,7 +597,7 @@ if ($$.navigator){
 // check if current platform is the Mozilla Add-on runtime
 }else if($$.exports && $$.require && $$.module){
     var system= $$.require('sdk/system');
-	objectReplace.apply(engine.info, {
+	objectReplace.apply(Engine.info, {
 		engine : system.name,
 		engineVersion : system.version,
 		platform : system.platform + ' ' + system.platformVersion,
@@ -527,7 +607,7 @@ if ($$.navigator){
 
 // check if current platform is the Node.js runtime
 }else if($$.process && $$.process.versions && $$.process.env && $$.process.pid){
-    objectReplace.apply(engine.info, {
+    objectReplace.apply(Engine.info, {
 		engine : $$.process.name,
 		engineVersion : $$.process.versions.node,
 		platform : $$.process.platform,
@@ -537,5 +617,6 @@ if ($$.navigator){
 }
 
 //  publish APIs
-export var $= engine.getLibraryItem;
-export var $_= engine.getScope;
+export var $= Engine.getLibraryItem;
+export var $_= Engine.getScope;
+export var Make = Make;
