@@ -15,3 +15,15 @@ export var Make = function(object, prototype) {
         return object;
     };
 };
+
+export var hasPrototype = function(object, prototype){
+    var p = Object.getPrototypeOf(object);
+    while(p !== null){
+        if(p == prototype)
+            return true;
+        else
+            p = Object.getPrototypeOf(p);
+    }
+
+    return false;
+};
