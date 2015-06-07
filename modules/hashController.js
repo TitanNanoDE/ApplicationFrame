@@ -16,19 +16,26 @@ var hash= {
 };
         
 //      Classes
-var HashEvent= function(type, path){
-	this.type= type;
-	this.path= path;
-	this.trigger= function(count){
+var HashEvent = {
+
+    type : null,
+    path : '',
+
+    _make : function(type, path){
+        this.type= type;
+        this.path= path;
+    },
+
+    trigger : function(count){
 		var path= this.path;
-		if(this.type == HashEvent.ADD){
+		if(this.type == HashEvent_ADD){
 			hash.actions.forEach(function(item){
 				if(item.path == path && item.enter && (!item.persistent || !item.active)){
 					item.enter(path);
 					if(item.persistent) item.active= true;
 				}
 			});
-		}else if(this.type == HashEvent.LOST){
+		}else if(this.type == HashEvent_LOST){
 			hash.actions.forEach(function(item){
 				var old= null;
 				if(item.path == path && item.exit){
@@ -50,14 +57,14 @@ var HashEvent= function(type, path){
 		}else{
 			$$.console.error('unknown HashEvent type!');
 		}
-	};
+	}
 };
 
-HashEvent.ADD= 0;
-HashEvent.LOST= 1;
+var HashEvent_ADD= 0;
+var HashEvent_LOST= 1;
 
 //exports
-var interface_ = {
+var Interface = {
 	mount : function(path, enter, exit, persistent){
 		if(path instanceof Array)
 			path.forEach(function(item){
@@ -130,12 +137,12 @@ var interface_ = {
 				path+= '/' + hash.path[i];
         
 				if(difference)
-					events_lost.push(new HashEvent(HashEvent.LOST, path));
+					events_lost.push(new HashEvent(HashEvent_LOST, path));
 				else if(hash.path[i] == hashPath[i])
 					continue;
 				else if(hash.path[i] != hashPath[i]){
 					difference= true;
-					events_lost.push(new HashEvent(HashEvent.LOST, path));
+					events_lost.push(new HashEvent(HashEvent_LOST, path));
 				}
 			}
 
@@ -158,12 +165,12 @@ var interface_ = {
 				path+= '/' + hashPath[i];
 
 				if(difference)
-					events_add.push(new HashEvent(HashEvent.ADD, path));
+					events_add.push(new HashEvent(HashEvent_ADD, path));
 				else if(hashPath[i] == hash.path[i])
 					continue;
 				else if(hashPath[i] != hash.path[i]){
 					difference= true;
-					events_add.push(new HashEvent(HashEvent.ADD, path));
+					events_add.push(new HashEvent(HashEvent_ADD, path));
 				}
 			}
 
@@ -182,7 +189,7 @@ var interface_ = {
 	}
 };
 
-export var hash = interface_;
+export var hash = interface;
 
 export var config = {
     main : 'hash',

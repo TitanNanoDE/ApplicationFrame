@@ -41,7 +41,7 @@ export var b64= {
             cache= oB3 >> 2;
             nB2= nB2 | cache;
 
-            nB3= oB3 << 6;
+            var nB3= oB3 << 6;
             nB3= nB3 | oB4;
 
 

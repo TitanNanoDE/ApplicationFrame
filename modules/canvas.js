@@ -6,6 +6,7 @@
  *****************************************************************/
 "use strict";
 
+import { Make }    from 'util/make';
 import { classes } from 'modules/classes';
 
 var $$= (typeof window !== 'undefined') ? window : global;
@@ -41,14 +42,14 @@ var layerRender= function(context, canvas){
     sortElements(closed, zLevel_max);
     closed.elements.forEach(item => item.render(context, canvas));
 };
-        
-var Context= function(){
-    this.yOffset= 0;
-    this.xOffset= 0;
-    this.available= true;
-    this.finally= function(){};
-};
-Context.prototype={
+
+var Context = {
+    yOffset : 0,
+    xOffset : 0,
+    available : true,
+
+    finally : function(){},
+
     addOffset : function(x, y){
         this.yOffset+= y;
         this.xOffset+= x;
@@ -69,75 +70,81 @@ var verifyOpacity= function(n){
 };
         
 // Classes
-var Canvas= function(target){
-    var { open, closed } = attributes(this, {
-        dom : target,
-        elements : [],
-        context : target.getContext('2d'),
-        renderStart : 0,
-        fpsOverlay : null,
-        fps : 0,
-        frames : 0
-    });
+var Canvas = {
 
-    open.cursor= 'default';
-    open.maxFps= 60;
-    open.fpsLock= true;
-    open.fpsOverlay= false;
-            
-//  catch events
-//  mousemove / over, out, move
-    closed.dom.addEventListener('mousemove', function(e){
-        var mouse= { x : e.layerX, y : e.layerY };
-        var context= new Context();
+    cursor : 'default',
+    maxFps : 60,
+    fpsLock : true,
+    fpsOverlay : false,
 
-        sortElements(closed, getZLevelMax(closed));
-        for(var i= closed.elements.length-1; i >= 0; i--){
-            var element= closed.elements[i].checkMouse(mouse, context);
-            if(element){
-                var style= element.cursor || open.cursor;
-                if(this.style.getPropertyValue('cursor') != style)
-                    this.style.setProperty('cursor', style);
+    _make : function(target){
+        var { open, closed } = attributes(this, {
+            dom : target,
+            elements : [],
+            context : target.getContext('2d'),
+            renderStart : 0,
+            fpsOverlay : null,
+            fps : 0,
+            frames : 0
+        });
+
+    //  catch events
+    //  mousemove / over, out, move
+        closed.dom.addEventListener('mousemove', function(e){
+            var mouse= { x : e.layerX, y : e.layerY };
+            var context= new Context();
+
+            sortElements(closed, getZLevelMax(closed));
+            for(var i= closed.elements.length-1; i >= 0; i--){
+                var element= closed.elements[i].checkMouse(mouse, context);
+                if(element){
+                    var style= element.cursor || open.cursor;
+                    if(this.style.getPropertyValue('cursor') != style)
+                        this.style.setProperty('cursor', style);
+                }
             }
-        }
-        context.finally();
-                
-        if(context.available && this.style.getPropertyValue() != open.cursor)
-            this.style.setProperty('cursor', open.cursor);
-    }, false);
-//  suppress contextmenu
-    this._dom.addEventListener('contextmenu', function(e){
-        e.preventDefault();
-        return false;
-    }, false);
-//  mouseclick
-    this._dom.addEventListener('click', function(e){
-        var context= new Context();
-        var mouse= { x : e.layerX, y : e.layerY };
-                
-        sortElements(closed, getZLevelMax(closed));
-        for(var i= closed.elements.length-1; i >= 0; i--){
-            if(closed.elements[i].checkClick(mouse, context))
-                return;
-        }
-    }, false);
-            
-//  create FPS overlay
-    closed.fpsOverlay= new Layer(10, this._dom.height - 60, 0);
-    closed.fpsOverlay.addElement(new FilledRect(0, 0, 150, 60, '#000', 0));
-    closed.fpsOverlay.addElement(new TextBox('FPS: 0', 0, 0, 1));
-    closed.fpsOverlay.elements(1).color= '#fff';
-    closed.fpsOverlay.addElement(new TextBox('Frames: 0', 0, 15, 1));
-    closed.fpsOverlay.elements(2).color= '#fff';
-    closed.fpsOverlay.addElement(new TextBox('FPS Lock: off', 0, 30, 1));
-    closed.fpsOverlay.elements(3).color= '#fff';
-};
-Canvas.prototype= {
+            context.finally();
+
+            if(context.available && this.style.getPropertyValue() != open.cursor)
+                this.style.setProperty('cursor', open.cursor);
+        }, false);
+
+    //  suppress contextmenu
+        closed.dom.addEventListener('contextmenu', function(e){
+            e.preventDefault();
+            return false;
+        }, false);
+
+    //  mouseclick
+        closed.dom.addEventListener('click', function(e){
+            var context= new Context();
+            var mouse= { x : e.layerX, y : e.layerY };
+
+            sortElements(closed, getZLevelMax(closed));
+            for(var i= closed.elements.length-1; i >= 0; i--){
+                if(closed.elements[i].checkClick(mouse, context))
+                    return;
+            }
+        }, false);
+
+    //  create FPS overlay
+        closed.fpsOverlay= new Layer(10, this._dom.height - 60, 0);
+        closed.fpsOverlay.addElement(new FilledRect(0, 0, 150, 60, '#000', 0));
+        closed.fpsOverlay.addElement(new TextBox('FPS: 0', 0, 0, 1));
+        closed.fpsOverlay.elements(1).color= '#fff';
+        closed.fpsOverlay.addElement(new TextBox('Frames: 0', 0, 15, 1));
+        closed.fpsOverlay.elements(2).color= '#fff';
+        closed.fpsOverlay.addElement(new TextBox('FPS Lock: off', 0, 30, 1));
+        closed.fpsOverlay.elements(3).color= '#fff';
+    },
+
     render : function(){
         var { open, closed } = attributes(this);
+
         if(this.isRunning){
-            var context= new Context();
+            var context= Make(Context);
             var start= Date.now();
+
             closed.context.save();
             closed.context.clearRect(0, 0, closed.dom.width, closed.dom.height);
             closed.context.globalAlpha= 1;
@@ -170,29 +177,37 @@ Canvas.prototype= {
             $$.requestAnimationFrame(function(){ closed.render(); });
         }
     },
+
     start : function(){
         var { open, closed } = attributes(this);
         open.isRunning= true;
         $$.requestAnimationFrame(function(){ closed.render(); });
     },
+
     stop : function(){
         this.isRunning= false;
     },
+
     addElement : function(element){
         attributes(this).closed.elements.push(element);
     },
+
     get height(){
         return attributes(this).closed.dom.height;
     },
+
     get width(){
         return attributes(this).closed.dom.width;
     },
+
     get fps(){
         return attributes(this).closed.fps;
     },
+
     get frames(){
         return attributes(this).closed.frames;
     },
+
     measureText : function(textElement){
         var { closed } = attributes(this);
         closed.context.font= textElement.font;
@@ -201,6 +216,7 @@ Canvas.prototype= {
         closed.context.textBaseline= 'top';
         return closed.context.measureText(textElement.content);
     },
+
     measureTextWidth : function(textElement){
         var { closed } = attributes(this);
         var lines= textElement.content.split('\n');
@@ -213,28 +229,37 @@ Canvas.prototype= {
         lines.forEach(item => linesWidth.push(closed.context.measureText(item).width));
         return Math.max.apply(Math, linesWidth);
     },
+
     measureTextHeight : function(text, lineHeight){
         if(text !== '')
             return text.split('\n').length * lineHeight;
         else
             return 0;
     },
+
     elements : function(index){
         return attributes(this).closed.elements[index];
     }
 };
+
+var Layer = {
+    x : 0,
+    y : 0,
+    opacity : 1,
+    hidden : false,
+
+    _make : function(x, y, zLevel){
+        attributes(this, {
+            elements : []
+        });
+
+        this.zLevel= zLevel || 0;
+        this.x= x || 0;
+        this.y= y || 0;
         
-var Layer= function(x, y, zLevel){
-    attributes(this, {
-        elements : []
-    });
-    this.zLevel= zLevel || 0;
-    this.x= x || 0;
-    this.y= y || 0;
-    this.opacity= 1;
-    this.hidden= false;
-};
-Layer.prototype= {
+        this._make = null;
+    },
+
     render : function(context, canvas){
         if(!this.hidden){
             context.addOffset(this.x, this.y);
@@ -245,7 +270,9 @@ Layer.prototype= {
             canvas.restore();
         }
     },
-    addElement : Canvas.prototype.addElement,
+
+    addElement : Canvas.addElement,
+
     checkMouse : function(mouse, context){
         var element= null;
         var { open, closed } = attributes(this);
@@ -260,6 +287,7 @@ Layer.prototype= {
         context.removeOffset(this.x, this.y);
         return element;
     },
+
     checkClick : function(mouse, context){
         var { open, closed } = attributes(this);
         context.addOffset(this.x, this.y);
@@ -270,30 +298,39 @@ Layer.prototype= {
         }
         context.removeOffset(this.x, this.y);
     },
+
     clear : function(){
         attributes(this).closed.elements= [];
     },
-    elements : Canvas.prototype.elements
+
+    elements : Canvas.elements
 };
-        
-var RectShapeElement= function(x, y, width, height, zLevel){
-    var { open, closed } = attributes(this, {
-        mouse : false
-    });
-    this.x= x || 0;
-    this.y= y || 0;
-    this.zLevel= zLevel || 0;
-    this.hidden= false;
-    this.width= width || 0;
-    this.height= height || 0;
-    this.opacity= 1;
-    this.cursor= null;
-    this.onmouseover= function(){};
-    this.onmouseout= function(){};
-    this.onmousemove= function(){};
-    this.onclick= function(){};
-};
-RectShapeElement.prototype= {
+
+var RectShapeElement = {
+    x : 0,
+    y : 0,
+    zLevel : 0,
+    hidden : false,
+    width : 0,
+    height : 0,
+    opacity : 1,
+    cursor : null,
+    onmouseover : function(){},
+    onmouseout : function(){},
+    onmousemove : function(){},
+    onclick : function(){},
+
+    _make : function(x, y, zLevel, width, height){
+        var { open, closed } = attributes(this, {
+            mouse : false
+        });
+        this.x= x || 0;
+        this.y= y || 0;
+        this.zLevel= zLevel || 0;
+        this.width= width || 0;
+        this.height= height || 0;
+    },
+
     checkMouse : function(mouse, context){
         var { open, closed } =
         if(!open.hidden &&
@@ -323,6 +360,7 @@ RectShapeElement.prototype= {
             return null;
         }
     },
+
     checkClick : function(mouse, context){
         if(!this.hidden &&
            mouse.x >= (context.xOffset + this.x) &&
@@ -339,10 +377,20 @@ RectShapeElement.prototype= {
         
 var FilledRect= function(x, y, width, height, color, zLevel){
     RectShapeElement.apply(this, [x, y, width, height, zLevel]);
-    this.color= color;
     this.cursor= null;
 };
-FilledRect.prototype= new Prototype([RectShapeElement, {
+
+FilledRect = Make({
+    color : null,
+    cursor : null,
+
+    _make : function(x, y, width, height, color, zLevel){
+        Object.getPrototypeOf(this)._make.apply(this, [x, y, width, height, zLevel]);
+        this.color= color;
+
+        this.make = null;
+    },
+
     render : function(context, canvas){
         if(!this.hidden){
             canvas.save();
@@ -352,16 +400,19 @@ FilledRect.prototype= new Prototype([RectShapeElement, {
             canvas.restore();
         }
     }
-}]);
+}, RectShapeElement);
 
-var CImage= function(source, x, y, zLevel){
-    RectShapeElement.apply(this, [x, y, null, null, zLevel]);
-    this.source= source;
-    this._width= null;
-    this._height= null;
-    this.crop= null;
-};
-CImage.prototype= new Prototype([RectShapeElement, {
+var CImage =  Make({
+    width : null,
+    height : null,
+    crop : null,
+    source : null,
+
+    _make : function(source, x, y, zLevel){
+        Object.getPrototypeOf(this)._make.apply(this, [x, y, null, null, zLevel]);
+        this.source = source;
+    },
+
     render : function(context, canvas){
         if(!this.hidden){
             canvas.save();
@@ -380,39 +431,48 @@ CImage.prototype= new Prototype([RectShapeElement, {
             canvas.restore();
         }
     },
+
     get width(){
         return (attributes(this).closed.width || this.source.naturalWidth || 0);
     },
+
     set width(width){
         attributes(this).closed.width= width;
     },
+
     get height(){
         return (attributes(this).closed.height || this.source.naturalHeight || 0);
     },
+
     set height(height){
         attributes(this).closed.height= height;
     }
-}]);
-        
-var TextBox= function(content= '', x= 0, y=0, zLevel= 0){
-    attributes(this, {
-        lineHeight : null
-    });
-    this.x= x || 0;
-    this.y= y || 0;
-    this.content= content;
-    this.fontFamily= 'sans-serif';
-    this.fontSize= 12;
-    this.fontStyle= '';
-    this.fontWeight= 'normal';
-    this.color= '#000';
-    this.aling= 'left';
-    this.opacity= 1;
-    this.zLevel= zLevel || 0;
-    this.cursor= null;
-    this.textBaseline= 'top';
-};
-TextBox.prototype= {
+}, RectShapeElement);
+
+var TextBox = {
+    x : 0,
+    y : 0,
+    content : null,
+    fontFamily : 'sans-serif',
+    fontSize : 12,
+    fontStyle : '',
+    fontWeight : 'normal',
+    color : '#000',
+    aling : 'left',
+    opacity : 1,
+    zLevel : 0,
+    cursor : null,
+    textBaseLine : 'top',
+
+    _make : function(content= '', x= 0, y=0, zLevel= 0){
+        this.x= x;
+        this.y= y;
+        this.content= content;
+        this.zLevel= zLevel;
+
+        this._make = null;
+    },
+
     _render : function(context, canvas){
         if(!this.hidden){
             canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
@@ -453,20 +513,26 @@ TextBox.prototype= {
         this._lineHeight= value;
     }
 };
-        
-var HitArea= function(x, y, width, height, zLevel){
-    RectShapeElement.apply(this, [x, y, width, height, zLevel]);
-};
-HitArea.prototype= new Prototype([RectShapeElement, {
+
+HitArea = Make({
+
     _render : function(){}
-}]);
-        
-var ImageCrop= function(top, right, bottom, left){
-    this.top= top || 0;
-    this.right= right || 0;
-    this.bottom= bottom || 0;
-    this.left= left || 0;
-};
+
+}, RectShapeElement);
+
+ImageCrop = {
+    top : 0,
+    right : 0,
+    bottom : 0,
+    left : 0,
+
+    _make : function(top, right, bottom, left){
+        this.top= top || 0;
+        this.right= right || 0;
+        this.bottom= bottom || 0;
+        this.left= left || 0;
+    }
+}
         
 // animations
 var fadeOut= function(element, time, callback){

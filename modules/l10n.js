@@ -1,4 +1,6 @@
 
+import { $, $$ } from '../af';
+
 var instance= Date.now() + '::' + Math.round(Math.random() * 200);
 	
 var localize= function(element){

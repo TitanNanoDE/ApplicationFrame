@@ -6,6 +6,7 @@
 	"debug" : true,
 	"browser" : true,
     "devel" : true,
+    "newcap" : false,
 	"globals" : {
 		"global" : false,
         "System" : false

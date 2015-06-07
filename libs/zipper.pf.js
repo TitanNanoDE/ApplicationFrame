@@ -1,5 +1,7 @@
 /* global self */
 
+var $$ = this;
+
 export default {
     zipper : {
         unzip : function(file, callback){
@@ -257,9 +259,11 @@ export default {
                 var nLength= 0;
                 var cursor= 0;
                 var length= null;
+                var data = null;
 			
                 for(var i= 0; i < arguments.length; i++){
                     data= arguments[i];
+
                     if($$.Array.isArray(data)){
                         nLength+= data[1];
                     }else{

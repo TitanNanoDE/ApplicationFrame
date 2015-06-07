@@ -6,15 +6,19 @@
  *****************************************************************/
 
 "use strict";
-		
-var AsyncLoop= function(loop){
-	this._l= loop;
-	this.busy= false;
-	this.step= 0;
-	this.status= 'notstarted';
-};
 
-AsyncLoop.prototype= {
+var AsyncLoop = {
+    _l : null,
+	busy : false,
+	step : 0,
+	status : 'notstarted',
+
+    _make : function(loop){
+        this._l = loop;
+
+        this._make = null;
+    },
+
     run : function(){
         this.busy= true;
         var loop= this;
@@ -42,22 +46,30 @@ AsyncLoop.prototype= {
     }
 };
 
-var EventManager= function(){
-	var listeners= [];
-	this.addEventListener= function(type, listener, useCapture){
-		listeners.push({
+var EventManager= {
+    listeners : null,
+
+    _make : function(){
+        this.listeners = [];
+
+        this._make = null;
+    },
+
+	addEventListener : function(type, listener, useCapture){
+		this.listeners.push({
 			type : type,
 			listener : listener,
 			useCapture : useCapture
 		});
-	};
-	this.dispatchEvent= function(event){
-		listeners.forEach(item => {
+	},
+
+	dispatchEvent : function(event){
+		this.listeners.forEach(item => {
 			if(item.type === event.type){
 				item.listener(event);
 			}
 		});
-	};
+	}
 };
 
 var Prototype= function(...types){
@@ -71,15 +83,17 @@ var Prototype= function(...types){
 	return prototype;
 };
 
-var AsyncQueue= function(processor){
-    this.queue=  [];
-    this.active= false;
-    this.processor= processor;
+var AsyncQueue = {
+    queue : null,
+    active : false,
+    processor : null,
 
-    return this.push.bind(this);
-};
+    _make : function(processor){
+        this._processor = processor;
 
-AsyncQueue.prototype= {
+        this._make = null;
+    },
+
     next : function(){
         if(this.queue.length > 0){
             this.integrate(...this.queue.shift());
@@ -88,6 +102,7 @@ AsyncQueue.prototype= {
             this.active= false;
         }
     },
+
     push : function(...args){
         var self= this;
 		return new Promise(function(done){
@@ -102,11 +117,13 @@ AsyncQueue.prototype= {
 	}
 };
 
-var Accessor= function(){
-    this.privateMap= new WeakMap();
-};
+var Accessor = {
+    privateMap : null,
 
-Accessor.prototype= {
+    _make : function(){
+        this.privateMap = new WeakMap();
+    },
+
     attributes : function(target, object){
         if(!object){
             return { public : target, private : this.privateMap.get(target) };
