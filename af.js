@@ -21,6 +21,22 @@ var Interface = {
 
 };
 
+var ApplicationScopePrivatePrototype = Make({
+    public : null,
+
+    _make : function(scope){
+        Object.getPrototypeOf(this)._make(scope);
+
+        this.public = scope;
+
+        this._make = null;
+    },
+
+    onprogress : function(f){
+        scopes.get(this).listeners.push({ type : 'progress', listener : f });
+    }
+}, Interface);
+
 // this prototype defines a new application scope
 var ApplicationScope = {
     name : null,
@@ -36,12 +52,6 @@ var ApplicationScope = {
 
         this.name= name;
         this.public= Make(ApplicationScopeInterface)(this);
-        this.private=  {
-            public : this.public,
-            onprogress : function(f){
-                self.listeners.push({ type : 'progress', listener : f });
-            }
-        };
         this.workers= [];
         this.listeners= [];
 
@@ -82,11 +92,19 @@ var ApplicationScopeInterface = Make({
         scope.workers.push(new ScopeWorker(f));
 	},
 
+    prototype : function(object){
+        scopes.get(this).private = Make(object, ApplicationScopePrivatePrototype)(scopes.get(this));
+    },
+
 	main : function(f){
 		var scope= scopes.get(this);
 
-        scope.thread= f;
-		Engine.ready.then(scope.thread.bind(scope.private));
+        if(scope.private === null)
+            scope.private = Make(ApplicationScopePrivatePrototype)(scope);
+
+        scope.thread= f.bind(scope.private);
+
+		Engine.ready.then(scope.thread);
 	},
 
 	terminate : function(type){
