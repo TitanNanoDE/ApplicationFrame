@@ -9,7 +9,8 @@
 import { Make }    from 'util/make';
 import { classes } from 'modules/classes';
 
-var $$= (typeof window !== 'undefined') ? window : global;
+var $$ = window;
+
 var { Prototype, Accessor } = classes;
 var { attributes } = Make(Accessor)();
 
