@@ -21,20 +21,64 @@ var Interface = {
 
 };
 
+var Catalog = {
+
+    _listeners : null,
+
+    _make : function(){
+        this._listeners = [];
+
+        this._make = null;
+    },
+
+    on : function(event, listener){
+        var self= this;
+
+        return new $$.Promise(function(success){
+            if(listener.length > 0)
+                self._listeners.push({ event : event, listener : listener, success : success });
+            else
+                success();
+        });
+    },
+
+    add : function(key, value){
+        this[key]= value;
+        var object= this;
+        this._listeners.forEach(function(item){
+
+            if(item.event == 'available'){
+                var ready= 0;
+                item.listener.forEach(function(item){
+                    if(Object.keys(object).indexOf(item) > -1)
+                        ready++;
+                });
+
+                if(ready == item.listener.length){
+                    item.success();
+                }
+            }
+        });
+    }
+};
+
 var ApplicationScopePrivatePrototype = Make({
     public : null,
+    modules : null,
 
     _make : function(scope){
         Object.getPrototypeOf(this)._make(scope);
 
         this.public = scope;
+        this.modules = {};
 
         this._make = null;
     },
 
     onprogress : function(f){
         scopes.get(this).listeners.push({ type : 'progress', listener : f });
-    }
+    },
+
 }, Interface);
 
 // this prototype defines a new application scope
@@ -46,14 +90,17 @@ var ApplicationScope = {
     thread : null,
     workers : null,
     listeners : null,
+    modules : null,
 
     _make : function(name){
         var self= this;
 
         this.name= name;
         this.public= Make(ApplicationScopeInterface)(this);
+
         this.workers= [];
         this.listeners= [];
+        this.modules = Make(Catalog)();
 
         this._make = null;
     },
@@ -107,13 +154,24 @@ var ApplicationScopeInterface = Make({
 		Engine.ready.then(scope.thread);
 	},
 
+    module : function(name, dependencies, f){
+        var scope = scopes.get(this);
+
+        scope.modules.on('available', dependencies).then(function(){
+            scope.modules.add(new Promise(function(ready){
+                f(scope, ready);
+            }));
+        });
+    },
+
 	terminate : function(type){
 		var scope= scopes.get(this);
 
         scope.getListeners('terminate').emit(type);
 	}
+
 }, Interface);
-  
+
 // this prototype defines a new mozilla addon scope
 var MozillaAddonScope = {
     name : 'addon',
