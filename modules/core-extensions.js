@@ -26,3 +26,9 @@ var apply= function($$){
 export var coreExtension = {
     apply : apply
 };
+
+export var config = {
+    main : 'coreExtensions',
+    author : 'Jovan Gerodetti',
+    version : '0.2'
+};
