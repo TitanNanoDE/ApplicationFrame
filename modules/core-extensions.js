@@ -1,21 +1,26 @@
 // core extensions for the default ApplicationFrame modules - copyright by TitanNano / Jovan Gerodetti - http://www.titannano.de
 
+import { Make } from 'util/make';
+
 var apply= function($$){
 	"use strict";
-
-// 	if your required list type isn't here just add it
-	if($$.NodeList && !$$.NodeList.prototype.forEach) $$.NodeList.prototype.forEach= $$.Array.prototype.forEach;
-	if($$.TouchList && !$$.TouchList.prototype.forEach) $$.TouchList.prototype.forEach= $$.Array.prototype.forEach;
 	
-/* --- last extension --- */
-	var ArrayLast= function(){
-		return this[this.length -1];
-	};
+	var ListExtension = Make({
+        last : function(){
+            return this[this.length -1];
+        },
 
-	if($$.Array && !$$.Array.prototype.last) $$.Array.prototype.last= ArrayLast;
+        find : $$.Array.prototype.find,
+        indexOf : $$.Array.prototype.indexOf,
+        map : $$.Array.prototype.map
+    });
 
-	if($$.TouchList && !$$.TouchList.prototype.indexOf) $$.TouchList.prototype.indexOf= Array.prototype.indexOf;
-	if($$.TouchList && !$$.TouchList.prototype.find) $$.TouchList.prototype.find= Array.prototype.find;
+    ['Array', 'NodeList', 'TouchList'].forEach(function(type){
+        if($$[type]){
+            $$[type].prototype = Make(ListExtension, $$[type].prototype);
+        }
+    });
+
 };
 
 export var coreExtension = {
