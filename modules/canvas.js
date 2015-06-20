@@ -11,7 +11,7 @@ import { classes } from 'modules/classes';
 
 var $$= (typeof window !== 'undefined') ? window : global;
 var { Prototype, Accessor } = classes;
-var { attributes } = new Accessor();
+var { attributes } = Make(Accessor)();
 
 // Functions
 var getZLevelMax= function(element){
@@ -332,7 +332,7 @@ var RectShapeElement = {
     },
 
     checkMouse : function(mouse, context){
-        var { open, closed } =
+        var { open, closed } = attributes(this);
         if(!open.hidden &&
            mouse.x >= (context.xOffset + this.x) &&
            mouse.x <= (context.xOffset + this.x +this.width) &&
@@ -403,13 +403,17 @@ FilledRect = Make({
 }, RectShapeElement);
 
 var CImage =  Make({
-    width : null,
-    height : null,
     crop : null,
     source : null,
 
     _make : function(source, x, y, zLevel){
         Object.getPrototypeOf(this)._make.apply(this, [x, y, null, null, zLevel]);
+        
+        attributes(this, {
+            width : null,
+            height : null
+        });
+        
         this.source = source;
     },
 
@@ -514,13 +518,13 @@ var TextBox = {
     }
 };
 
-HitArea = Make({
+var HitArea = Make({
 
     _render : function(){}
 
 }, RectShapeElement);
 
-ImageCrop = {
+var ImageCrop = {
     top : 0,
     right : 0,
     bottom : 0,
@@ -532,7 +536,7 @@ ImageCrop = {
         this.bottom= bottom || 0;
         this.left= left || 0;
     }
-}
+};
         
 // animations
 var fadeOut= function(element, time, callback){
@@ -576,7 +580,7 @@ var fadeIn= function(element, time, callback){
 };
         
 var zoomIn= function(element, target, amount, time, callback){
-    if(!element instanceof CImage){
+    if(!(element instanceof CImage)){
         $$.console.error('element is not a instance of CImage');
         return false;
     }
@@ -607,7 +611,7 @@ var zoomIn= function(element, target, amount, time, callback){
 };
         
 var zoomOut= function(element, target, amount, time, callback){
-    if(!element instanceof CImage){
+    if(!(element instanceof CImage)){
         $$.console.error('element is not a instance of CImage');
         return false;
     }
