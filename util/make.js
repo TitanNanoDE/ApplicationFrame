@@ -7,13 +7,17 @@ export var Make = function(object, prototype) {
     Object.setPrototypeOf(object, prototype);
 
 
-    return function(...args){
+    var m = function(...args){
         var make = prototype.make || prototype._make || function(){};
 
         make.apply(object, args);
 
         return object;
     };
+
+    m.get = function(){ return object; };
+
+    return m;
 };
 
 export var hasPrototype = function(object, prototype){
