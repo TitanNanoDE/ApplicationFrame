@@ -79,7 +79,7 @@ var ApplicationScopePrivatePrototype = Make({
         scopes.get(this).listeners.push({ type : 'progress', listener : f });
     },
 
-}, Interface);
+}, Interface).get();
 
 // this prototype defines a new application scope
 var ApplicationScope = {
@@ -170,7 +170,7 @@ var ApplicationScopeInterface = Make({
         scope.getListeners('terminate').emit(type);
 	}
 
-}, Interface);
+}, Interface).get();
 
 // this prototype defines a new mozilla addon scope
 var MozillaAddonScope = {
@@ -244,7 +244,7 @@ var MozillaAddonScopeInterface = Make({
 			}
 		};
 	}
-}, Interface);
+}, Interface).get();
 
 // this prototype defines a new service scope
 var ServiceScope = {
@@ -326,7 +326,7 @@ var ServiceScopeInterface = Make({
 //			source= $$.URL.revokeObjectURL(source);
 		});
 	}
-}, Interface);
+}, Interface).get();
 
 // this prototype defines a new scope worker
 var ScopeWorker = {
@@ -369,7 +369,7 @@ var ScopeWorkerInterface = Make({
 	onprogress : function(f){
 		scopes.get(this).progressListeners.push(f);
 	}
-}, Interface);
+}, Interface).get();
 
 // Functions
 
@@ -588,7 +588,7 @@ var Engine = {
 			shared : function(){
 				return Engine.shared;
 			},
-			import : function(...modules){
+			'import' : function(...modules){
 				Engine.ready= new Promise(function(ready){
 					Promise.all(modules.map(m => System.import(m))).then(modules => modules.forEach(m => {
 						if('config' in m){
