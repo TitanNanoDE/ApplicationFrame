@@ -60,18 +60,19 @@ var createOAuthNonce= function(){
 };
 
 var socketPrivateStorage= new $$.WeakMap();
-var Socket= function(type, url, options){
-    socketPrivateStorage.set(this, {
-        type : type,
-        url : url,
-        lastMessage : null,
-        open : false,
-        options : options
-    });
-    this.headers= {};
-};
 		
-Socket.prototype= {
+var Socket = {
+
+    _make : function(type, url, options){
+        socketPrivateStorage.set(this, {
+            type : type,
+            url : url,
+            lastMessage : null,
+            open : false,
+            options : options
+        });
+    },
+
     get url(){
         return socketPrivateStorage.get(this).url;
     },
@@ -88,6 +89,7 @@ Socket.prototype= {
         var self= socketPrivateStorage.get(this);
         var selfPublic= this;
         var xhr= new $$.XMLHttpRequest(this._options);
+
         return new Promise(((setValue, setError) => {
             xhr.onreadystatechange= function(){
                 if(this.readyState == 4){
@@ -103,10 +105,10 @@ Socket.prototype= {
             apply(headers, this.headers);
             Object.keys(this.headers).forEach(key => xhr.setRequestHeader(key, selfPublic.headers));
 
-            if(self.type == Socket.HTTP_POST){
+            if(self.type == SocketFlags.HTTP_POST){
                 xhr.open('POST', self.url, true);
                 xhr.send(message);
-            }else if(self.type == Socket.HTTP_GET){
+            }else if(self.type == SocketFlags.HTTP_GET){
                 xhr.open('GET', self.url + '?' + message, true);
                 xhr.send();
             }
@@ -114,9 +116,10 @@ Socket.prototype= {
     },
 
     request : function(url, message, headers){
-        var self= socketPrivateStorage.get(this);
-        var selfPublic= this;
-        var xhr= new $$.XMLHttpRequest(this.options);
+        var self = socketPrivateStorage.get(this);
+        var selfPublic = this;
+        var xhr = new $$.XMLHttpRequest(this.options);
+
         return new Promise((setValue, setError) => {
             xhr.onreadystatechange= function(){
                 if(this.readyState == 4){
@@ -132,11 +135,11 @@ Socket.prototype= {
             apply(headers, selfPublic.headers);
             $$.Object(selfPublic.headers).forEach(key => xhr.setRequestHeader(key, selfPublic.headers));
 
-            if(self.type == Socket.HTTP_POST){
+            if(self.type == SocketFlags.HTTP_POST){
                 xhr.open('POST', self.url + url,  true);
                 xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded; charset=UTF-8');
                 xhr.send(message);
-            }else if(self.type == Socket.HTTP_GET){
+            }else if(self.type == SocketFlags.HTTP_GET){
                 xhr.open('GET', self.url + url + (message ? '?' + message : ''), true);
                 xhr.send();
             }
@@ -144,24 +147,30 @@ Socket.prototype= {
     }
 };
 
-Socket.HTTP_GET= 'http_get';
-Socket.HTTP_POST= 'http_post';
-Socket.HTTP= 'http_post';
-
-var oauthsocketStorage= new $$.WeakMap();
-var OAuthSocket= function(id, host, key, secred, options){
-    oauthsocketStorage.set(this, {
-        host : host,
-        key : key,
-        options : options,
-        secred : secred,
-        id : id,
-        token : $$.localStorage.getItem('af.oauth.'+ id +'.token') || '',
-        tokenSecred : $$.localStorage.getItem('af.oauth.'+ id +'.tokenSecred') || ''
-    });
+var SocketFlags = {
+    HTTP_GET : 'http_get',
+    HTTP_POST : 'http_post',
+    HTTP : 'http_post'
 };
 
-OAuthSocket.prototype= {
+var oauthsocketStorage= new $$.WeakMap();
+
+var OAuthSocket = {
+
+    _make : function(id, host, key, secred, options){
+        oauthsocketStorage.set(this, {
+            host : host,
+            key : key,
+            options : options,
+            secred : secred,
+            id : id,
+            token : $$.localStorage.getItem('af.oauth.'+ id +'.token') || '',
+            tokenSecred : $$.localStorage.getItem('af.oauth.'+ id +'.tokenSecred') || ''
+        });
+
+        this._make = null;
+    },
+
     post : function(endpoint, data){
         var self= oauthsocketStorage.get(this);
 
@@ -268,33 +277,32 @@ OAuthSocket.prototype= {
 };
 
 var oauthrequestStorage= new $$.WeakMap();
-var OAuthRequest= function(method, url, data, client, addQuery){
-    var selfP= oauthrequestStorage.set(this, {
-        client : client,
-        data : data,
-        method : method
-    });
-    this.responseType= '';
-    this.useDataInSignature= true;
-    this.encodeData= true;
-    this.addQuery= true;
-    this.oauthHeader= {
-        'oauth_consumer_key' : client.key,
-        'oauth_nonce' : createOAuthNonce(),
-        'oauth_signature_method' : 'HMAC-SHA1',
-        'oauth_timestamp' : $$.parseInt($$.Date.now().toString()) / 1000,
-        'oauth_version' : '1.0'
-    };
-    this.headers= {};
-    url= new URL(url);
-    if(url.host === ''){
-        url.host= client.host;
-    }
-    selfP.url= url.href;
-    if(client.token !== '') this.oauthHeader.oauth_token= client.token;
-};
 
-OAuthRequest.prototype= {
+var OAuthRequest = {
+
+    _make : function(method, url, data, client, addQuery){
+        var selfP= oauthrequestStorage.set(this, {
+            client : client,
+            data : data,
+            method : method
+        });
+
+        this.oauthHeader= {
+            'oauth_consumer_key' : client.key,
+            'oauth_nonce' : createOAuthNonce(),
+            'oauth_signature_method' : 'HMAC-SHA1',
+            'oauth_timestamp' : $$.parseInt($$.Date.now().toString()) / 1000,
+            'oauth_version' : '1.0'
+        };
+        this.headers= {};
+        url= new URL(url);
+        if(url.host === ''){
+            url.host= client.host;
+        }
+        selfP.url= url.href;
+        if(client.token !== '') this.oauthHeader.oauth_token= client.token;
+    },
+
     send : function(onUploadProgress, onDownloadProgress){
         var self= this;
         var selfP= oauthrequestStorage.get(this);
