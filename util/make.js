@@ -22,7 +22,11 @@ export var Make = function(object, prototype) {
 
 export var hasPrototype = function(object, prototype){
     var p = Object.getPrototypeOf(object);
+
     while(p !== null){
+        if(typeof prototype == 'function')
+            prototype = prototype.prototype;
+
         if(p == prototype)
             return true;
         else
