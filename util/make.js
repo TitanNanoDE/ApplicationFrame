@@ -4,7 +4,7 @@ export var Make = function(object, prototype) {
         object = {};
     }
 
-    Object.setPrototye(object, prototype);
+    Object.setPrototypeOf(object, prototype);
 
 
     return function(...args){

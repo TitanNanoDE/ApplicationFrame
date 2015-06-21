@@ -2,9 +2,9 @@
 
 "use strict";
 
-import { Make } from 'util/make';
+import { Make } from './util/make.js';
 
-export var $$= (typeof global != 'undefined') ? window : global;
+export var $$= window; //(typeof global != 'undefined') ? window : global;
 	
 //Variables
 var scopes= new $$.WeakMap();
@@ -323,13 +323,12 @@ var createUniqueId= function(){
 };
 	
 var objectReplace= function(update){
-	var self= this;
-
-    $$.Object.keys(update).forEach(function(item){
+    
+    $$.Object.keys(update).forEach(item => {
 		if(typeof update[item] == 'object' && !$$.Array.isArray(update[item]) && update[item] !== null)
-			objectReplace.apply(self[item], [update[item]]);
+			objectReplace.apply(this[item], [update[item]]);
 		else
-			self[item]= update[item];
+			this[item]= update[item];
 	});
 };
 
@@ -374,7 +373,6 @@ var userAgentParser= function(userAgentString){
 		}
 	});
 
-	$$.console.log(found);
 	if(found.length == 1){
 		record.engine= found[0][0];
 		record.engineVersion= found[0][1];
@@ -385,7 +383,6 @@ var userAgentParser= function(userAgentString){
 			else
 				return 1;
 		});
-		$$.console.log(found);
 		record.engine= found[found.length-1][0];
 		record.engineVersion= found[found.length-1][1];
 	}else{
@@ -430,8 +427,8 @@ var Engine = {
 		renderModes : ['default'],
 		features : {
 			chromeLevel : ($$.location.protocol == 'chrome:' || $$.location.protocol == 'resource:'),
-			storrage : !Engine.features.chromeLevel && (function(){try{ return $$.sessionStorage && $$.localStorage; }catch(e){ return false; }})(),
-			indexedDB : !Engine.features.chromeLevel && (function(){try{ return $$.indexedDB; }catch(e){ return false; }})(),
+//			storrage : !Engine.features.chromeLevel && (function(){try{ return $$.sessionStorage && $$.localStorage; }catch(e){ return false; }})(),
+//			indexedDB : !Engine.features.chromeLevel && (function(){try{ return $$.indexedDB; }catch(e){ return false; }})(),
         	notifications : ($$.Notification) || false,
         	renderFrame : ($$.requestAnimationFrame) || false,
         	audio : ($$.Audio) || false,
@@ -525,7 +522,7 @@ var Engine = {
 
 		system : {
 			settings : function(settings){
-				objectReplace.apply(Engine.options, settings);
+				objectReplace.apply(Engine.options, [settings]);
 			},
 			info : function(){
 				return cloneObject(Engine.info);
@@ -587,7 +584,7 @@ var Engine = {
 		else
 			$$.console.error('scope does not exist!');
 	},
-	ready : new Promise.resolve()
+	ready : Promise.resolve()
 };
 
 // get the current Platform
@@ -596,7 +593,7 @@ var platform= null;
 // find out which engine is used
 if ($$.navigator){
 	Engine.info.type= 'Web';
-	objectReplace.apply(Engine.info, userAgentParser(navigator.userAgent));
+	objectReplace.apply(Engine.info, [userAgentParser(navigator.userAgent)]);
 
 //  check if touchscreen is supported
     $$.navigator.isTouch= 'ontouchstart' in $$;
@@ -604,23 +601,23 @@ if ($$.navigator){
 // check if current platform is the Mozilla Add-on runtime
 }else if($$.exports && $$.require && $$.module){
     var system= $$.require('sdk/system');
-	objectReplace.apply(Engine.info, {
+	objectReplace.apply(Engine.info, [{
 		engine : system.name,
 		engineVersion : system.version,
 		platform : system.platform + ' ' + system.platformVersion,
 		type : 'MozillaAddonSDK',
 		arch : system.architecture
-	});
+	}]);
 
 // check if current platform is the Node.js runtime
 }else if($$.process && $$.process.versions && $$.process.env && $$.process.pid){
-    objectReplace.apply(Engine.info, {
+    objectReplace.apply(Engine.info, [{
 		engine : $$.process.name,
 		engineVersion : $$.process.versions.node,
 		platform : $$.process.platform,
 		arch : $$.process.arch,
 		type : 'Node'
-	});
+	}]);
 }
 
 //  publish APIs

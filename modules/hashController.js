@@ -189,7 +189,7 @@ var Interface = {
 	}
 };
 
-export var hash = interface;
+export var hash = Interface;
 
 export var config = {
     main : 'hash',
