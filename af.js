@@ -10,8 +10,9 @@ export var $$= window; //(typeof global != 'undefined') ? window : global;
 var scopes= new $$.WeakMap();
 
 // Prototypes
+var prototypes = {};
 
-var Interface = {
+prototypes.Interface = {
 
     _make : function(scope){
         scopes.set(this, scope);
@@ -21,7 +22,7 @@ var Interface = {
 
 };
 
-var Catalog = {
+prototypes.Catalog = {
 
     _listeners : null,
 
@@ -79,10 +80,10 @@ var ApplicationScopePrivatePrototype = Make({
         scopes.get(this).listeners.push({ type : 'progress', listener : f });
     },
 
-}, Interface).get();
+}, prototypes.Interface).get();
 
 // this prototype defines a new application scope
-var ApplicationScope = {
+prototypes.ApplicationScope = {
     name : null,
     type : 'application',
     public : null,
@@ -96,11 +97,11 @@ var ApplicationScope = {
         var self= this;
 
         this.name= name;
-        this.public= Make(ApplicationScopeInterface)(this);
+        this.public= Make(prototypes.ApplicationScopeInterface)(this);
 
         this.workers= [];
         this.listeners= [];
-        this.modules = Make(Catalog)();
+        this.modules = Make(prototypes.Catalog)();
 
         this._make = null;
     },
@@ -125,7 +126,7 @@ var ApplicationScope = {
 
 // this prototype defines a new application scope interface
 	
-var ApplicationScopeInterface = Make({
+prototypes.ApplicationScopeInterface = Make({
 
 	on : function(type, listener){
 		var scope= scopes.get(this);
@@ -136,7 +137,7 @@ var ApplicationScopeInterface = Make({
 	thread : function(f){
 		var scope= scopes.get(this);
 
-        scope.workers.push(new ScopeWorker(f));
+        scope.workers.push(Make(prototypes.ScopeWorker)(f));
 	},
 
     prototype : function(object){
@@ -170,16 +171,16 @@ var ApplicationScopeInterface = Make({
         scope.getListeners('terminate').emit(type);
 	}
 
-}, Interface).get();
+}, prototypes.Interface).get();
 
 // this prototype defines a new mozilla addon scope
-var MozillaAddonScope = {
+prototypes.MozillaAddonScope = {
     name : 'addon',
     type : 'addon',
 	public : null,
 
     _make : function(){
-        this.public = Make(MozillaAddonScopeInterface)(this);
+        this.public = Make(prototypes.MozillaAddonScopeInterface)(this);
 
         var self = this;
         this.private=  {
@@ -195,11 +196,11 @@ var MozillaAddonScope = {
 	
 // this	prototype defines a new mozilla addon scope interface
 
-var MozillaAddonScopeInterface = Make({
+prototypes.MozillaAddonScopeInterface = Make({
 
-	create : ApplicationScopeInterface.main,
+	create : prototypes.ApplicationScopeInterface.main,
 
-	'module' : ApplicationScopeInterface.module,
+	'module' : prototypes.ApplicationScopeInterface.module,
 
 	modules : function(depsObject){
 		var scope= scopes.get(this);
@@ -244,17 +245,17 @@ var MozillaAddonScopeInterface = Make({
 			}
 		};
 	}
-}, Interface).get();
+}, prototypes.Interface).get();
 
 // this prototype defines a new service scope
-var ServiceScope = {
+prototypes.ServiceScope = {
 	thread : null,
 	isReady : false,
 	messageQueue : null,
 	public : null,
 
     _make : function(){
-        this.public = Make(ServiceScopeInterface)(this);
+        this.public = Make(prototypes.ServiceScopeInterface)(this);
         this.messageQueue = [];
 
         this._make = null;
@@ -263,7 +264,7 @@ var ServiceScope = {
 	
 // this prototype defines a new service scope loader
 	
-var ServiceScopeInterface = Make({
+prototypes.ServiceScopeInterface = Make({
 
 	talk : function(name, data){
 		var scope= scopes.get(this);
@@ -326,10 +327,10 @@ var ServiceScopeInterface = Make({
 //			source= $$.URL.revokeObjectURL(source);
 		});
 	}
-}, Interface).get();
+}, prototypes.Interface).get();
 
 // this prototype defines a new scope worker
-var ScopeWorker = {
+prototypes.ScopeWorker = {
     scope : null,
     thread : null,
     progressListeners : null,
@@ -361,7 +362,7 @@ var ScopeWorker = {
 
 // this prototype defines a new scope worker interface
 	
-var ScopeWorkerInterface = Make({
+prototypes.ScopeWorkerInterface = Make({
 	then : function(f){
 		return scopes.get(this).promise.then(f);
 	},
@@ -369,7 +370,7 @@ var ScopeWorkerInterface = Make({
 	onprogress : function(f){
 		scopes.get(this).progressListeners.push(f);
 	}
-}, Interface).get();
+}, prototypes.Interface).get();
 
 // Functions
 
@@ -556,7 +557,7 @@ var Engine = {
 
 		applications : {
 			'new' : function(name){
-				Engine.pushScope(new ApplicationScope(name));
+				Engine.pushScope(Make(prototypes.ApplicationScope)(name));
 				return {
 					name : name
 				};
@@ -565,7 +566,7 @@ var Engine = {
 
 		services : {
 			'new' : function(name){
-				Engine.pushScope(new ServiceScope(name));
+				Engine.pushScope(Make(prototypes.ServiceScope)(name));
 			},
 			setLoaderModule : function(url){
 				Engine.shared.serviceLoader= url;
@@ -638,7 +639,7 @@ var Engine = {
 			name= Engine.settings.applicationName;
 		
 		if(Engine.scopeList[name])
-			return Engine.scopeList[name];
+			return Engine.scopeList[name].public;
 		else
 			$$.console.error('scope does not exist!');
 	},
