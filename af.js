@@ -513,7 +513,10 @@ var Engine = {
         	computedStyle : ($$.getComputedStyle) || false,
         	deviceOrientation : ($$.DeviceOrientationEvent) || false,
         	spread : (function(){try{ return eval("var x; x= [1, 2, 3], (function(x, y, z){})(...x), true;"); }catch(e){ return false; }})()
-		}
+		},
+        moduleTypes : {
+            EXTENSION : 'extension'
+        }
 	},
 	itemLibrary : {
 		addon : (function(){
@@ -590,12 +593,18 @@ var Engine = {
 				return Engine.shared;
 			},
 			'import' : function(...modules){
-				Engine.ready= new Promise(function(ready){
+                var { moduleTypes } = Engine.shared;
+
+                Engine.ready= new Promise(function(ready){
 					Promise.all(modules.map(m => System.import(m))).then(modules => modules.forEach(m => {
 						if('config' in m){
 							if(m.config.main){
-								if(!(m.config.main in Engine.itemLibrary)){
+                                if(m.config.type && m.config.type == moduleTypes.EXTENSION){
+                                    m[m.config.main](prototypes, scopes);
+
+                                }else if(!(m.config.main in Engine.itemLibrary)){
 									Engine.itemLibrary[m.config.main]= m[m.config.main];
+
 								}else{
 									$$.console.warn('an other version of "'+ m.config.main +'" is already loaded!');
 								}
