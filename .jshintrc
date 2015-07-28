@@ -9,6 +9,7 @@
     "newcap" : false,
 	"globals" : {
 		"global" : false,
-        "System" : false
+        "System" : false,
+        "ServiceWorker" : false
 	}
 }
