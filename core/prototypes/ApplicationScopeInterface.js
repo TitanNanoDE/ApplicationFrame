@@ -12,16 +12,22 @@ export default Make({
 		var scope= Scopes.get(this);
 
         scope.listeners.push({ type : type, listener : listener });
+
+        return this;
 	},
 
 	thread : function(f){
 		var scope= Scopes.get(this);
 
         scope.workers.push(Make(Extendables.ScopeWorker)(f));
+
+        return this;
 	},
 
     prototype : function(object){
         Scopes.get(this).private = Make(object, ApplicationScopePrivatePrototype)(Scopes.get(this));
+
+        return this;
     },
 
 	main : function(f){
@@ -33,6 +39,8 @@ export default Make({
         scope.thread= f.bind(scope.private);
 
 		Engine.ready.then(scope.thread);
+
+        return this;
 	},
 
     module : function(name, dependencies, f){
@@ -43,6 +51,8 @@ export default Make({
                 f(scope, ready);
             }));
         });
+
+        return this;
     },
 
 	terminate : function(type){

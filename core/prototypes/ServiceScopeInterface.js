@@ -44,6 +44,8 @@ export default Make({
 				callback(e.data.data, setAnswer);
 			}
 		}, false);
+
+        return this;
 	},
 
 	main : function(source){
@@ -68,5 +70,7 @@ export default Make({
             scope.messageQueue = null;
 //			source= $$.URL.revokeObjectURL(source);
 		});
+
+        return this;
 	}
 }, Interface).get();

@@ -20,12 +20,16 @@ export default Make({
 			if(!scope.modules[key])
 				scope.modules[key]= depsObject[key];
 		});
+
+        return this;
 	},
 
 	hook : function(globalObject){
 		var scope= Scopes.get(this);
 
         scope.global= globalObject;
+
+        return this;
 	},
 
     dataURL : function(path){
@@ -55,5 +59,7 @@ export default Make({
 				});
 			}
 		};
+
+        return this;
 	}
 }, Interface).get();
