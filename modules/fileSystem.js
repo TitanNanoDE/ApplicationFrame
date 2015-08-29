@@ -11,6 +11,9 @@ var $$= (typeof window !== 'undefined') ? window : global;
 var db;
 var request= $$.indexedDB.open("pf.filesystem", 2);
 
+const DEFAULTSYSTEM = "main";
+
+
 request.onsuccess= function(){
 	db= request.result;
 	$$.console.log("ready!!");
@@ -81,8 +84,6 @@ var DBItemFile = {
         this._make = null;
     }
 };
-	
-var DEFAULTSYSTEM = "main";
 
 //export
 var saveFileTo= function(args){
