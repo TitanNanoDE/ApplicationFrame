@@ -4,7 +4,7 @@
 
 import { Make } from './util/make.js';
 import { objectExtend } from './util/functions.js';
-import Engine from './core/objects.js';
+import Engine from './core/objects/Engine.js';
 
 export var $$ = window; //(typeof global != 'undefined') ? window : global;
 
