@@ -41,7 +41,6 @@ var Engine = {
         	webSocket : (WebSocket) || false,
         	computedStyle : (getComputedStyle) || false,
         	deviceOrientation : ($$.DeviceOrientationEvent) || false,
-        	spread : (function(){try{ return eval("var x; x= [1, 2, 3], (function(x, y, z){})(...x), true;"); }catch(e){ return false; }})()
 		},
         moduleTypes : {
             EXTENSION : 'extension'
@@ -89,10 +88,11 @@ var Engine = {
 
 		applications : {
 			'new' : function(name){
-				Engine.pushScope(Make(ApplicationScope)(name));
-				return {
-					name : name
-				};
+                var scope = Make(ApplicationScope)(name);
+
+				Engine.pushScope(scope);
+
+				return scope;
 			}
 		},
 
