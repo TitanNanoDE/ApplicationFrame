@@ -1,11 +1,22 @@
+var apply = function (target, source) {
+    Object.keys(source).forEach(function(key){
+        Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
+    });
+
+    return target;
+};
+
 export var Make = function(object, prototype) {
     if(arguments.length < 2){
         prototype = object;
-        object = {};
+        object = null;
     }
 
-    Object.setPrototypeOf(object, prototype);
-
+    if (object === null) {
+        object = Object.create(prototype);
+    } else {
+        object = apply(Object.create(prototype), object);
+    }
 
     var m = function(...args){
         var make = prototype.make || prototype._make || function(){};
