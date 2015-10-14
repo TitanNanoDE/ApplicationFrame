@@ -13,80 +13,80 @@ var apply= function(target, features){
 	});
 };
 
-export var dom= function(item){
+var append= function(element){
+    return this.appendChild(element);
+};
 
-	var append= function(element){
-		return this.appendChild(element);
-	};
+var classes= function(...classes){
+    var list= this.className.split(' ');
+    var add= [];
+    var remove= [];
+    classes.forEach(item => {
+        if(item.substr(0, 1) == '-')
+            remove.push(item.substr(1));
+        else if(item.substr(0, 1) == '+')
+            add.push(item.substr(1));
+        else
+            add.push(item);
+    });
 
-	var classes= function(...classes){
-		var list= this.className.split(' ');
-		var add= [];
-		var remove= [];
-		classes.forEach(item => {
-			if(item.substr(0, 1) == '-')
-				remove.push(item.substr(1));
-			else if(item.substr(0, 1) == '+')
-				add.push(item.substr(1));
-			else
-				add.push(item);
-		});
+    remove.forEach(item => {
+        if(list.indexOf(item) > -1)
+            list.splice(list.indexOf(item), 1);
+    });
 
-		remove.forEach(item => {
-			if(list.indexOf(item) > -1)
-				list.splice(list.indexOf(item), 1);
-		});
+    add.forEach(item => {
+        if(list.indexOf(item) < 0)
+            list.push(item);
+    });
 
-		add.forEach(item => {
-			if(list.indexOf(item) < 0)
-				list.push(item);
-		});
+    this.className= list.join(' ');
+};
 
-		this.className= list.join(' ');
-	};
+var css= function(properties, extend){
+    if(extend){
+        var current= {};
+        properties.split(';').forEach(item => {
+            var [key, value] = item.split(':');
+            current[key]= value;
+        });
 
-	var css= function(properties, extend){
-		if(extend){
-			var current= {};
-			properties.split(';').forEach(item => {
-				var [key, value] = item.split(':');
-				current[key]= value;
-			});
+        Object.keys(properties).forEach(key => {
+            if(properties[key] === null)
+                delete current[key];
+            else
+                current[key]= properties[key];
+        });
 
-			Object.keys(properties).forEach(key => {
-				if(properties[key] === null)
-					delete current[key];
-				else
-					current[key]= properties[key];
-			});
+        this.style.cssText= Object.keys(current).map(key => key + ':' + current[key]).join(';');
+    }else{
+        this.style.cssText= Object.keys(properties).map(key => key + ':' + properties[key]).join(';');
+    }
+};
 
-			this.style.cssText= Object.keys(current).map(key => key + ':' + current[key]).join(';');
-		}else{
-			this.style.cssText= Object.keys(properties).map(key => key + ':' + properties[key]).join(';');
-		}
-	};
+var replace= function(node){
+    if(node instanceof Node){
+        this.parentNode.replaceChild(node, this);
+    }
+};
 
-	var replace= function(node){
-		if(node instanceof Node){
-			this.parentNode.replaceChild(node, this);
-		}
-	};
-
-    var transition= function(...items){
-		return new Promise(function(setValue){
+var transition= function(...items){
+    return new Promise(function(setValue){
 //     		set event listener
-			this.addEventListener('transitionend', function x(e){
-				this.removeEventListener('transitionend', x);
-                setValue(this, e);
-            });
+        this.addEventListener('transitionend', function x(e){
+            this.removeEventListener('transitionend', x);
+            setValue(this, e);
+        });
 
-			classes.apply(this, items);
-        }.bind(this));
-    };
+        classes.apply(this, items);
+    }.bind(this));
+};
 
-	var remove= function(){
-		this.parentNode.removeChild(this);
-	};
+var remove= function(){
+    this.parentNode.removeChild(this);
+};
+
+export var dom= function(item){
 
 	var features= {
 		append : append,

@@ -14,7 +14,7 @@ var hash= {
 	overrides : {},
 	target : null
 };
-        
+
 //      Classes
 var HashEvent = {
 
@@ -82,14 +82,14 @@ var Interface = {
 	down : function(newElement){
 		$$.location.hash+= '/' + newElement;
 	},
-        
+
 	up : function(){
 		var hash= $$.location.hash.split('/');
 		hash.shift();
 		hash.pop();
 		$$.location.hash= '!/' + hash.join('/');
 	},
-        
+
 	swichTo : function(path){
 		$$.location.hash= '!' + path;
 	},
@@ -135,7 +135,7 @@ var Interface = {
 			var path= '';
 			for(var i= 0; i < hash.path.length; i++){
 				path+= '/' + hash.path[i];
-        
+
 				if(difference)
 					events_lost.push(new HashEvent(HashEvent_LOST, path));
 				else if(hash.path[i] == hashPath[i])

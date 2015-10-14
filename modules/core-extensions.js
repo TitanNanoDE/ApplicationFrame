@@ -4,7 +4,7 @@ import { Make } from 'util/make';
 
 var apply= function($$){
 	"use strict";
-	
+
 	var ListExtension = Make({
         last : function(){
             return this[this.length -1];

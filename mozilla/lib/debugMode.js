@@ -1,5 +1,5 @@
 
-this.$$= this;
+var $$= this;
 var { $_ }= $$.require('af/core');
 
 $_('addon').hook($$);
@@ -9,7 +9,7 @@ $_('addon').modules({
     'self' : $$.require('sdk/self')
 });
 
-$_('addon').module(function(){    
+$_('addon').module(function(){
     var prefName= 'extensions.'+$_('self').id+'.sdk.console.logLevel';
     this.enabled= function(value){
         var status= (value) ? 'debug' : 'error';

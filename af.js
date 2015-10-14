@@ -6,8 +6,7 @@ import { Make } from './util/make.js';
 import { objectExtend } from './util/functions.js';
 import Engine from './core/objects/Engine.js';
 
-export var $$ = window; //(typeof global != 'undefined') ? window : global;
-
+var $$ = window || global;
 
 var userAgentParser= function(userAgentString){
 	var items= [];
@@ -92,17 +91,14 @@ var userAgentParser= function(userAgentString){
 	return record;
 };
 
-// get the current Platform
-var platform= null;    
-
 // find out which engine is used
 if ($$.navigator){
 	Engine.info.type= 'Web';
 	objectExtend.apply(Engine.info, [userAgentParser(navigator.userAgent)]);
 
 //  check if touchscreen is supported
-    $$.navigator.isTouch= 'ontouchstart' in $$;
-    
+    $$.navigator.isTouch = 'ontouchstart' in $$;
+
 // check if current platform is the Mozilla Add-on runtime
 }else if($$.exports && $$.require && $$.module){
     var system= $$.require('sdk/system');

@@ -11,7 +11,7 @@ import { classes } from 'modules/classes';
 
 var $$ = window;
 
-var { Prototype, Accessor } = classes;
+var { Accessor } = classes;
 var { attributes } = Make(Accessor)();
 
 // Functions
@@ -23,10 +23,10 @@ var getZLevelMax= function(element){
     });
     return max;
 };
-        
+
 var sortElements= function(element, zLevels){
     var newOrder= [];
-    var loop= function(item){
+    var loop= function(item, i){
         if(item.zLevel == i)
             newOrder.push(item);
     };
@@ -35,7 +35,7 @@ var sortElements= function(element, zLevels){
     }
     element._elements= newOrder;
 };
-        
+
 var layerRender= function(context, canvas){
 //  sortElements
     var { closed } = attributes(this);
@@ -60,7 +60,7 @@ var Context = {
         this.xOffset-= x;
     }
 };
-        
+
 var verifyOpacity= function(n){
     if(n > 1)
         return 1;
@@ -69,7 +69,7 @@ var verifyOpacity= function(n){
     else
         return n;
 };
-        
+
 // Classes
 var Canvas = {
 
@@ -157,13 +157,13 @@ var Canvas = {
                 closed.fpsOverlay.elements(3).content= 'FPS Lock: ' + ((open.fpsLock) ? 'on' : 'off');
                 closed.fpsOverlay.render(context, closed.context);
             }
-                    
+
             var duration= (Date.now() - closed.renderStart) / 1000;
             var renderTime= (Date.now() - start) / 1000;
             closed.fps=  1 / duration;
             closed.frames++;
             var c= this;
-                    
+
 //          fps lock
             if(this.fpsLock){
                 var timeForFrame= 1 / this.maxFps;
@@ -257,7 +257,7 @@ var Layer = {
         this.zLevel= zLevel || 0;
         this.x= x || 0;
         this.y= y || 0;
-        
+
         this._make = null;
     },
 
@@ -276,7 +276,7 @@ var Layer = {
 
     checkMouse : function(mouse, context){
         var element= null;
-        var { open, closed } = attributes(this);
+        var { closed } = attributes(this);
 
         context.addOffset(this.x, this.y);
         sortElements(this, getZLevelMax(this));
@@ -290,7 +290,7 @@ var Layer = {
     },
 
     checkClick : function(mouse, context){
-        var { open, closed } = attributes(this);
+        var { closed } = attributes(this);
         context.addOffset(this.x, this.y);
         sortElements(this, getZLevelMax(this));
         for(var i= closed.elements.length-1; i >= 0; i--){
@@ -322,7 +322,7 @@ var RectShapeElement = {
     onclick : function(){},
 
     _make : function(x, y, zLevel, width, height){
-        var { open, closed } = attributes(this, {
+        attributes(this, {
             mouse : false
         });
         this.x= x || 0;
@@ -375,7 +375,7 @@ var RectShapeElement = {
         }
     }
 };
-        
+
 var FilledRect= function(x, y, width, height, color, zLevel){
     RectShapeElement.apply(this, [x, y, width, height, zLevel]);
     this.cursor= null;
@@ -409,12 +409,12 @@ var CImage =  Make({
 
     _make : function(source, x, y, zLevel){
         Object.getPrototypeOf(this)._make.apply(this, [x, y, null, null, zLevel]);
-        
+
         attributes(this, {
             width : null,
             height : null
         });
-        
+
         this.source = source;
     },
 
@@ -538,7 +538,7 @@ var ImageCrop = {
         this.left= left || 0;
     }
 };
-        
+
 // animations
 var fadeOut= function(element, time, callback){
     var timeOut= 20; // milliseconds
@@ -579,7 +579,7 @@ var fadeIn= function(element, time, callback){
     element.opacity= 0;
     update();
 };
-        
+
 var zoomIn= function(element, target, amount, time, callback){
     if(!(element instanceof CImage)){
         $$.console.error('element is not a instance of CImage');
@@ -610,7 +610,7 @@ var zoomIn= function(element, target, amount, time, callback){
         element.crop= new ImageCrop();
     update();
 };
-        
+
 var zoomOut= function(element, target, amount, time, callback){
     if(!(element instanceof CImage)){
         $$.console.error('element is not a instance of CImage');
