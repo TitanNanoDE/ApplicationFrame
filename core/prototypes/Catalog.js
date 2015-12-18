@@ -1,4 +1,4 @@
-export default {
+let Catalog = {
 
     _listeners : null,
 
@@ -38,3 +38,5 @@ export default {
         });
     }
 };
+
+export default Catalog;

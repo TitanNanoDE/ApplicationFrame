@@ -1,4 +1,4 @@
-export default {
+let EventManager = {
     listeners : null,
 
     _make : function(){
@@ -16,10 +16,16 @@ export default {
 	},
 
 	dispatchEvent : function(event){
-		this.listeners.forEach(item => {
-			if(item.type === event.type){
-				item.listener(event);
-			}
-		});
-	}
+        setTimeout(() => {
+            this.listeners.forEach(item => {
+                if(item.type === event.type){
+                    setTimeout(() => {
+                        item.listener(event);
+                    }, 0);
+                }
+            });
+        }, 0);
+    }
 };
+
+export default EventManager;

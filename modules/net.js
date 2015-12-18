@@ -60,7 +60,7 @@ var createOAuthNonce= function(){
 };
 
 var socketPrivateStorage= new $$.WeakMap();
-		
+
 var Socket = {
 
     _make : function(type, url, options){
@@ -80,11 +80,11 @@ var Socket = {
     get lastMessage(){
         return socketPrivateStorage.get(this).lastMessage;
     },
-            
+
     get open(){
         return socketPrivateStorage.get(this).open;
     },
-            
+
     push : function(message, headers){
         var self= socketPrivateStorage.get(this);
         var selfPublic= this;
@@ -386,7 +386,7 @@ var request= function(url, options){
         xhr.send();
     });
 };
-		
+
 var require= function(url){
     var xhr= new $$.XMLHttpRequest();
     xhr.open('GET', url, false);

@@ -22,12 +22,12 @@ request.onsuccess= function(){
 request.onerror= function(){
 	$$.console.error("Fehler beim verbinden mit der Datenbank!!");
 };
-        
+
 request.onupgradeneeded= function(event){
 	var db= event.target.result;
 	var system= DEFAULTSYSTEM;
 	var storage;
-            
+
 // 	upgrade to version 1
 	if(event.oldVersion < 1){
 		storage = db.createObjectStore(system, { keyPath: "path" });
@@ -37,7 +37,7 @@ request.onupgradeneeded= function(event){
 	}else{
 		storage= db.transaction(system, "readwrite").objectStore(system);
 	}
-	
+
 //  upgrade to version 2
 	if(event.oldVersion < 2){
 		storage.createIndex("mimeType", "mimeType", { unique : false });
@@ -66,7 +66,7 @@ var TNFile = {
 		saveFileTo({file : this, path : path, system : system});
 	}
 };
-	
+
 var DBItemFile = {
     name : '',
     type : null,
@@ -135,7 +135,7 @@ var removeFile= function(args, callback){
 		callback(true);
 	};
 };
-            
+
 var getStaticFilePointerFromPath= function(args, callback){
 	var system= args.system || this.DEFAULTSYSTEM;
 	var storage= db.transaction(system, "readonly").objectStore(system);
@@ -161,7 +161,7 @@ var getStaticFilePointerFromPath= function(args, callback){
 var getStaticFilePointerFromFile= function(){
 // @ToDo: implement this!! basically just call URL.createObjectURL...
 };
-		
+
 var getFileList= function(args, callback){
 	var system= args.system || this.DEFAULTSYSTEM;
 	var storage= db.transaction(system, "readonly").objectStore(system);

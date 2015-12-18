@@ -1,13 +1,21 @@
-//Application Frame v0.1.0 - copyright by TitanNano / Jovan Ggerodetti - http://www.titannano.de
+/**
+ * @module ApplicationFrame
+ * @version 0.1.0
+ * @copyright by TitanNano / Jovan Gerodetti - {@link http://www.titannano.de}
+ */
 
 "use strict";
 
-import { Make } from './util/make.js';
+// import { Make } from './util/make.js';
 import { objectExtend } from './util/functions.js';
 import Engine from './core/objects/Engine.js';
 
 var $$ = window || global;
 
+/**
+ * @param {navigator.userAgent} userAgentString
+ * @return {UserAgent}
+ */
 var userAgentParser= function(userAgentString){
 	var items= [];
 	var current= '';
@@ -121,6 +129,14 @@ if ($$.navigator){
 	}]);
 }
 
-//  publish APIs
+/**
+ * @type {module:Engine~Engine.getLibraryItem}
+ * @static
+ */
 export var $= Engine.getLibraryItem;
+
+/**
+ * @type {module:Engine~Engine.getScope}
+ * @static
+ */
 export var $_= Engine.getScope;

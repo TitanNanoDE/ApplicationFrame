@@ -5,7 +5,7 @@
  * License. - http://www.apache.org/licenses/LICENSE-2.0         *
  *****************************************************************/
 
-export var b64= {
+export var b64 = {
     decode : function(string){
         var catalog= "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         var buffer= new ArrayBuffer((string.length * 6) / 8);

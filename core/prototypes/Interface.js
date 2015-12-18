@@ -1,6 +1,6 @@
 import Scopes from '../objects/Scopes.js';
 
-export default {
+let Interface = {
 
     _make : function(scope){
         Scopes.set(this, scope);
@@ -9,3 +9,5 @@ export default {
     }
 
 };
+
+export default Interface;

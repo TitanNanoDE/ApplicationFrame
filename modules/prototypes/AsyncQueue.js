@@ -19,8 +19,7 @@ export default {
     },
 
     push : function(...args){
-        var self= this;
-		return new Promise(function(done){
+		return new Promise(done => {
             args.push(done);
             this.queue.push(args);
 
@@ -28,6 +27,6 @@ export default {
                 this.active= true;
                 this.next();
             }
-		}.bind(this)).then(value => self.next());
+		}).then(() => this.next());
 	}
 };

@@ -1,3 +1,10 @@
+/**
+ * @module Engine
+ * @author Jovan Gerodetti <jovan@titannao.de>
+ * @copyright by TitanNano / Jovan Gerodetti - {@link http://www.titannano.de}
+ * @role Inner
+ */
+
 import { Make } from '../../util/make.js';
 import { objectExtend, cloneObject, createUniqueId } from '../..util/functions.js';
 import ApplicationScope from './core/prototypes/ApplicaionScope.js';
@@ -7,12 +14,32 @@ import Extendables from '../objects/Extendables.js';
 
 var $$ = window;
 
-// Engine
-//The engine holds private flags, arrays and functions.
+/**
+ * The engine holds private flags, arrays and functions.
+ *
+ * @namespace
+ * @inner
+ */
 var Engine = {
+
+	/**
+	 * @namespace
+	 */
 	shared : {
+
+		/**
+		 * @type {string}
+		 */
 		serviceLoader : '',
+
+		/**
+		 * @type {string[]}
+		 */
 		renderModes : ['default'],
+
+		/**
+		 * @type {Object}
+		 */
 		features : {
 			chromeLevel : (location.protocol == 'chrome:' || location.protocol == 'resource:'),
 //			storrage : !Engine.features.chromeLevel && (function(){try{ return sessionStorage && localStorage; }catch(e){ return false; }})(),
@@ -42,11 +69,24 @@ var Engine = {
         	computedStyle : (getComputedStyle) || false,
         	deviceOrientation : ($$.DeviceOrientationEvent) || false,
 		},
+
+		/**
+		 * @type {Object}
+		 * @property {string} EXTENSION
+		 */
         moduleTypes : {
             EXTENSION : 'extension'
         }
 	},
+
+	/**
+	 * @namespace
+	 */
 	itemLibrary : {
+
+		/**
+		 * @type {module:Engine~LibraryItem}
+		 */
 		addon : (function(){
 			var self= {};
 
@@ -86,6 +126,9 @@ var Engine = {
 				return null;
 		})(),
 
+		/**
+		 * @type module:Engine~LibraryItem
+		 */
 		applications : {
 			'new' : function(name){
                 var scope = Make(ApplicationScope)(name);
@@ -96,6 +139,9 @@ var Engine = {
 			}
 		},
 
+		/**
+		 * @type module:Engine~LibraryItem
+		 */
 		services : {
 			'new' : function(name){
 				Engine.pushScope(Make(ServiceScope)(name));
@@ -105,12 +151,18 @@ var Engine = {
 			}
 		},
 
+		/**
+		 * @type {module:Engine~LibraryItem}
+		 */
 		wrap : function(source){
 			return new Promise(function(done){
 				done(source.apply({}));
 			});
 		},
 
+		/**
+		 * @type {module:Engine~LibraryItem}
+		 */
 		system : {
 			settings : function(settings){
 				objectExtend.apply(Engine.options, [settings]);
@@ -146,11 +198,25 @@ var Engine = {
 			}
 		}
 	},
+
+	/**
+	 * @type {Object}
+	 * @property {string} applicationName
+	 * @property {string} renderMode
+	 * @property {string} override
+	 */
 	options : {
 		applicationName : '',
 		renderMode : 'default',
 		override : 'false'
 	},
+
+	/**
+	 * @type {Object}
+	 * @property {string} engine
+	 * @property {string} engineVersion
+	 * @property {string} platform
+	 */
 	info : {
 		engine : 'unknown',
     	engineVersion : '1',
@@ -158,7 +224,18 @@ var Engine = {
     	arch : 'x32',
     	type : 'unknown'
 	},
+
+	/**
+	 * @type {Object}
+	 */
 	scopeList : {},
+
+	/**
+	 * @param {string} name
+	 *
+	 *//**
+	 * @param {object} name
+	 */
 	getLibraryItem : function(name){
 		if(typeof name == 'string'){
 			return Engine.itemLibrary[name];
@@ -166,12 +243,21 @@ var Engine = {
 			return Engine.itemLibrary[name.name];
 		}
 	},
+
+	/**
+	 * @param {Scope} scope
+	 */
 	pushScope : function(scope){
 		if(!this.scopeList[scope.name] && scope.name != "application")
 			this.scopeList[scope.name]= scope;
 		else
 			console.error('a scope with this name does already exist!');
 	},
+
+	/**
+	 * @param {string} name
+     * @return {ApplicaionScopeInterface}
+	 */
 	getScope : function(name){
 		if(name == 'application')
 			name= Engine.settings.applicationName;
@@ -181,7 +267,16 @@ var Engine = {
 		else
 			console.error('scope does not exist!');
 	},
+
+	/**
+	 * @type {external:System.Promise}
+	 */
 	ready : Promise.resolve()
 };
 
+/**
+ * @member Engine
+ * @type {module:Engine~Engine}
+ * @memberof module:Engine
+ */
 export default Engine;
