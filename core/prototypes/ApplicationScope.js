@@ -1,5 +1,5 @@
 import { Make } from '../../util/make.js';
-import Catalog from '../../util/Catalog.js';
+import Catalog from './Catalog.js';
 import Extendables from '../objects/Extendables.js';
 
 
@@ -38,7 +38,7 @@ let ApplicationScope = {
     workers : null,
 
     /**
-     * @type {Array}
+     * @type {Object}
      */
     listeners : null,
 
@@ -59,30 +59,10 @@ let ApplicationScope = {
         this.public= Make(Extendables.ApplicationScopeInterface)(this);
 
         this.workers= [];
-        this.listeners= [];
+        this.listeners= {};
         this.modules = Make(Catalog)();
 
         this._make = null;
-    },
-
-    /**
-     * @param {string} type
-     */
-    getListeners : function(type){
-        var list= [];
-
-        list.emit= function(value){
-            this.forEach(function(item){
-                item.listener(value);
-            });
-        };
-
-        this.listeners.forEach(function(item){
-            if(item.type === type)
-                list.push(item);
-        });
-
-        return list;
     }
 };
 

@@ -6,11 +6,11 @@
  */
 
 import { Make } from '../../util/make.js';
-import { objectExtend, cloneObject, createUniqueId } from '../..util/functions.js';
-import ApplicationScope from './core/prototypes/ApplicaionScope.js';
-import ServiceScope from './core/protypes/ServiceScope.js';
-import Scopes from './core/objects/Scopes.js';
-import Extendables from '../objects/Extendables.js';
+import { objectExtend, cloneObject, createUniqueId } from '../../util/functions.js';
+import ApplicationScope from '../prototypes/ApplicationScope.js';
+import ServiceScope from '../prototypes/ServiceScope.js';
+import Scopes from './Scopes.js';
+import Extendables from './Extendables.js';
 
 var $$ = window;
 
@@ -135,7 +135,7 @@ var Engine = {
 
 				Engine.pushScope(scope);
 
-				return scope;
+				return scope.public;
 			}
 		},
 

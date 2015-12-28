@@ -1,5 +1,5 @@
 import { Make } from '../../util/make.js';
-import { createUniqueId } from '../util/functions.js';
+import { createUniqueId } from '../../util/functions.js';
 import Scopes from '../objects/Scopes.js';
 import Interface from './Interface.js';
 import Engine from '../objects/Engine.js';

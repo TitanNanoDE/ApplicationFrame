@@ -1,17 +1,17 @@
 /* global require */
 
 import { Make } from '../../util/make.js';
-import { createUniqueId } from '../util/functions.js';
+import { createUniqueId } from '../../util/functions.js';
 import Scopes from '../objects/Scopes.js';
-import Extendables from '../objects/Extendables.js';
+import ApplicationScopeInterface from './ApplicationScopeInterface.js';
 import Interface from './Interface.js';
 
 // this	prototype defines a new mozilla addon scope interface
 export default Make({
 
-	create : Extendables.ApplicationScopeInterface.main,
+	create : ApplicationScopeInterface.main,
 
-	'module' : Extendables.ApplicationScopeInterface.module,
+	'module' : ApplicationScopeInterface.module,
 
 	modules : function(depsObject){
 		var scope= Scopes.get(this);
@@ -32,10 +32,10 @@ export default Make({
         return this;
 	},
 
-    dataURL : function(path){
-		var prefixURI= require('@loader/options').prefixURI;
+    dataURL : function(){
+//		var prefixURI= require('@loader/options').prefixURI;
 
-        return (prefixURI + 'af/lib/') + (path || '');
+//        return (prefixURI + 'af/lib/') + (path || '');
     },
 
     talkTo : function(worker){

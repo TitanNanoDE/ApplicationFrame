@@ -46,7 +46,7 @@ export var Make = function(object, prototype) {
     }
 
     var m = function(...args){
-        var make = prototype.make || prototype._make || function(){};
+        var make = object.make || object._make || function(){};
 
         make.apply(object, args);
 
@@ -69,7 +69,7 @@ export var Make = function(object, prototype) {
 export var hasPrototype = function(object, prototype){
     var p = Object.getPrototypeOf(object);
 
-    while(p !== null){
+    while(p !== null && p !== undefined){
         if(typeof prototype == 'function')
             prototype = prototype.prototype;
 
@@ -90,7 +90,7 @@ export var hasPrototype = function(object, prototype){
  * @param {...Object} prototypes
  * @return {Proxy}
  */
-export var mixin = function(...prototypes){
+export var Mixin = function(...prototypes){
 
     return new Proxy(prototypes, MixinTrap);
 
@@ -107,7 +107,7 @@ var findProperty = function(prototypes, key) {
     for (var i = 0; i < prototypes.length; i++) {
         var item = prototypes[i];
 
-        if (item[key]) {
+        if (item && item[key]) {
             return item;
         }
     }
@@ -122,6 +122,10 @@ var MixinTrap = {
 
     'get' : function(prototypes, key) {
         var object = findProperty(prototypes, key);
+
+        if (object && typeof object[key] === 'function') {
+            return object[key].bind(object);
+        }
 
         return (object ? object[key] : null);
     },

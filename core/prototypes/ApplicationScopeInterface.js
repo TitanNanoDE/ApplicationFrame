@@ -22,11 +22,33 @@ let ApplicationScopeInterface = Make(
      * @param {function} listener
      */
     on : function(type, listener){
-        var scope= Scopes.get(this);
+        var scope = Scopes.get(this);
 
-        scope.listeners.push({ type : type, listener : listener });
+        if (!scope.listeners[type]) {
+            scope.listeners[type] = [];
+        }
+
+        scope.listeners[type].push(listener);
 
         return this;
+    },
+
+    /**
+     * Emmits a new event on this application.
+     *
+     * @param {string} type
+     * @param {Object} data
+     */
+    emit : function(type, data){
+        let scope = Scopes.get(this);
+
+        if (scope.listeners[type]) {
+            scope.listeners[type].forEach(f => {
+                setTimeout(function(){
+                    f(data);
+                }, 0);
+            });
+        }
     },
 
     /**
@@ -99,9 +121,7 @@ let ApplicationScopeInterface = Make(
      * @param {string} reason - the reason for the termination.
      */
     terminate : function(reason){
-        var scope= Scopes.get(this);
-
-        scope.getListeners('terminate').emit(reason);
+        this.emmit('terminate', reason);
     }
 
 }, Interface).get();
