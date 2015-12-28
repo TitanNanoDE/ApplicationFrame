@@ -1,4 +1,4 @@
-import { Make, hasPrototype } from '../../util/Make.js';
+import { Make, hasPrototype } from '../../util/make.js';
 import { ObjectParser, parseExpression, assignExpression } from './Parser.js';
 import { attributeNames } from './Mapping.js';
 import { selectElement } from './Util.js';

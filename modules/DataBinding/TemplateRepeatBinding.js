@@ -1,4 +1,4 @@
-import { Make } from '../../util/Make.js';
+import { Make } from '../../util/make.js';
 import Binding from './Binding.js';
 import { parseExpression } from './Parser.js';
 import { bindNode } from './Bind.js';
