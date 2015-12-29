@@ -1,4 +1,4 @@
-import { Mixin, hasPrototype } from 'af/util/make.js';
+import { Mixin, hasPrototype } from '../../util/make.js';
 
 /**
  * selects a dom node by the given query.

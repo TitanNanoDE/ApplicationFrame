@@ -1,4 +1,4 @@
-import { hasPrototype } from 'af/util/make.js';
+import { hasPrototype } from '../../util/make.js';
 import { parseExpression } from './Parser.js';
 import { polyMask } from './Util.js';
 
