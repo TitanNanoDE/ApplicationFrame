@@ -9,6 +9,8 @@
 // import { Make } from './util/make.js';
 import { objectExtend } from './util/functions.js';
 import Engine from './core/objects/Engine.js';
+import { Make, hasPrototype, Mixin } from './util/make.js';
+import Application from './core/prototypes/Application.js';
 
 var $$ = window || global;
 
@@ -140,3 +142,15 @@ export var $= Engine.getLibraryItem;
  * @static
  */
 export var $_= Engine.getScope;
+
+export default {
+    Util : {
+        Make : Make,
+        hasPrototype : hasPrototype,
+        Mixin : Mixin
+    },
+
+    Prototypes : {
+        Application : Application
+    }
+};

@@ -1,4 +1,4 @@
-import { recycle, watcherList } from './Bind.js';
+import { recycle, watcherList, destoryScope } from './Bind.js';
 
 /**
  * Prototype for data binding scopes.
@@ -27,6 +27,10 @@ let ScopePrototype = {
             expression : expression,
             cb : cb
         });
+    },
+
+    __destroy__ : function() {
+        destoryScope(this);
     }
 };
 

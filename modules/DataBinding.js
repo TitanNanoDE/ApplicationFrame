@@ -1,6 +1,7 @@
 //import CryptoJS from '../libs/CryptoJS-SHA-3.js';
 import { makeTemplate } from './DataBinding/Template.js';
 import { bindNode } from './DataBinding/Bind.js';
+import ViewPort from './DataBinding/ViewPort.js';
 
 /**
  * @module DataBinding
@@ -43,7 +44,8 @@ document.head.appendChild(style);
 
 export let DataBinding = {
     makeTemplate : makeTemplate,
-    bindNode : bindNode
+    bindNode : bindNode,
+    ViewPort : ViewPort,
 };
 
 export let config = {

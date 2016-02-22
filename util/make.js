@@ -138,5 +138,7 @@ var MixinTrap = {
         } else {
             prototypes[0][key] = value;
         }
+
+        return true;
     }
 };

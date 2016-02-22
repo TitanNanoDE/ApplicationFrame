@@ -91,6 +91,8 @@ let checkNode = function(node, scope, parentNode) {
     } else if(node.localName === 'template'){
         let repeatedTemplate = (node.hasAttribute('replace') && node.hasAttribute('repeat'));
 
+        node.attributes.forEach(child => checkNode(child, scope, node));
+
         if (repeatedTemplate) {
             bindTemplateRepeat(node, scopeInfo);
         }
@@ -304,6 +306,12 @@ export let recycle = function (scope) {
     } else {
         console.log(`full recycle in ${duration}s`);
     }
+};
+
+export let destoryScope = function(scope) {
+    scopeList.delete(scope);
+    scopeIndex.splice(scopeIndex.indexOf(scope), 1);
+    watcherList.delete(scope);
 };
 
 /**

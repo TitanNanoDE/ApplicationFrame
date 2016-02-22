@@ -1,18 +1,20 @@
-import { hasPrototype } from '../../util/make.js';
+import { Make } from '../../util/make.js';
 import { bindNode } from './Bind.js';
-import { selectElement, selectAllElements, unwrapPolymerNode } from './Util.js';
+import { selectElement, selectAllElements, polyMask } from './Util.js';
+import { importTemplate } from './TemplateLoader.js';
+import ScopePrototype from './ScopePrototype.js';
 
 let makeElementFromTemplate = function(template, scope, application, item) {
     let node = template.content.cloneNode(true);
     let placeholder = selectElement('bind-placeholder', node);
 
-    item = unwrapPolymerNode(item);
+    item = polyMask(item);
 
     item.attributes.forEach(attr => {
         node.firstElementChild.setAttribute(attr.name, attr.value);
     });
 
-    if (placeholder) {
+    if (placeholder.bare) {
         let node = item.firstElementChild;
         placeholder.parentNode.replaceChild(item.firstElementChild, placeholder.bare);
 
@@ -30,6 +32,10 @@ let makeElementFromTemplate = function(template, scope, application, item) {
             scope[item.name.replace(/^scope\-/, '')] = item.value;
         }
     }]);
+
+    if (template.hasAttribute('component')) {
+        scope.element = node.firstElementChild;
+    }
 
     scope = bindNode(node, scope);
 
@@ -50,9 +56,22 @@ let makeElementFromTemplate = function(template, scope, application, item) {
  * @return {Object}
  */
 export let makeTemplate = function (template, scope, application) {
-    template = hasPrototype(template, Node) ? template : selectElement(template);
+    template = (typeof template === 'string') ? selectElement(template) : polyMask(template);
 
-    if (template.hasAttribute('bind-element')) {
+    if (template.hasAttribute('src') && !template.processed) {
+        let source = template.getAttribute('src');
+
+        scope = Make(scope, ScopePrototype)();
+
+        importTemplate(source, template)
+            .then(template => {
+                template.processed = true;
+                makeTemplate(template, scope, application)
+            });
+
+        return scope;
+
+    } else if (template.hasAttribute('bind-element')) {
         let makeElement = makeElementFromTemplate.bind(this, template, scope, application);
         let list = selectAllElements(template.id);
 

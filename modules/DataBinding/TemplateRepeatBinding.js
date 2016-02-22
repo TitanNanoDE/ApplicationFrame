@@ -12,6 +12,11 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
     itemNodeList : null,
 
     /**
+     * @type {WeakMap<ScopePrototype>}
+     */
+    itemScopeList : null,
+
+    /**
      * @type {Node}
      */
     template : null,
@@ -34,7 +39,53 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
         Binding._make.apply(this);
 
         this.itemNodeList = new WeakMap();
+        this.itemScopeList = new WeakMap();
         this.modelBackup = [];
+    },
+
+    renderItem : function(model, scope, itemName, cursor, polyParent, item, index){
+        let node = null;
+
+        if (this.itemNodeList.has(item)) {
+            node = this.itemNodeList.get(item);
+            let childScope = this.itemScopeList.get(item);
+
+            childScope.$first = index === 0;
+            childScope.$last = model.length -1 === index;
+            childScope.$index = index;
+        } else {
+            let childScope = Make({
+                $first : index === 0,
+                $last : model.length-1 === index,
+                $index : index
+            }, scope).get();
+
+            childScope[itemName] = item;
+
+            node = this.template.content.cloneNode(true).firstElementChild;
+            bindNode(node, childScope, true);
+
+            this.itemNodeList.set(item, node);
+            this.itemScopeList.set(item, childScope);
+        }
+
+        if (cursor.value && cursor.value.parentNode) {
+            if (node !== cursor.value) {
+                if (polyParent) {
+                    getPolyParent(cursor.value.parentNode, polyParent).insertBefore(node, cursor);
+                } else {
+                    polyMask(cursor.value.parentNode).insertBefore(node, cursor);
+                }
+            } else {
+                cursor.value = cursor.value.nextElementSibling;
+            }
+        } else {
+            if (polyParent) {
+                getPolyParent(this.marker.parentNode, polyParent).appendChild(node);
+            } else {
+                polyMask(this.marker.parentNode).appendChild(node);
+            }
+        }
     },
 
     update : function(scope){
@@ -66,49 +117,11 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
                 window.Polymer.dom.flush();
             }
 
-            let cursor = this.marker.nextElementSibling;
+            let cursor = {
+                value : this.marker.nextElementSibling
+            };
 
-            model.forEach((item, index) => {
-                let node = null;
-
-                if (this.itemNodeList.has(item)) {
-                    node = this.itemNodeList.get(item);
-                } else {
-                    /**
-                     * @todo update this meta info on each recycle not only when we create a new scope.
-                     */
-                    let childScope = Make({
-                        $first : index === 0,
-                        $last : model.length-1 === index,
-                        $index : index
-                    }, scope).get();
-
-                    childScope[itemName] = item;
-
-                    node = this.template.content.cloneNode(true).firstElementChild;
-                    bindNode(node, childScope, true);
-
-                    this.itemNodeList.set(item, node);
-                }
-
-                if (cursor && cursor.parentNode){
-                    if (node !== cursor) {
-                        if (polyParent) {
-                            getPolyParent(cursor.parentNode, polyParent).insertBefore(node, cursor);
-                        } else {
-                            polyMask(cursor.parentNode).insertBefore(node, cursor);
-                        }
-                    } else {
-                        cursor = cursor.nextElementSibling;
-                    }
-                } else {
-                    if (polyParent) {
-                        getPolyParent(this.marker.parentNode, polyParent).appendChild(node);
-                    } else {
-                        polyMask(this.marker.parentNode).appendChild(node);
-                    }
-                }
-            });
+            model.forEach(this.renderItem.bind(this, model, scope, itemName, cursor, polyParent));
         }
     }
 

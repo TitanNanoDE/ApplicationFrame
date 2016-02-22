@@ -36,7 +36,9 @@ let Binding = {
     update : function(scope){
         let text = this.originalNodeValue;
         let values = this.properties.map(key => {
-            return { name : key, value : parseExpression(key, scope) };
+            let item = { name : key, value : parseExpression(key, scope) };
+
+            return item;
         });
 
         if (this.singleExpression) {
@@ -50,7 +52,7 @@ let Binding = {
         if (hasPrototype(this.node, window.Attr)) {
             polyMask(this.parentNode).setAttribute(this.node.name, text);
         } else {
-            this.node.textContent = text;
+            this.node.textContent = text.replace(/ /g, '\u00a0');;
         }
     }
 };
