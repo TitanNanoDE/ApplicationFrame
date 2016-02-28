@@ -47,6 +47,13 @@ let request = new Promise((success, error) => {
     };
 });
 
+let requestToPromise = function(request) {
+    return new Promise((success, error) => {
+        request.onsuccess = success;
+        request.onerror = error;
+    });
+}
+
 /**
  * Run this if the DB connection works fine.
  */
@@ -117,7 +124,7 @@ var saveFileTo = function({ file, path, system = DEFAULTSYSTEM }){
     	file = Make(DbItemFile)(file.name, file.type, file.data, `${path}${file.name}.${file.type}`, file.mimeType);
     	let request = storage.put(file);
 
-        return request;
+        return requestToPromise(request);
     }).then(() => {
         Plugins.logger.log('Saved file', file, 'to', path);
     }, () => {
@@ -136,7 +143,7 @@ var openFile = function({ system = DEFAULTSYSTEM, path }){
         let storage = db.transaction(system, "readonly").objectStore(system);
         let request = storage.get(path);
 
-        return request;
+        return requestToPromise(request);
     }).then((event) => {
         Plugins.logger.log(event);
         return Make(DbFile)(event.target.result.name, event.target.result.type, event.target.result.data);
@@ -149,7 +156,7 @@ var removeFile= function(args){
         let storage = db.transaction(system, "readwrite").objectStore(system);
         let request = storage.delete(args.path);
 
-        return request;
+        return requestToPromise(request);
     }).then(() => true, () => false);
 };
 
