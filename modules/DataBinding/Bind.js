@@ -9,6 +9,7 @@ import TwoWayBinding from './TwoWayBinding.js';
 import ScopePrototype from './ScopePrototype.js';
 import EnabledBinding from './EnabledBinding.js';
 import TemplateRepeatBinding from './TemplateRepeatBinding.js';
+import AutoBinding from './AutoBinding.js';
 
 /**
  * Contains all scope, scopeInfo pairs.
@@ -18,7 +19,7 @@ import TemplateRepeatBinding from './TemplateRepeatBinding.js';
 let scopeList = new WeakMap();
 
 /**
- * @type {WeakMap[]}
+ * @type {ScopePrototype[]}
  */
 let scopeIndex = [];
 
@@ -75,6 +76,7 @@ let checkNode = function(node, scope, parentNode) {
             enabledAttribute = node.name === attributeNames.get('enabled'),
             classes = (node.name === attributeNames.get('classes')),
             modelBinding = node.name === attributeNames.get('model'),
+            autoBinding = node.name === 'bind',
             twoWay = (node.name === attributeNames.get('value') || modelBinding);
 
         let singleBinding = visibilityBinding || transparencyBinding;
@@ -87,6 +89,8 @@ let checkNode = function(node, scope, parentNode) {
             bindEnabled(text, scopeInfo, parentNode);
         } else if (variables || singleBinding) {
             bindSimple(text, node, variables, scopeInfo, singleBinding, parentNode);
+        } else if (autoBinding) {
+            bindAuto(text, node, scopeInfo, parentNode);
         }
     } else if(node.localName === 'template'){
         let repeatedTemplate = (node.hasAttribute('replace') && node.hasAttribute('repeat'));
@@ -257,6 +261,15 @@ let bindEvents = function(events, node, scope){
         }
 	});
 };
+
+let bindAuto = function(text, scopeInfo, template) {
+    let binding = Make({
+        scopeName : text,
+        template : template
+    }, AutoBinding)();
+
+    scopeInfo.bindings.push(binding);
+}
 
 let executeWatchers = function(scope) {
     watcherList.get(scope) && watcherList.get(scope).forEach(watcher => {

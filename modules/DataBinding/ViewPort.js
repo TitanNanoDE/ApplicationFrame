@@ -42,7 +42,7 @@ let ViewPortInstance = {
     destory : function(){
         this._innerScope.__destroy__();
 
-        while (this._scope.element.children) {
+        while (this._scope.element.children.length > 0) {
             this._scope.element.removeChild(this._scope.element.firstChild);
         }
 
