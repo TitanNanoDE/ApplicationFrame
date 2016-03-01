@@ -75,6 +75,7 @@ let ViewPort = {
                 right: 0;
                 display: flex;
                 flex-direction: column;
+                overflow: auto;
             }
         `;
 

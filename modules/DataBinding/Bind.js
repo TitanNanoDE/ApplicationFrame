@@ -90,7 +90,7 @@ let checkNode = function(node, scope, parentNode) {
         } else if (variables || singleBinding) {
             bindSimple(text, node, variables, scopeInfo, singleBinding, parentNode);
         } else if (autoBinding) {
-            bindAuto(text, node, scopeInfo, parentNode);
+            bindAuto(text, scopeInfo, parentNode);
         }
     } else if(node.localName === 'template'){
         let repeatedTemplate = (node.hasAttribute('replace') && node.hasAttribute('repeat'));
@@ -231,6 +231,7 @@ let bindTemplateRepeat = function(template, scopeInfo) {
         marker : marker,
     }, TemplateRepeatBinding)();
 
+    console.log('replace template with marker');
     template.parentNode.replaceChild(marker, template);
     scopeInfo.bindings.push(binding);
 };

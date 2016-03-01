@@ -72,9 +72,9 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
         if (cursor.value && cursor.value.parentNode) {
             if (node !== cursor.value) {
                 if (polyParent) {
-                    getPolyParent(cursor.value.parentNode, polyParent).insertBefore(node, cursor);
+                    getPolyParent(cursor.value.parentNode, polyParent).insertBefore(node, cursor.value);
                 } else {
-                    polyMask(cursor.value.parentNode).insertBefore(node, cursor);
+                    polyMask(cursor.value.parentNode).insertBefore(node, cursor.value);
                 }
             } else {
                 cursor.value = cursor.value.nextElementSibling;

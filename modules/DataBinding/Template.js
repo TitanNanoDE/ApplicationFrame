@@ -96,7 +96,10 @@ export let makeTemplate = function (template, scope, application) {
         scope = bindNode(node, scope);
 
         if (template.hasAttribute('replace')) {
+            console.log('replace template');
             template.parentNode.replaceChild(node, template.bare);
+        } else if (template.hasAttribute('insert')) {
+            template.parentNode.insertBefore(node, template.bare);
         }
 
         return {　node : node, scope : scope };
