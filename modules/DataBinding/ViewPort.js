@@ -1,6 +1,8 @@
 import { DataBinding } from '../DataBinding.js';
 import { Make } from '../../util/make.js';
 
+const LIST_HAS_ITEMS = 0;
+
 let ViewPortInstance = {
     _scope : null,
     _bound : false,
@@ -14,6 +16,7 @@ let ViewPortInstance = {
     bind : function(context) {
         if (!this._bound) {
             this._scope.templateUrl = context.template;
+            this._scope.overflow = '';
             this._scope.__apply__();
 
             if (!this._originalTemplate) {
@@ -42,13 +45,18 @@ let ViewPortInstance = {
     destory : function(){
         this._innerScope.__destroy__();
 
-        while (this._scope.element.children.length > 0) {
+        while (this._scope.element.children.length > LIST_HAS_ITEMS) {
             this._scope.element.removeChild(this._scope.element.firstChild);
         }
 
         this._scope.element.appendChild(this._originalTemplate);
         this._bound = false;
-    }
+    },
+
+    alowOverflow : function() {
+        this._scope.overflow = 'overflow';
+        this._scope.__apply__();
+    },
 };
 
 let ViewPort = {
@@ -60,7 +68,8 @@ let ViewPort = {
 
     /**
      * @constructs
-     * @param {Application} application
+     * @param {Application} application - the application this viewport belongs to.
+     * @return {void}
      */
     _make : function(application){
         let style = document.head.appendChild(document.createElement('style'));
@@ -68,14 +77,18 @@ let ViewPort = {
 
         style.innerHTML = `
             .view-port {
-                position: absolute;
+                position: relative;
                 left: 0;
                 top: 0;
-                bottom: 0;
-                right: 0;
+                height: 100%;
+                width: 100%;
                 display: flex;
                 flex-direction: column;
                 overflow: auto;
+            }
+
+            .view-port.overflow {
+                overflow: visible;
             }
         `;
 
@@ -84,7 +97,7 @@ let ViewPort = {
         template.setAttribute('component', '');
 
         template.innerHTML = `
-            <div class="custom-element">
+            <div class="custom-element {{overflow}}">
                 <template src="{{templateUrl}}" replace></template>
             </div>
         `;
@@ -97,7 +110,7 @@ let ViewPort = {
 
         this._application = application;
 
-        DataBinding.makeTemplate(template, function(){ return {} }, application);
+        DataBinding.makeTemplate(template, () => { return {} }, application);
     },
 
     getInstance : function(name){
