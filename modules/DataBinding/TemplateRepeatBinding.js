@@ -34,6 +34,7 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
     /**
      * @constructs
      * @extends {Binding}
+     * @return {void}
      */
     _make : function(){
         Binding._make.apply(this);
@@ -62,7 +63,7 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
 
             childScope[itemName] = item;
 
-            node = this.template.content.cloneNode(true).firstElementChild;
+            node = document.importNode(this.template.content, true).firstElementChild;
             bindNode(node, childScope, true);
 
             this.itemNodeList.set(item, node);
@@ -72,7 +73,7 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
         if (cursor.value && cursor.value.parentNode) {
             if (node !== cursor.value) {
                 if (polyParent) {
-                    getPolyParent(cursor.value.parentNode, polyParent).insertBefore(node, cursor.value);
+                    getPolyParent(cursor.value, polyParent).insertBefore(node, cursor.value);
                 } else {
                     polyMask(cursor.value.parentNode).insertBefore(node, cursor.value);
                 }

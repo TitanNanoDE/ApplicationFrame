@@ -1,7 +1,7 @@
 import { Make, hasPrototype } from '../../util/make.js';
 import { ObjectParser, parseExpression, assignExpression } from './Parser.js';
 import { attributeNames } from './Mapping.js';
-import { selectElement } from './Util.js';
+import { selectElement, polyMask } from './Util.js';
 
 import Binding from './Binding.js';
 import ClassBinding from './ClassBinding.js';
@@ -36,8 +36,9 @@ let expressionTracking = {};
 /**
  * applies the binding to the node for the given scope.
  *
- * @param {Node|string} node
- * @param {Object} scope
+ * @param {Node|string} node - the node which should be bound
+ * @param {Object} scope - the scope which should be bound to
+ * @param {boolean} isolated - indicates if this scope should be recycled isolated
  * @return {ScopePrototype}
  */
 export let bindNode = function(node, scope, isolated) {
@@ -232,7 +233,7 @@ let bindTemplateRepeat = function(template, scopeInfo) {
     }, TemplateRepeatBinding)();
 
     console.log('replace template with marker');
-    template.parentNode.replaceChild(marker, template);
+    polyMask(template.parentNode).replaceChild(marker, template);
     scopeInfo.bindings.push(binding);
 };
 

@@ -5,7 +5,7 @@ import { importTemplate } from './TemplateLoader.js';
 import ScopePrototype from './ScopePrototype.js';
 
 let makeElementFromTemplate = function(template, scope, application, item) {
-    let node = template.content.cloneNode(true);
+    let node = document.importNode(template.content, true);
     let placeholder = selectElement('bind-placeholder', node);
 
     item = polyMask(item);
@@ -91,7 +91,7 @@ export let makeTemplate = function (template, scope, application) {
         });
 
     } else {
-        let node = template.content.cloneNode(true);
+        let node = document.importNode(template.content, true);
 
         scope = bindNode(node, scope);
 
