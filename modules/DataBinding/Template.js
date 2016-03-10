@@ -92,13 +92,25 @@ export let makeTemplate = function (template, scope, application) {
 
     } else {
         let node = document.importNode(template.content, true);
+        let isReplace = template.hasAttribute('replace');
+        let isInsert = template.hasAttribute('insert');
 
         scope = bindNode(node, scope);
 
-        if (template.hasAttribute('replace')) {
+        if (isReplace || isInsert) {
+            let elementList = [].slice.apply(node.childNodes);
+
+            scope.__cleanElements__ = function(){
+                elementList.forEach(node => {
+                    node.parentNode && node.parentNode.removeChild(node);
+                });
+            }
+        }
+
+        if (isReplace) {
             console.log('replace template');
             template.parentNode.replaceChild(node, template.bare);
-        } else if (template.hasAttribute('insert')) {
+        } else if (isInsert) {
             template.parentNode.insertBefore(node, template.bare);
         }
 

@@ -238,25 +238,30 @@ let bindTemplateRepeat = function(template, scopeInfo) {
 };
 
 /**
- * binds the events specified for a Node
+ * Binds the events specified for a Node
  *
- * @param {string[]} events
- * @param {Node} node
- * @param {ScopePrototype} scope
+ * @param {string[]} events - a string representation of the object with all the event / expression pairs.
+ * @param {Node} node - the node on which the event listeners should be registered.
+ * @param {ScopePrototype} scope - the data scope on which the binding happens.
+ * @return {void}
  */
 let bindEvents = function(events, node, scope){
-	let eventRegex = /{[A-Za-z0-9\-_\.: \(\)]*}/g;
+	events = ObjectParser(events);
 
-	events = events.match(eventRegex);
-
-	events.forEach(function(event){
-		console.log(event);
-		event = event.replace(/[{}]/g, '');
-		let [name, method] = event.split(':');
+	Object.keys(events).forEach(name => {
+		let method = events[name];
 
         if (scope.$methods && scope.$methods[method.trim()]) {
             node.addEventListener(name.trim(), e => {
                 scope.$methods[method.trim()].apply(scope, [e]);
+
+                scope.__apply__();
+            });
+        } else {
+            method = parseExpression(method.trim(), scope);
+
+            node.addEventListener(name.trim(), e => {
+                method.apply(scope, [e]);
 
                 scope.__apply__();
             });
@@ -323,10 +328,34 @@ export let recycle = function (scope) {
     }
 };
 
-export let destoryScope = function(scope) {
+export let destoryScope = function(scope, inProgress) {
+    let scopeInfo = scopeList.get(scope);
+
+    let [scopes, bindings] = scopeInfo.bindings.reduce((prev, binding) => {
+        let [scopes, bindings] = prev;
+
+        if (binding.destory) {
+            let [scopes_add, bindings_add] = binding.destory();
+
+            scopes += scopes_add;
+            bindings += bindings_add;
+        }
+
+        return [scopes, bindings];
+    }, [0, 0]);
+
+    bindings += scopeInfo.bindings.length;
+    scopes += 1;
+
     scopeList.delete(scope);
     scopeIndex.splice(scopeIndex.indexOf(scope), 1);
     watcherList.delete(scope);
+
+    if (inProgress) {
+        return [scopes, bindings];
+    } else {
+        console.log(`${scopes} scopes and ${bindings} bindings cleaned!`);
+    }
 };
 
 /**

@@ -29,8 +29,8 @@ let ScopePrototype = {
         });
     },
 
-    __destroy__ : function() {
-        destoryScope(this);
+    __destroy__ : function(inProgress) {
+        return destoryScope(this, inProgress);
     }
 };
 

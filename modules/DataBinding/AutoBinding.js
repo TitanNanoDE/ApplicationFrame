@@ -14,6 +14,8 @@ let AutoBinding = Make(/** @lends AutoBinding.prototype*/{
 
     _make : function(){},
 
+    _scope : null,
+
     update : function(scope) {
         if (!this._isBound) {
             let subScope = parseExpression(this.scopeName, scope);
@@ -28,12 +30,22 @@ let AutoBinding = Make(/** @lends AutoBinding.prototype*/{
                     scopeHolder = parseExpression(scopeHolder.join('.'), scope);
 
                     scopeHolder[scopeObjName] = makeTemplate(this.template, subScope, true);
+
+                    this._scope = scopeHolder[scopeObjName];
                 } else {
-                    makeTemplate(this.template, subScope, true);
+                    this._scope = makeTemplate(this.template, subScope, true);
                 }
             }, 0);
 
             this._isBound = true;
+        }
+    },
+
+    destory : function(){
+        if (this._scope) {
+            return this._scope.__destroy__(true);
+        } else {
+            return [0, 0];
         }
     }
 

@@ -151,6 +151,7 @@ export default {
     },
 
     Prototypes : {
-        Application : Application
+        Application : Application,
+        EventTarget : EventTarget,
     }
 };

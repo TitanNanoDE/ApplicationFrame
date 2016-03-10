@@ -124,6 +124,21 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
 
             model.forEach(this.renderItem.bind(this, model, scope, itemName, cursor, polyParent));
         }
+    },
+
+    destory : function(){
+        let count = this.modelBackup.reduce((prev, item) => {
+            let [scopes, bindings] = prev;
+            let scope = this.itemScopeList.get(item);
+            let [scopes_add, bindings_add] = scope.__destroy__(true);
+
+            return [scopes + scopes_add, bindings + bindings_add];
+        }, [0, 0]);
+
+        this.itemScopeList = null;
+        this.itemNodeList = null;
+
+        return count;
     }
 
 }, Binding).get();
