@@ -47,7 +47,7 @@ export let ObjectParser = function(source){
 export let parseExpression = function(expression, scope){
 	let chain = expression.split('.');
 
-    chain.forEach(function(item){
+    chain.forEach((item) => {
         let pos = item.search(/\(\)$/);
 
         if (scope) {

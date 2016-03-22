@@ -12,7 +12,7 @@ import ServiceScope from '../prototypes/ServiceScope.js';
 import Scopes from './Scopes.js';
 import Extendables from './Extendables.js';
 
-var $$ = window;
+var $$ = (typeof window === 'undefined') ? global : window;
 
 /**
  * The engine holds private flags, arrays and functions.
@@ -44,29 +44,29 @@ var Engine = {
 			chromeLevel : (location.protocol == 'chrome:' || location.protocol == 'resource:'),
 //			storrage : !Engine.features.chromeLevel && (function(){try{ return sessionStorage && localStorage; }catch(e){ return false; }})(),
 //			indexedDB : !Engine.features.chromeLevel && (function(){try{ return indexedDB; }catch(e){ return false; }})(),
-        	notifications : (Notification) || false,
+        	notifications : ($$.Notification) || false,
         	renderFrame : (requestAnimationFrame) || false,
-        	audio : (Audio) || false,
+        	audio : ($$.Audio) || false,
         	indexOf : (Array.indexOf) || false,
         	forEach : (Array.forEach) || false,
         	geolocation : (navigator.geolocation) || false,
-        	appCache : (applicationCache) || false,
+        	appCache : ($$.applicationCache) || false,
         	xcom : ($$.postMessage) || false,
-        	blobs : (Blob) || false,
+        	blobs : ($$.Blob) || false,
         	clipBoard : ($$.ClipboardEvent) || false,
         	file : ($$.File) || false,
-        	fileReader : (FileReader) || false,
+        	fileReader : ($$.FileReader) || false,
         	hashchange : (typeof onhashchange != "undefined") || false,
         	json : (JSON) || false,
-        	matchMedia : (matchMedia) || false,
+        	matchMedia : ($$.matchMedia) || false,
         	timing : ($$.PerformanceTiming) || false,
         	pageVisibility : ((typeof document.hidden != "undefined") && document.visibilityState),
         	serverSentEvent : ($$.EventSource) || false,
-        	webWorker : (Worker) || false,
-			sharedWebWorker : (SharedWorker) || false,
-        	arrayBuffer : (ArrayBuffer)|| false,
-        	webSocket : (WebSocket) || false,
-        	computedStyle : (getComputedStyle) || false,
+        	webWorker : ($$.Worker) || false,
+			sharedWebWorker : ($$.SharedWorker) || false,
+        	arrayBuffer : ($$.ArrayBuffer)|| false,
+        	webSocket : ($$.WebSocket) || false,
+        	computedStyle : ($$.getComputedStyle) || false,
         	deviceOrientation : ($$.DeviceOrientationEvent) || false,
 		},
 

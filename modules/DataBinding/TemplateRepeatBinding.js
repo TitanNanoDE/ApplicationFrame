@@ -4,6 +4,48 @@ import { parseExpression } from './Parser.js';
 import { bindNode } from './Bind.js';
 import { polyMask, getPolyParent } from './Util.js';
 
+let AdvancedWeakMap = {
+    _weakMapStore : null,
+    _objFallBackStore : null,
+
+    _make : function(){
+        this._weakMapStore = new WeakMap();
+        this._objFallBackStore = {};
+    },
+
+    get : function(object) {
+        if (typeof object !== 'object') {
+            return this._objFallBackStore[object];
+        } else {
+            return this._weakMapStore.get(object);
+        }
+    },
+
+    set : function(object, value) {
+        if (typeof object !== 'object') {
+            return this._objFallBackStore[object] = value;
+        } else {
+            return this._weakMapStore.set(object, value);
+        }
+    },
+
+    has : function(object) {
+        if (typeof object !== 'object') {
+            return object in this._objFallBackStore;
+        } else {
+            return this._weakMapStore.has(object);
+        }
+    },
+
+    delete : function(object) {
+        if (typeof object !== 'object') {
+            delete this._objFallBackStore[object];
+        } else {
+            this._weakMapStore.delete(object);
+        }
+    }
+}
+
 let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
 
     /**
@@ -39,8 +81,8 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
     _make : function(){
         Binding._make.apply(this);
 
-        this.itemNodeList = new WeakMap();
-        this.itemScopeList = new WeakMap();
+        this.itemNodeList = Make(AdvancedWeakMap)();
+        this.itemScopeList = Make(AdvancedWeakMap)();
         this.modelBackup = [];
     },
 
@@ -58,7 +100,8 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
             let childScope = Make({
                 $first : index === 0,
                 $last : model.length-1 === index,
-                $index : index
+                $index : index,
+                __parentScope__ : scope,
             }, scope).get();
 
             childScope[itemName] = item;
@@ -99,31 +142,30 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
             return;
         }
 
-        if (Array.isArray(model)) {
+        model = model && Array.isArray(model) ? model : [];
 
-            this.modelBackup.forEach(item => {
-                if (model.indexOf(item) < 0) {
-                    if (polyParent) {
-                        getPolyParent(this.marker, polyParent).removeChild(this.itemNodeList.get(item));
-                    } else {
-                        polyMask(this.marker.parentNode).removeChild(this.itemNodeList.get(item));
-                        this.itemNodeList.delete(item);
-                    }
+        this.modelBackup.forEach(item => {
+            if (model.indexOf(item) < 0) {
+                if (polyParent) {
+                    getPolyParent(this.marker, polyParent).removeChild(this.itemNodeList.get(item));
+                } else {
+                    polyMask(this.marker.parentNode).removeChild(this.itemNodeList.get(item));
+                    this.itemNodeList.delete(item);
                 }
-            });
-
-            this.modelBackup = model.slice();
-
-            if (window.Polymer) {
-                window.Polymer.dom.flush();
             }
+        });
 
-            let cursor = {
-                value : this.marker.nextElementSibling
-            };
+        this.modelBackup = model.slice();
 
-            model.forEach(this.renderItem.bind(this, model, scope, itemName, cursor, polyParent));
+        if (window.Polymer) {
+            window.Polymer.dom.flush();
         }
+
+        let cursor = {
+            value : this.marker.nextElementSibling
+        };
+
+        model.forEach(this.renderItem.bind(this, model, scope, itemName, cursor, polyParent));
     },
 
     destory : function(){

@@ -11,23 +11,24 @@ import { objectExtend } from './util/functions.js';
 import Engine from './core/objects/Engine.js';
 import { Make, hasPrototype, Mixin } from './util/make.js';
 import Application from './core/prototypes/Application.js';
+import EventTarget from './core/prototypes/EventTarget.js';
 
-var $$ = window || global;
+let $$ = window || global;
 
 /**
- * @param {navigator.userAgent} userAgentString
- * @return {UserAgent}
+ * @param {navigator.userAgent} userAgentString - the userAgent string.
+ * @return {UserAgent} - a userAgent object.
  */
-var userAgentParser= function(userAgentString){
-	var items= [];
-	var current= '';
-	var enabled= true;
-	var version= '';
-	var engines= ['Gecko', 'AppleWebKit', 'Firefox', 'Safari', 'Chrome', 'OPR', 'Trident'];
-	var found= [];
-	var record= {};
+let userAgentParser= function(userAgentString){
+	let items= [];
+	let current= '';
+	let enabled= true;
+	let version= '';
+	let engines= ['Gecko', 'AppleWebKit', 'Firefox', 'Safari', 'Chrome', 'OPR', 'Trident'];
+	let found= [];
+	let record= {};
 
-	for(var i= 0; i < userAgentString.length; i++){
+	for(let i= 0; i < userAgentString.length; i++){
 		if(userAgentString[i] == ' ' && enabled){
 			items.push(current);
 			current= '';
@@ -41,7 +42,7 @@ var userAgentParser= function(userAgentString){
 	}
 	items.push(current);
 
-	items.forEach(function(item){
+	items.forEach((item) => {
 		if(item.indexOf(';') > -1){
 			record.platform= item;
 		}else if(item.indexOf('/') > -1){
@@ -59,7 +60,7 @@ var userAgentParser= function(userAgentString){
 		record.engine= found[0][0];
 		record.engineVersion= found[0][1];
 	}else if(found.length > 1){
-		found.sort(function(a, b){
+		found.sort((a, b) => {
 			if(a[2] < b[2])
 				return 0;
 			else
@@ -74,7 +75,7 @@ var userAgentParser= function(userAgentString){
 
 	record.arch= 'x32';
 
-	record.platform.substring(1, record.platform.length-2).split('; ').forEach(function(item){
+	record.platform.substring(1, record.platform.length-2).split('; ').forEach((item) => {
 		if(item.indexOf('OS X') > -1){
 			record.platform= item;
 			record.arch= 'x64';
@@ -111,7 +112,7 @@ if ($$.navigator){
 
 // check if current platform is the Mozilla Add-on runtime
 }else if($$.exports && $$.require && $$.module){
-    var system= $$.require('sdk/system');
+    let system= $$.require('sdk/system');
 	objectExtend.apply(Engine.info, [{
 		engine : system.name,
 		engineVersion : system.version,
@@ -135,13 +136,13 @@ if ($$.navigator){
  * @type {module:Engine~Engine.getLibraryItem}
  * @static
  */
-export var $= Engine.getLibraryItem;
+export let $= Engine.getLibraryItem;
 
 /**
  * @type {module:Engine~Engine.getScope}
  * @static
  */
-export var $_= Engine.getScope;
+export let $_= Engine.getScope;
 
 export default {
     Util : {

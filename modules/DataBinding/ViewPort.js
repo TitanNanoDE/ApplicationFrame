@@ -43,14 +43,16 @@ let ViewPortInstance = {
     },
 
     destory : function(){
-        this._innerScope.__destroy__();
+        if (this._bound) {
+            this._innerScope.__destroy__();
 
-        while (this._scope.element.children.length > LIST_HAS_ITEMS) {
-            this._scope.element.removeChild(this._scope.element.firstChild);
+            while (this._scope.element.children.length > LIST_HAS_ITEMS) {
+                this._scope.element.removeChild(this._scope.element.firstChild);
+            }
+
+            this._scope.element.appendChild(this._originalTemplate);
+            this._bound = false;
         }
-
-        this._scope.element.appendChild(this._originalTemplate);
-        this._bound = false;
     },
 
     alowOverflow : function() {
@@ -121,6 +123,12 @@ let ViewPort = {
                 this._application.on(`viewPort:ready:${name}`, () => success(this._elements[name]));
             }
         });
+    },
+
+    free : function(instance){
+        this._elements[instance._scope.name] = null;
+
+        instance._scope.__destroy__();
     }
 };
 

@@ -27,11 +27,13 @@ let request = new Promise((success, error) => {
 
     /**
      * Upgrade the DB if required!
+     * @param {Event} event - the event information.
+     * @return {void}
      */
     request.onupgradeneeded = function(event){
-    	var db= event.target.result;
-    	var system= DEFAULTSYSTEM;
-    	var storage;
+    	let db= event.target.result;
+    	let system= DEFAULTSYSTEM;
+    	let storage;
 
     // 	upgrade to version 1
     	if(event.oldVersion < 1){
@@ -87,13 +89,13 @@ let DbFile = {
     },
 
     saveTo : function(args){
-		var system= args.system || "main";
-		var path= args.path || "";
+		let system= args.system || "main";
+		let path= args.path || "";
 		saveFileTo({file : this, path : path, system : system});
 	}
 };
 
-var DbItemFile = {
+let DbItemFile = {
     name : '',
     type : null,
     data : null,
@@ -114,11 +116,12 @@ var DbItemFile = {
 /**
  * Saves a file to the given path in the given file system.
  *
- * @param {DbFile} file
- * @param {string} path
- * @param {string} [system]
+ * @param {DbFile} file - The file which should be saved.
+ * @param {string} path - The path the file should be saved to.
+ * @param {string} [system] - Specifies the target file system.
+ * @return {Promse<*>} - Returns a promise for the end of the saving process.
  */
-var saveFileTo = function({ file, path, system = DEFAULTSYSTEM }){
+let saveFileTo = function({ file, path, system = DEFAULTSYSTEM }){
     return db.then(db => {
         let storage = db.transaction(system, "readwrite").objectStore(system);
     	file = Make(DbItemFile)(file.name, file.type, file.data, `${path}${file.name}.${file.type}`, file.mimeType);
@@ -135,10 +138,11 @@ var saveFileTo = function({ file, path, system = DEFAULTSYSTEM }){
 /**
  * Returns the file from the given path in the given system.
  *
- * @param {string} path
- * @param {string} system
+ * @param {string} path - the path from which the file should be opend.
+ * @param {string} [system] - Specifies the target filesystem.
+ * @return {Promise<DbFile>} - returns the file.
  */
-var openFile = function({ system = DEFAULTSYSTEM, path }){
+let openFile = function({ system = DEFAULTSYSTEM, path }){
     return db.then(db => {
         let storage = db.transaction(system, "readonly").objectStore(system);
         let request = storage.get(path);
@@ -150,7 +154,7 @@ var openFile = function({ system = DEFAULTSYSTEM, path }){
     }, () => Plugins.logger.error(`FileSystem error while reading File '${path}'`));
 };
 
-var removeFile= function(args){
+let removeFile= function(args){
     return db.then(db => {
         let system = args.system || DEFAULTSYSTEM;
         let storage = db.transaction(system, "readwrite").objectStore(system);
@@ -160,14 +164,14 @@ var removeFile= function(args){
     }).then(() => true, () => false);
 };
 
-var getStaticFilePointerFromPath= function({ system = DEFAULTSYSTEM, path }){
+let getStaticFilePointerFromPath= function({ system = DEFAULTSYSTEM, path }){
     return db.then(db => {
         let storage= db.transaction(system, "readonly").objectStore(system);
         let request= storage.get(path);
 
         return request;
     }).then(event => {
-        var url= "";
+        let url= "";
 
         if(event.target.result && ( (event.target.result.data instanceof $$.Blob) || (event.target.result.data instanceof $$.File) )){
             url= $$.URL.createObjectURL(event.target.result.data);
@@ -176,17 +180,18 @@ var getStaticFilePointerFromPath= function({ system = DEFAULTSYSTEM, path }){
         }
 
         return {url : url, status : 1};
-    }, () => { status : 0 });
+    }, () => { return { status : 0 } });
 };
 
-var getStaticFilePointerFromFile = function(DbFile){
+/*let getStaticFilePointerFromFile = function(DbFile){
 // @ToDo: implement this!! basically just call URL.createObjectURL...
-};
+};*/
 
 /**
  * Returns the fileSystem index, a list of all file paths in this filesystem.
  *
- * @param {string} [system]
+ * @param {string} [system] - specifies the target file system.
+ * @return {Promise<string[]>} - The list of all files in this system.
  */
 let getFileList = function({ system = DEFAULTSYSTEM }){
     return db.then(db => {
@@ -195,10 +200,10 @@ let getFileList = function({ system = DEFAULTSYSTEM }){
 
         return new Promise((success) => {
             storage.openCursor().onsuccess = (event) => {
-                var cursor= event.target.result;
+                let cursor = event.target.result;
 
                 if (cursor) {
-                    Plugins.logger.log(cursor.key);
+//                    Plugins.logger.log(cursor.key);
                     list.push(cursor.key);
                     cursor.continue();
                 } else {
@@ -216,7 +221,7 @@ let getFileListSince = function({ path, system = DEFAULTSYSTEM }){
 
         path = (path[path.length] !== '/') ? (path + '/') : path;
 
-        list.forEach(function(item){
+        list.forEach((item) => {
 			if (item.indexOf(path) === 0) {
 				nList.push(item.replace(path, ''));
 			}
@@ -236,7 +241,7 @@ export default {
     DbFile : DbFile
 };
 
-export var config = {
+export let config = {
     main : 'fileSystem',
     author : 'Jovan Gerodetti',
     version : 'v1.1'
