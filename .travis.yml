@@ -1,4 +1,3 @@
-before_script: chmod +x "./.travis/build.pl"
 script:
     - npm run test
 branches:
