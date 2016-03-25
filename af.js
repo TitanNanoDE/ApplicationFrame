@@ -13,7 +13,7 @@ import { Make, hasPrototype, Mixin } from './util/make.js';
 import Application from './core/prototypes/Application.js';
 import EventTarget from './core/prototypes/EventTarget.js';
 
-let $$ = window || global;
+var $$ = (typeof window == 'object') ? window : global;
 
 /**
  * @param {navigator.userAgent} userAgentString - the userAgent string.

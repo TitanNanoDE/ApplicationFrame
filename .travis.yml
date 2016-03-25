@@ -1,7 +1,6 @@
 before_script: chmod +x "./.travis/build.pl"
-script: 
-    - ./.travis/build.pl
-    - node .travis/af-test.js
+script:
+    - npm run test
 branches:
     only:
         - master

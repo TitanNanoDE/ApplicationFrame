@@ -41,15 +41,15 @@ var Engine = {
 		 * @type {Object}
 		 */
 		features : {
-			chromeLevel : (location.protocol == 'chrome:' || location.protocol == 'resource:'),
+//			chromeLevel : ($$.location.protocol == 'chrome:' || $$.location.protocol == 'resource:'),
 //			storrage : !Engine.features.chromeLevel && (function(){try{ return sessionStorage && localStorage; }catch(e){ return false; }})(),
 //			indexedDB : !Engine.features.chromeLevel && (function(){try{ return indexedDB; }catch(e){ return false; }})(),
         	notifications : ($$.Notification) || false,
-        	renderFrame : (requestAnimationFrame) || false,
+        	renderFrame : ($$.requestAnimationFrame) || false,
         	audio : ($$.Audio) || false,
         	indexOf : (Array.indexOf) || false,
         	forEach : (Array.forEach) || false,
-        	geolocation : (navigator.geolocation) || false,
+        	geolocation : ($$.navigator && $$.navigator.geolocation) || false,
         	appCache : ($$.applicationCache) || false,
         	xcom : ($$.postMessage) || false,
         	blobs : ($$.Blob) || false,
@@ -60,7 +60,7 @@ var Engine = {
         	json : (JSON) || false,
         	matchMedia : ($$.matchMedia) || false,
         	timing : ($$.PerformanceTiming) || false,
-        	pageVisibility : ((typeof document.hidden != "undefined") && document.visibilityState),
+        	pageVisibility : ($$.document && (typeof $$.document.hidden != "undefined") && $$.document.visibilityState),
         	serverSentEvent : ($$.EventSource) || false,
         	webWorker : ($$.Worker) || false,
 			sharedWebWorker : ($$.SharedWorker) || false,
