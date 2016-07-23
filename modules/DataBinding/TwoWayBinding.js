@@ -1,6 +1,7 @@
 import { Make } from '../../util/make.js';
-import { parseExpression, assignExpression } from './Parser.js';
 import { attributeNames } from './Mapping.js';
+import { parseExpression, assignExpression } from './Parser.js';
+import { polyInvoke } from './Util.js';
 import Binding from './Binding.js';
 
 let TwoWayBinding = Make(/** @lends TwoWayBinding.prototype*/{
@@ -29,7 +30,7 @@ let TwoWayBinding = Make(/** @lends TwoWayBinding.prototype*/{
         let attribute = attributeNames.rename(this.node.name);
 
         if (!this.indirect) {
-            this.parentNode.setAttribute(attribute, value);
+            polyInvoke(this.parentNode).setAttribute(attribute, value);
         } else {
             let oldValue = parseExpression(this.viewBinding, this.parentNode);
 

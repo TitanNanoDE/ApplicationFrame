@@ -1,6 +1,7 @@
 //import CryptoJS from '../libs/CryptoJS-SHA-3.js';
-import { makeTemplate } from './DataBinding/Template.js';
 import { bindNode } from './DataBinding/Bind.js';
+import { makeTemplate } from './DataBinding/Template.js';
+import { polyInvoke } from './DataBinding/Util.js';
 import ViewPort from './DataBinding/ViewPort.js';
 
 /**
@@ -40,7 +41,7 @@ style.innerHTML = `
     }
 `;
 
-document.head.appendChild(style);
+polyInvoke(document.head).appendChild(style);
 
 export let DataBinding = {
     makeTemplate : makeTemplate,

@@ -1,6 +1,7 @@
 import { Make } from '../../util/make.js';
-import Binding from './Binding.js';
 import { parseExpression } from './Parser.js';
+import { polyInvoke } from './Util.js';
+import Binding from './Binding.js';
 
 let EnabledBinding = Make(/** @lends EnabledBinding.prototype*/{
     /**
@@ -18,9 +19,9 @@ let EnabledBinding = Make(/** @lends EnabledBinding.prototype*/{
         let value = parseExpression(this.originalNodeValue, scope);
 
         if (!value) {
-            this.parentNode.setAttribute('disabled', '');
+            polyInvoke(this.parentNode).setAttribute('disabled', '');
         } else {
-            this.parentNode.removeAttribute('disabled');
+            polyInvoke(this.parentNode).removeAttribute('disabled');
         }
     }
 

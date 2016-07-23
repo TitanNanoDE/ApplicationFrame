@@ -1,15 +1,14 @@
 import { Make, hasPrototype } from '../../util/make.js';
 import { ObjectParser, parseExpression, assignExpression } from './Parser.js';
 import { attributeNames } from './Mapping.js';
-import { selectElement, polyMask } from './Util.js';
-
+import { polyInvoke } from './Util.js';
+import AutoBinding from './AutoBinding.js';
 import Binding from './Binding.js';
 import ClassBinding from './ClassBinding.js';
-import TwoWayBinding from './TwoWayBinding.js';
-import ScopePrototype from './ScopePrototype.js';
 import EnabledBinding from './EnabledBinding.js';
+import ScopePrototype from './ScopePrototype.js';
 import TemplateRepeatBinding from './TemplateRepeatBinding.js';
-import AutoBinding from './AutoBinding.js';
+import TwoWayBinding from './TwoWayBinding.js';
 
 /**
  * Contains all scope, scopeInfo pairs.
@@ -39,11 +38,11 @@ let expressionTracking = {};
  * @param {Node|string} node - the node which should be bound
  * @param {Object} scope - the scope which should be bound to
  * @param {boolean} isolated - indicates if this scope should be recycled isolated
- * @return {ScopePrototype}
+ * @return {ScopePrototype} - the scope this node is bound to
  */
 export let bindNode = function(node, scope, isolated) {
 	scope = hasPrototype(scope, ScopePrototype) ? scope : Make(scope, ScopePrototype)();
-    node = hasPrototype(node, Node) ? node : selectElement(node);
+    node = hasPrototype(node, Node) ? node : document.querySelector(node);
 
 	scopeList.set(scope, {
 		node : node,
@@ -61,16 +60,17 @@ export let bindNode = function(node, scope, isolated) {
 /**
  * Travels through a node and it's children searching for binding expressions
  *
- * @param {Node} node
- * @param {ScopePrototype} scope
- * @param {Node} parentNode
+ * @param {Node} node - the node to check
+ * @param {ScopePrototype} scope - the scope this node should be bound to
+ * @param {Node} parentNode - the parent of the provided node
+ * @return {void}
  */
 let checkNode = function(node, scope, parentNode) {
     let dataRegex = /{{[^{}]*}}/g;
     let scopeInfo = scopeList.get(scope);
 
 	if (node.nodeName == '#text' || node.nodeType === 2) {
-    	let text = node.value || node.textContent,
+    	let text = node.value || polyInvoke(node).textContent,
             variables = text.match(dataRegex),
             visibilityBinding = (node.name === attributeNames.get('visible')),
             transparencyBinding = (node.name === attributeNames.get('transparent')),
@@ -110,7 +110,7 @@ let checkNode = function(node, scope, parentNode) {
         	if (events !== null) {
         		bindEvents(events, node, scope);
 
-				node.removeAttribute(attributeNames.get('events'));
+				polyInvoke(node).removeAttribute(attributeNames.get('events'));
        		}
         }
 
@@ -167,9 +167,10 @@ let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
 /**
  * Compares for changes in the UI in a two way binding
  *
- * @param {string} newValue
- * @param {ScopePrototype} scope
- * @param {TwoWayBinding} binding
+ * @param {string} newValue - the new value
+ * @param {ScopePrototype} scope - the scope to check
+ * @param {TwoWayBinding} binding - the binding to check
+ * @return {void}
  */
 let compareTwoWay = function(newValue, scope, binding){
     if (binding.currentValue !== newValue) {
@@ -233,7 +234,7 @@ let bindTemplateRepeat = function(template, scopeInfo) {
     }, TemplateRepeatBinding)();
 
     console.log('replace template with marker');
-    polyMask(template.parentNode).replaceChild(marker, template);
+    polyInvoke(template.parentNode).replaceChild(marker, template);
     scopeInfo.bindings.push(binding);
 };
 

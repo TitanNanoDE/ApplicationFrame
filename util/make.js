@@ -87,8 +87,8 @@ export var hasPrototype = function(object, prototype){
  * prototypes contain the same propterty, the new prototype will return
  * the propterty of the first prototype in the list which contains it.
  *
- * @param {...Object} prototypes
- * @return {Proxy}
+ * @param {...Object} prototypes - the porotype object to combine
+ * @return {Proxy} - the resulting proxy object
  */
 export var Mixin = function(...prototypes){
 

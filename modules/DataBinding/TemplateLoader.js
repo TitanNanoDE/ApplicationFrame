@@ -1,5 +1,6 @@
-import NetworkRequest from '../../core/prototypes/NetworkRequest.js';
 import { Make, Mixin } from '../../util/make.js';
+import { polyInvoke } from './Util.js';
+import NetworkRequest from '../../core/prototypes/NetworkRequest.js';
 
 
 let FakeTemplate = {
@@ -13,10 +14,10 @@ let FakeTemplate = {
         let fragment = new DocumentFragment();
         let container = document.createElement('div');
 
-        container.innerHTML = this._markup;
+        polyInvoke(container).innerHTML = this._markup;
 
         [].forEach.apply(container.childNodes, [element => {
-            fragment.appendChild(element);
+            polyInvoke(fragment).appendChild(element);
         }]);
 
         return fragment;

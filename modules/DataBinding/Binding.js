@@ -1,6 +1,6 @@
 import { hasPrototype } from '../../util/make.js';
 import { parseExpression } from './Parser.js';
-import { polyMask } from './Util.js';
+import { polyInvoke } from './Util.js';
 
 let Binding = {
 
@@ -50,9 +50,9 @@ let Binding = {
         }
 
         if (hasPrototype(this.node, window.Attr)) {
-            polyMask(this.parentNode).setAttribute(this.node.name, text);
+            polyInvoke(this.parentNode).setAttribute(this.node.name, text);
         } else {
-            this.node.textContent = text.replace(/ /g, '\u00a0');;
+            polyInvoke(this.node).textContent = text.toString().replace(/ /g, '\u00a0');;
         }
     }
 };

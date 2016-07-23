@@ -1,8 +1,8 @@
 import { Make } from '../../util/make.js';
-import Binding from './Binding.js';
-import { parseExpression } from './Parser.js';
 import { bindNode } from './Bind.js';
-import { polyMask, getPolyParent } from './Util.js';
+import { getPolyParent, polyInvoke } from './Util.js';
+import { parseExpression } from './Parser.js';
+import Binding from './Binding.js';
 
 let AdvancedWeakMap = {
     _weakMapStore : null,
@@ -116,18 +116,18 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
         if (cursor.value && cursor.value.parentNode) {
             if (node !== cursor.value) {
                 if (polyParent) {
-                    getPolyParent(cursor.value, polyParent).insertBefore(node, cursor.value);
+                    polyInvoke(getPolyParent(cursor.value, polyParent)).insertBefore(node, cursor.value);
                 } else {
-                    polyMask(cursor.value.parentNode).insertBefore(node, cursor.value);
+                    polyInvoke(cursor.value.parentNode).insertBefore(node, cursor.value);
                 }
             } else {
                 cursor.value = cursor.value.nextElementSibling;
             }
         } else {
             if (polyParent) {
-                getPolyParent(this.marker.parentNode, polyParent).appendChild(node);
+                polyInvoke(getPolyParent(this.marker.parentNode, polyParent)).appendChild(node);
             } else {
-                polyMask(this.marker.parentNode).appendChild(node);
+                polyInvoke(this.marker.parentNode).appendChild(node);
             }
         }
     },
@@ -147,9 +147,9 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
         this.modelBackup.forEach(item => {
             if (model.indexOf(item) < 0) {
                 if (polyParent) {
-                    getPolyParent(this.marker, polyParent).removeChild(this.itemNodeList.get(item));
+                    polyInvoke(getPolyParent(this.marker, polyParent)).removeChild(this.itemNodeList.get(item));
                 } else {
-                    polyMask(this.marker.parentNode).removeChild(this.itemNodeList.get(item));
+                    polyInvoke(this.marker.parentNode).removeChild(this.itemNodeList.get(item));
                     this.itemNodeList.delete(item);
                 }
             }

@@ -1,25 +1,23 @@
 import { Make } from '../../util/make.js';
 import { bindNode } from './Bind.js';
-import { selectElement, selectAllElements, polyMask } from './Util.js';
 import { importTemplate } from './TemplateLoader.js';
+import { polyInvoke } from './Util.js';
 import ScopePrototype from './ScopePrototype.js';
 
 let makeElementFromTemplate = function(template, scope, application, item) {
     let node = document.importNode(template.content, true);
-    let placeholder = selectElement('bind-placeholder', node);
-
-    item = polyMask(item);
+    let placeholder = node.querySelector('bind-placeholder');
 
     item.attributes.forEach(attr => {
-        node.firstElementChild.setAttribute(attr.name, attr.value);
+        polyInvoke(node.firstElementChild).setAttribute(attr.name, attr.value);
     });
 
-    if (placeholder.bare) {
+    if (placeholder) {
         let node = item.firstElementChild;
-        placeholder.parentNode.replaceChild(item.firstElementChild, placeholder.bare);
+        polyInvoke(placeholder.parentNode).replaceChild(item.firstElementChild, placeholder);
 
         [].forEach.apply(item.children, [item => {
-            node.parentNode.appendChild(item);
+            polyInvoke(node.parentNode).appendChild(item);
         }]);
     }
 
@@ -39,7 +37,7 @@ let makeElementFromTemplate = function(template, scope, application, item) {
 
     scope = bindNode(node, scope);
 
-    item.parentNode.replaceChild(node, item.bare);
+    polyInvoke(item.parentNode).replaceChild(node, item);
 
     if (application) {
         application.emit(`newElement:${template.id}`, scope);
@@ -50,13 +48,13 @@ let makeElementFromTemplate = function(template, scope, application, item) {
  * creates a new instance of an HTML template and applies the binding with
  * the given scope.
  *
- * @param {Node|string} template
- * @param {ScopePrototype} scope
- * @param {ApplicationScopeInterface} application
- * @return {Object}
+ * @param {Node|string} template - the template to render
+ * @param {ScopePrototype} scope - the scope for this template to bind to
+ * @param {ApplicationScopeInterface} application - the application this template belongs to
+ * @return {Object} - collection of scope and rendered element
  */
 export let makeTemplate = function (template, scope, application) {
-    template = (typeof template === 'string') ? selectElement(template) : polyMask(template);
+    template = (typeof template === 'string') ? document.querySelector(template) : template;
 
     if (template.hasAttribute('src') && !template.processed) {
         let source = template.getAttribute('src');
@@ -73,14 +71,14 @@ export let makeTemplate = function (template, scope, application) {
 
     } else if (template.hasAttribute('bind-element')) {
         let makeElement = makeElementFromTemplate.bind(this, template, scope, application);
-        let list = selectAllElements(template.id);
+        let list = document.querySelectorAll(template.id);
 
         [].forEach.apply(list, [makeElement]);
 
         (new MutationObserver(mutations => {
             mutations.forEach(item => {
                 if (item.addedNodes.length > 0) {
-                    let list = selectAllElements(template.id);
+                    let list = document.querySelectorAll(template.id);
 
                     [].forEach.apply(list, [makeElement]);
                 }
@@ -109,9 +107,9 @@ export let makeTemplate = function (template, scope, application) {
 
         if (isReplace) {
             console.log('replace template');
-            template.parentNode.replaceChild(node, template.bare);
+            polyInvoke(template.parentNode).replaceChild(node, template.bare);
         } else if (isInsert) {
-            template.parentNode.insertBefore(node, template.bare);
+            polyInvoke(template.parentNode).insertBefore(node, template.bare);
         }
 
         return {　node : node, scope : scope };

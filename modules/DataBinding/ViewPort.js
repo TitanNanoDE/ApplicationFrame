@@ -1,5 +1,6 @@
 import { DataBinding } from '../DataBinding.js';
 import { Make } from '../../util/make.js';
+import { polyInvoke } from './Util.js';
 
 const LIST_HAS_ITEMS = 0;
 
@@ -47,10 +48,10 @@ let ViewPortInstance = {
             this._innerScope.__destroy__();
 
             while (this._scope.element.children.length > LIST_HAS_ITEMS) {
-                this._scope.element.removeChild(this._scope.element.firstChild);
+                polyInvoke(this._scope.element).removeChild(this._scope.element.firstChild);
             }
 
-            this._scope.element.appendChild(this._originalTemplate);
+            polyInvoke(this._scope.element).appendChild(this._originalTemplate);
             this._bound = false;
         }
     },
@@ -74,10 +75,10 @@ let ViewPort = {
      * @return {void}
      */
     _make : function(application){
-        let style = document.head.appendChild(document.createElement('style'));
+        let style = polyInvoke(document.head).appendChild(document.createElement('style'));
         let template = document.createElement('template');
 
-        style.innerHTML = `
+        polyInvoke(style).innerHTML = `
             .view-port {
                 position: relative;
                 left: 0;
@@ -95,10 +96,10 @@ let ViewPort = {
         `;
 
         template.id = 'view-port';
-        template.setAttribute('bind-element', '');
-        template.setAttribute('component', '');
+        polyInvoke(template).setAttribute('bind-element', '');
+        polyInvoke(template).setAttribute('component', '');
 
-        template.innerHTML = `
+        polyInvoke(template).innerHTML = `
             <div class="custom-element {{overflow}}">
                 <template src="{{templateUrl}}" replace></template>
             </div>
