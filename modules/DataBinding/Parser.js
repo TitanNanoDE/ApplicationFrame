@@ -2,8 +2,8 @@
 /**
  * Parses an object expression
  *
- * @param {string} source
- * @param {ScopePrototype} scope
+ * @param {string} source - the string to parse.
+ * @return {Object} - the parsed result.
  */
 export let ObjectParser = function(source){
     let target = null;
@@ -40,9 +40,9 @@ export let ObjectParser = function(source){
 /**
  * Parses a given expression in the context of the given scope.
  *
- * @param {string} expression
- * @param {ScopePrototype} scope
- * @return {ScopePrototype}
+ * @param {string} expression - the expression to parse.
+ * @param {ScopePrototype} scope - the scope on which the expression should be parsed.
+ * @return {*} - the result value.
  */
 export let parseExpression = function(expression, scope){
 	let chain = expression.split('.');

@@ -79,7 +79,8 @@ let checkNode = function(node, scope, parentNode) {
             classes = (node.name === attributeNames.get('classes')),
             modelBinding = node.name === attributeNames.get('model'),
             autoBinding = node.name === 'bind',
-            twoWay = (node.name === attributeNames.get('value') || modelBinding);
+            twoWay = (node.name === attributeNames.get('value') || modelBinding),
+            styleBinding = (node.name === 'bind-style');
 
         let singleBinding = visibilityBinding || transparencyBinding;
 
@@ -93,6 +94,8 @@ let checkNode = function(node, scope, parentNode) {
             bindSimple(text, node, variables, scopeInfo, singleBinding, parentNode);
         } else if (autoBinding) {
             bindAuto(text, scopeInfo, parentNode);
+        } else if (styleBinding) {
+            bindStyle(text, scopeInfo, scope, parentNode);
         }
     } else if(node.localName === 'template'){
         let repeatedTemplate = (node.hasAttribute('replace') && node.hasAttribute('repeat'));
@@ -122,12 +125,13 @@ let checkNode = function(node, scope, parentNode) {
 /**
  * creates a two way binding
  *
- * @param {string} text
- * @param {ScopePrototype} scope
- * @param {Object} scopeInfo
- * @param {Node} node,
- * @param {Node} parentNode
- * @param {boolean} indirect
+ * @param {string} text - the attribute text
+ * @param {ScopePrototype} scope - the scope for this binding
+ * @param {Object} scopeInfo - the scopeInfo for this binding
+ * @param {Node} node - the attribute node
+ * @param {Node} parentNode - the actual node
+ * @param {boolean} indirect - indicates if this binding is indirect
+ * @return {void}
  */
 let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
     let property = text.replace(/[{}]/g, '');
@@ -168,9 +172,9 @@ let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
 /**
  * Compares for changes in the UI in a two way binding
  *
- * @param {string} newValue - the new value
- * @param {ScopePrototype} scope - the scope to check
- * @param {TwoWayBinding} binding - the binding to check
+ * @param {string} newValue - the new value to compare
+ * @param {ScopePrototype} scope - the scope of the comparison
+ * @param {TwoWayBinding} binding - the binding to compare
  * @return {void}
  */
 let compareTwoWay = function(newValue, scope, binding){
@@ -187,11 +191,13 @@ let compareTwoWay = function(newValue, scope, binding){
 /**
  * creates a simple binding
  *
- * @type {string} text
- * @type {Node} node
- * @type {string[]} variables
- * @type {ScopePrototype} scope
- * @type {ScopeInfo} scopeInfo
+ * @param {string} text
+ * @param {Node} node
+ * @param {string[]} variables
+ * @param {ScopePrototype} scope
+ * @param {ScopeInfo} scopeInfo
+ * @param {boolean} singleExpression - indicates if text contains only one expression
+ * @return {void}
  */
 let bindSimple = function(text, node, variables, scopeInfo, singleExpression, parentNode){
     /** @type {Binding} */
@@ -263,9 +269,16 @@ let bindEvents = function(events, node, scope){
             method = parseExpression(method.trim(), scope);
 
             node.addEventListener(name.trim(), e => {
+                let canceled = false;
+
+                e.cancleRecycle = function(){
+                    canceled = true;
+                }
+
                 method.apply(scope, [e]);
 
-                scope.__apply__();
+                if (!canceled)
+                    scope.__apply__();
             });
         }
 	});
@@ -276,6 +289,16 @@ let bindAuto = function(text, scopeInfo, template) {
         scopeName : text,
         template : template
     }, AutoBinding)();
+
+    scopeInfo.bindings.push(binding);
+}
+
+
+let bindStyle = function(text, scopeInfo, scope, parentNode) {
+    let binding = Make({
+        bindings: text,
+        parentNode: parentNode,
+    }, StyleBinding)(scope);
 
     scopeInfo.bindings.push(binding);
 }
@@ -365,7 +388,8 @@ export let destoryScope = function(scope, inProgress) {
 /**
  * Returns the value of an DOM Node
  *
- * @param {Node} node
+ * @param {Node} node - the node to fetch the value from
+ * @return {*} - value of this node
  */
 let getElementValue = function(node){
     if (node.localName === 'input') {
