@@ -6,6 +6,7 @@ import AutoBinding from './AutoBinding.js';
 import Binding from './Binding.js';
 import ClassBinding from './ClassBinding.js';
 import EnabledBinding from './EnabledBinding.js';
+import RenderEngine from './RenderEngine';
 import ScopePrototype from './ScopePrototype.js';
 import TemplateRepeatBinding from './TemplateRepeatBinding.js';
 import TwoWayBinding from './TwoWayBinding.js';
@@ -296,37 +297,39 @@ let executeWatchers = function(scope) {
 /**
  * Checks every binding for the given scope and updates every value.
  *
- * @param {ScopePrototype} scope
- * @param {ScopeInfo} scopeInfo
+ * @param {ScopePrototype} scope? - the scope to recycle
+ * @return {void}
  */
 export let recycle = function (scope) {
-    let t0 = window.performance.now();
+    RenderEngine.scheduleRenderTask(() => {
+        let t0 = window.performance.now();
 
-    if (scope) {
-        executeWatchers(scope);
-        scopeList.get(scope).bindings.forEach(binding => binding.update(scope));
-
-    } else {
-        scopeIndex.forEach(scope => {
+        if (scope) {
             executeWatchers(scope);
-	        scopeList.get(scope).bindings.forEach(binding => binding.update(scope));
+            scopeList.get(scope).bindings.forEach(binding => binding.update(scope));
+
+        } else {
+            scopeIndex.forEach(scope => {
+                executeWatchers(scope);
+    	        scopeList.get(scope).bindings.forEach(binding => binding.update(scope));
+            });
+        }
+
+        Object.keys(expressionTracking).forEach(expr => {
+            expr = expressionTracking[expr];
+
+            expr.value = expr.newValue;
         });
-    }
 
-    Object.keys(expressionTracking).forEach(expr => {
-        expr = expressionTracking[expr];
+        let t1 = window.performance.now();
+        let duration = ((t1 - t0) / 1000).toFixed(2);
 
-        expr.value = expr.newValue;
+        if (scope) {
+            console.log(`scope recycled in ${duration}s`, scope);
+        } else {
+            console.log(`full recycle in ${duration}s`);
+        }
     });
-
-    let t1 = window.performance.now();
-    let duration = ((t1 - t0) / 1000).toFixed(2);
-
-    if (scope) {
-        console.log(`scope recycled in ${duration}s`, scope);
-    } else {
-        console.log(`full recycle in ${duration}s`);
-    }
 };
 
 export let destoryScope = function(scope, inProgress) {

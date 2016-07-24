@@ -1,6 +1,7 @@
 import { Make } from '../../util/make.js';
-import Binding from './Binding.js';
 import { parseExpression } from './Parser.js';
+import Binding from './Binding.js';
+import RenderEngine from './RenderEngine';
 
 let ClassBinding = Make(/** @lends ClassBinding.prototype*/{
 
@@ -40,11 +41,11 @@ let ClassBinding = Make(/** @lends ClassBinding.prototype*/{
             .filter(key => key.indexOf('!') === 0)
             .forEach(this.applyClass.bind(this, scope, classes));
 
-        setTimeout(() => {
+        RenderEngine.scheduleRenderTask(() => {
             Object.keys(classes)
                 .filter(key => key.indexOf('!') !== 0)
                 .forEach(this.applyClass.bind(this, scope, classes));
-        }, 0);
+        });
     }
 
 }, Binding).get();
