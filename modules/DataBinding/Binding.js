@@ -1,4 +1,4 @@
-import { hasPrototype } from '../../util/make.js';
+import { hasPrototype } from '../../util/make';
 import { parseExpression } from './Parser.js';
 import { polyInvoke } from './Util.js';
 
@@ -50,9 +50,15 @@ let Binding = {
         }
 
         if (hasPrototype(this.node, window.Attr)) {
-            polyInvoke(this.parentNode).setAttribute(this.node.name, text);
+            if (polyInvoke(this.parentNode).getAttribute(this.node.name) !== text) {
+                polyInvoke(this.parentNode).setAttribute(this.node.name, text);
+            }
         } else {
-            polyInvoke(this.node).textContent = text.toString().replace(/ /g, '\u00a0');;
+            text = text.toString().replace(/ /g, '\u00a0');
+
+            if (this.node.textContent !== text) {
+                this.node.textContent = text;
+            }
         }
     }
 };
