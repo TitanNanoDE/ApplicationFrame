@@ -107,9 +107,9 @@ export let makeTemplate = function (template, scope, application) {
 
         if (isReplace) {
             console.log('replace template');
-            polyInvoke(template.parentNode).replaceChild(node, template.bare);
+            polyInvoke(template.parentNode).replaceChild(node, template);
         } else if (isInsert) {
-            polyInvoke(template.parentNode).insertBefore(node, template.bare);
+            polyInvoke(template.parentNode).insertBefore(node, template);
         }
 
         return {　node : node, scope : scope };

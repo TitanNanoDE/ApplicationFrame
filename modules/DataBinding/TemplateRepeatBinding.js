@@ -1,8 +1,8 @@
 import { Make } from '../../util/make.js';
-import { bindNode } from './Bind.js';
-import { getPolyParent, polyInvoke } from './Util.js';
-import { parseExpression } from './Parser.js';
 import Binding from './Binding.js';
+import { parseExpression } from './Parser.js';
+import { bindNode } from './Bind.js';
+import { polyInvoke, getPolyParent } from './Util.js';
 
 let AdvancedWeakMap = {
     _weakMapStore : null,
@@ -49,12 +49,12 @@ let AdvancedWeakMap = {
 let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
 
     /**
-     * @type {WeakMap<Node>}
+     * @type {WeakMap}
      */
     itemNodeList : null,
 
     /**
-     * @type {WeakMap<ScopePrototype>}
+     * @type {WeakMap}
      */
     itemScopeList : null,
 
@@ -86,7 +86,19 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
         this.modelBackup = [];
     },
 
-    renderItem : function(model, scope, itemName, cursor, polyParent, item, index){
+    /**
+     * renders one model item to the DOM
+     *
+     * @param  {*} model      [description]
+     * @param  {ScopePrototype} scope      [description]
+     * @param  {string} itemName   [description]
+     * @param  {DocumentFragment} fragment   [description]
+     * @param  {[type]} polyParent [description]
+     * @param  {[type]} item       [description]
+     * @param  {[type]} index      [description]
+     * @return {[type]}            [description]
+     */
+    renderItem : function(model, scope, itemName, fragment, polyParent, item, index){
         let node = null;
 
         if (this.itemNodeList.has(item)) {
@@ -113,29 +125,14 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
             this.itemScopeList.set(item, childScope);
         }
 
-        if (cursor.value && cursor.value.parentNode) {
-            if (node !== cursor.value) {
-                if (polyParent) {
-                    polyInvoke(getPolyParent(cursor.value, polyParent)).insertBefore(node, cursor.value);
-                } else {
-                    polyInvoke(cursor.value.parentNode).insertBefore(node, cursor.value);
-                }
-            } else {
-                cursor.value = cursor.value.nextElementSibling;
-            }
-        } else {
-            if (polyParent) {
-                polyInvoke(getPolyParent(this.marker.parentNode, polyParent)).appendChild(node);
-            } else {
-                polyInvoke(this.marker.parentNode).appendChild(node);
-            }
-        }
+        fragment.appendChild(node);
     },
 
     update : function(scope){
         let [itemName, link, expression] = this.originalNodeValue.split(' ');
         let model = parseExpression(expression, scope);
         let polyParent = this.template.getAttribute('bind-polymer-parent');
+        let dirty = false;
 
         if (link !== 'in') {
             console.console.error('DataBinding: invalide expression', this.originalNodeValue);
@@ -143,29 +140,56 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
         }
 
         model = model && Array.isArray(model) ? model : [];
+        dirty = this.modelBackup.length !== model.length;
 
-        this.modelBackup.forEach(item => {
-            if (model.indexOf(item) < 0) {
-                if (polyParent) {
-                    polyInvoke(getPolyParent(this.marker, polyParent)).removeChild(this.itemNodeList.get(item));
-                } else {
-                    polyInvoke(this.marker.parentNode).removeChild(this.itemNodeList.get(item));
-                    this.itemNodeList.delete(item);
+        if (!dirty) {
+            for (let i = 0; i < model.length; i++) {
+                if (model[i] !== this.modelBackup[i]) {
+                    dirty = true;
+                    break;
                 }
             }
-        });
-
-        this.modelBackup = model.slice();
-
-        if (window.Polymer) {
-            window.Polymer.dom.flush();
         }
 
-        let cursor = {
-            value : this.marker.nextElementSibling
-        };
+        if (dirty) {
+            this.modelBackup.forEach(item => {
+                if (model.indexOf(item) < 0) {
+                    if (polyParent) {
+                        polyInvoke(getPolyParent(this.marker, polyParent)).removeChild(this.itemNodeList.get(item));
+                    } else {
+                        polyInvoke(this.marker.parentNode).removeChild(this.itemNodeList.get(item));
+                    }
 
-        model.forEach(this.renderItem.bind(this, model, scope, itemName, cursor, polyParent));
+                    this.itemScopeList.delete(item);
+                    this.itemNodeList.delete(item);
+                }
+            });
+
+            this.modelBackup = model.slice();
+
+            if (window.Polymer) {
+                window.Polymer.dom.flush();
+            }
+
+            /** @type {DocumentFragment} */
+            let fragment = new DocumentFragment();
+
+            model.forEach(this.renderItem.bind(this, model, scope, itemName, fragment, polyParent));
+
+            if (this.marker.nextElementSibling) {
+                if (polyParent) {
+                    polyInvoke(getPolyParent(this.marker, polyParent)).insertBefore(fragment, this.marker.nextElementSibling);
+                } else {
+                    polyInvoke(this.marker.parentNode).insertBefore(fragment, this.marker.nextElementSibling);
+                }
+            } else {
+                if (polyParent) {
+                    polyInvoke(getPolyParent(this.marker, polyParent)).appendChild(fragment);
+                } else {
+                    polyInvoke(this.marker.parentNode).appendChild(fragment);
+                }
+            }
+        }
     },
 
     destory : function(){
