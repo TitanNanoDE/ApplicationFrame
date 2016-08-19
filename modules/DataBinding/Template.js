@@ -1,10 +1,16 @@
 import { Make } from '../../util/make.js';
 import { bindNode } from './Bind.js';
 import { importTemplate } from './TemplateLoader.js';
+import { parseExpression } from './Parser';
 import { polyInvoke } from './Util.js';
+/**
+ * @var {RenderEngine} RenderEngine
+ */
+import RenderEngine from './RenderEngine';
 import ScopePrototype from './ScopePrototype.js';
 
 let makeElementFromTemplate = function(template, scope, application, item) {
+    RenderEngine.schedulePostRenderTask(() => {
     let node = document.importNode(template.content, true);
     let placeholder = node.querySelector('bind-placeholder');
 
@@ -42,6 +48,7 @@ let makeElementFromTemplate = function(template, scope, application, item) {
     if (application) {
         application.emit(`newElement:${template.id}`, scope);
     }
+    });
 };
 
 /**
@@ -50,21 +57,28 @@ let makeElementFromTemplate = function(template, scope, application, item) {
  *
  * @param {Node|string} template - the template to render
  * @param {ScopePrototype} scope - the scope for this template to bind to
- * @param {ApplicationScopeInterface} application - the application this template belongs to
+ * @param {Application} [application] - the application this template belongs to
+ * @param {ScopePrototype} [parentScope] - the surounding scope of this template node
  * @return {Object} - collection of scope and rendered element
  */
-export let makeTemplate = function (template, scope, application) {
+export let makeTemplate = function (template, scope, application, parentScope) {
     template = (typeof template === 'string') ? document.querySelector(template) : template;
 
     if (template.hasAttribute('src') && !template.processed) {
         let source = template.getAttribute('src');
+
+        if (parentScope) {
+            let value = parseExpression(source, parentScope);
+
+            source = (value && value != '') ? value : source;
+        }
 
         scope = Make(scope, ScopePrototype)();
 
         importTemplate(source, template)
             .then(template => {
                 template.processed = true;
-                makeTemplate(template, scope, application)
+                makeTemplate(template, scope, application, parentScope)
             });
 
         return scope;
@@ -78,7 +92,11 @@ export let makeTemplate = function (template, scope, application) {
         (new MutationObserver(mutations => {
             mutations.forEach(item => {
                 if (item.addedNodes.length > 0) {
-                    let list = document.querySelectorAll(template.id);
+                    let list = [].map.apply(item.addedNodes, [node => {
+                        return node.querySelectorAll ? [].slice.apply(node.querySelectorAll(template.id)) : [];
+                    }]).reduce((prev, next) => prev.concat(next), []);
+
+                    list = list.concat([].filter.apply(item.addedNodes, [node => node.localName === template.id]));
 
                     [].forEach.apply(list, [makeElement]);
                 }

@@ -1,38 +1,62 @@
 import { DataBinding } from '../DataBinding.js';
 import { Make } from '../../util/make.js';
 import { polyInvoke } from './Util.js';
+import RenderEngine from './RenderEngine';
 
 const LIST_HAS_ITEMS = 0;
 
+/**
+ * @lends {ViewPortInstance.Prototype}
+ */
 let ViewPortInstance = {
     _scope : null,
     _bound : false,
     _innerScope : null,
     _originalTemplate : null,
 
-    _make : function(scope) {
+    /** @type {Application} */
+    _application : null,
+
+    /**
+     * @constructs
+     * @param  {ScopePrototype} scope    the scope of this viewport instance
+     * @param  {Application} application the application this viewport instance belongs to
+     * @return {[type]}             [description]
+     */
+    _make : function(scope, application) {
         this._scope = scope;
+        this._application = application;
     },
 
     bind : function(context) {
-        if (!this._bound) {
-            this._scope.templateUrl = context.template;
-            this._scope.overflow = '';
-            this._scope.__apply__();
+        return new Promise((done, error) => {
+            if (!this._bound) {
+                RenderEngine.schedulePostRenderTask(() => {
+                    this._scope.templateUrl = context.template;
+                    this._scope.overflow = '';
+                    this._scope.__apply__();
 
-            if (!this._originalTemplate) {
-                this._originalTemplate = this._scope.element.firstElementChild;
+                    if (!this._originalTemplate) {
+                        this._originalTemplate = this._scope.element.firstElementChild;
+                    }
+
+                    this._innerScope = DataBinding.makeTemplate(
+                        this._originalTemplate,
+                        context.scope || {},
+                        this._application,
+                        this._scope
+                    );
+
+                    this._bound = true;
+
+                    context.scope = this._innerScope;
+
+                    done(this);
+                });
+            } else {
+                error('ViewPort: viewport is already bound!');
             }
-
-            this._innerScope = DataBinding.makeTemplate(this._originalTemplate, context.scope || {});
-            this._bound = true;
-
-            context.scope = this._innerScope;
-        } else {
-            console.error('ViewPort: viewport is already bound!');
-        }
-
-        return this;
+        });
     },
 
     update : function(...args) {
@@ -53,6 +77,7 @@ let ViewPortInstance = {
 
             polyInvoke(this._scope.element).appendChild(this._originalTemplate);
             this._bound = false;
+            this._originalTemplate.processed = false;
         }
     },
 
@@ -64,7 +89,7 @@ let ViewPortInstance = {
 
 let ViewPort = {
 
-    _elements : {},
+    _elements : new Map(),
 
     /** @type {Application} */
     _application : null,
@@ -101,13 +126,12 @@ let ViewPort = {
 
         polyInvoke(template).innerHTML = `
             <div class="custom-element {{overflow}}">
-                <template src="{{templateUrl}}" replace></template>
+                <template src="templateUrl" replace></template>
             </div>
         `;
 
-        application.on('newElement:view-port', scope => {
-            this._elements[scope.name] = Make(ViewPortInstance)(scope);
-
+        application.on('newElement:view-port', (scope) => {
+            this._elements[scope.name] = Make(ViewPortInstance)(scope, application);
             application.emit(`viewPort:ready:${scope.name}`);
         });
 

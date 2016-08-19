@@ -1,13 +1,15 @@
 import { Make, hasPrototype } from '../../util/make.js';
 import { ObjectParser, parseExpression, assignExpression } from './Parser.js';
 import { attributeNames } from './Mapping.js';
-import { polyInvoke } from './Util.js';
+import { selectElement, polyInvoke } from './Util.js';
 import AutoBinding from './AutoBinding.js';
 import Binding from './Binding.js';
+import BindingRegistry from './BindingRegistry.js';
 import ClassBinding from './ClassBinding.js';
 import EnabledBinding from './EnabledBinding.js';
 import RenderEngine from './RenderEngine';
 import ScopePrototype from './ScopePrototype.js';
+import StyleBinding from './StyleBinding';
 import TemplateRepeatBinding from './TemplateRepeatBinding.js';
 import TwoWayBinding from './TwoWayBinding.js';
 
@@ -16,7 +18,7 @@ import TwoWayBinding from './TwoWayBinding.js';
  *
  * @type {WeakMap}
  */
-let scopeList = new WeakMap();
+let scopeList = new Map();
 
 /**
  * @type {ScopePrototype[]}
@@ -26,7 +28,7 @@ let scopeIndex = [];
 /**
  * @type {Array[]}
  */
-export let watcherList = new WeakMap();
+export let watcherList = new Map();
 
 /**
  * @type {Object}
@@ -90,15 +92,27 @@ let checkNode = function(node, scope, parentNode) {
             bindClasses(text, node, scopeInfo, parentNode);
         } else if (enabledAttribute) {
             bindEnabled(text, scopeInfo, parentNode);
-        } else if (variables || singleBinding) {
-            bindSimple(text, node, variables, scopeInfo, singleBinding, parentNode);
         } else if (autoBinding) {
             bindAuto(text, scopeInfo, parentNode);
         } else if (styleBinding) {
             bindStyle(text, scopeInfo, scope, parentNode);
+        } else if (BindingRegistry.get(node.name) && BindingRegistry.get(node.name).test()) {
+            Make(BindingRegistry.get(node.name))({
+                text: text,
+                variables: variables,
+                scope: scope,
+                scopeInfo: scopeInfo,
+                node: node,
+                parentNode: parentNode,
+            });
+        } else if (variables || singleBinding) {
+            bindSimple(text, node, variables, scopeInfo, singleBinding, parentNode);
         }
+
     } else if(node.localName === 'template'){
-        let repeatedTemplate = (node.hasAttribute('replace') && node.hasAttribute('repeat'));
+        let repeatedTemplate = (node.hasAttribute('replace') &&
+                                node.hasAttribute('repeat')) ||
+                                node.hasAttribute('bind-repeat');
 
         node.attributes.forEach(child => checkNode(child, scope, node));
 
@@ -233,9 +247,13 @@ let bindEnabled = function(text, scopeInfo, parentNode) {
 };
 
 let bindTemplateRepeat = function(template, scopeInfo) {
-    let marker = document.createComment(`repeat ${template.id} with ${template.getAttribute('repeat')}`);
+    let text = template.hasAttribute('bind-repeat') ?
+                            template.getAttribute('bind-repeat') :
+                            template.getAttribute('repeat');
+
+    let marker = document.createComment(`repeat ${template.id} with ${text}`);
     let binding = Make({
-        originalNodeValue : template.getAttribute('repeat'),
+        originalNodeValue : text,
         template : template,
         marker : marker,
     }, TemplateRepeatBinding)();
@@ -345,17 +363,30 @@ export let recycle = function (scope) {
         });
 
         let t1 = window.performance.now();
-        let duration = ((t1 - t0) / 1000).toFixed(2);
+        let duration = ((t1 - t0) / 1000);
+        let color = null;
+
+        if (duration >= 0.033) {
+            color = 'red';
+        } else if (duration >= 0.016) {
+            color = 'yellow';
+        } else {
+            color = 'green';
+        }
+
+        color = `color: ${color};`;
+        duration = duration.toFixed(2);
 
         if (scope) {
-            console.log(`scope recycled in ${duration}s`, scope);
+            console.log(`scope recycled in %c${duration}s`, color);
         } else {
-            console.log(`full recycle in ${duration}s`);
+            console.log(`full recycle in %c${duration}s`, color);
         }
-    });
+    }, scope || 'DataBindingRecycle');
 };
 
 export let destoryScope = function(scope, inProgress) {
+    console.log(scopeList);
     let scopeInfo = scopeList.get(scope);
 
     let [scopes, bindings] = scopeInfo.bindings.reduce((prev, binding) => {

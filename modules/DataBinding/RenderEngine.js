@@ -1,10 +1,14 @@
+import { Make } from '../../util/make';
+import TaskList from './RenderEngine/TaskList';
+
 /**
- * @module
+ * @module RednerEngine
+ * @memberof DataBinding
  */
 
 let preRenderHooks = [];
 let postRenderHooks = [];
-let renderTasks = [];
+let renderTasks = Make(TaskList)();
 let postRenderTasks = [];
 let nextPostRenderTasks = [];
 let active = false;
@@ -24,8 +28,8 @@ let renderCycle = function() {
     preRenderHooks.forEach(hook => hook());
 
     //run all render tasks.
-    let tasks = renderTasks;
-    renderTasks = [];
+    let tasks = renderTasks.tasks;
+    renderTasks.flush();
     tasks.forEach(task => task());
 
     //finish rendering, final steps
@@ -38,7 +42,7 @@ let renderCycle = function() {
 
 let scheduleNextFrame = function() {
     if (!active && (postRenderHooks.length > 0 || preRenderHooks.length > 0 ||
-        renderTasks.length > 0 || postRenderTasks.length > 0)) {
+        renderTasks.length > 0 || postRenderTasks.length > 0 || nextPostRenderTasks.length > 0)) {
             window.requestAnimationFrame(renderCycle);
 
             active = true;
@@ -92,10 +96,11 @@ let RenderEngine = {
 
     /**
      * @param {Function} f - the task to preform in the next render cycle.
+     * @param {string} [id] optional task id
      * @return {Function} - the function which has been passed in.
      */
-    scheduleRenderTask: function(f) {
-        renderTasks.push(f);
+    scheduleRenderTask: function(f, id) {
+        renderTasks.push(f, id);
         scheduleNextFrame();
 
         return f;
@@ -103,7 +108,7 @@ let RenderEngine = {
 
     /**
      * @param {Function} f - the task to preform after the next render cycle.
-     * @return {function} - the function which has been passed in.
+     * @return {Function} - the function which has been passed in.
      */
     schedulePostRenderTask: function(f) {
         nextPostRenderTasks.push(f);

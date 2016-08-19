@@ -1,8 +1,10 @@
 //import CryptoJS from '../libs/CryptoJS-SHA-3.js';
-import { bindNode } from './DataBinding/Bind.js';
 import { makeTemplate } from './DataBinding/Template.js';
 import { polyInvoke } from './DataBinding/Util.js';
+import { bindNode } from './DataBinding/Bind.js';
 import ViewPort from './DataBinding/ViewPort.js';
+import './DataBinding/IfBinding.js';
+import './DataBinding/ElementToScopeBinding.js';
 
 /**
  * @module DataBinding

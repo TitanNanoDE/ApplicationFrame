@@ -4,48 +4,6 @@ import { parseExpression } from './Parser.js';
 import { bindNode } from './Bind.js';
 import { polyInvoke, getPolyParent } from './Util.js';
 
-let AdvancedWeakMap = {
-    _weakMapStore : null,
-    _objFallBackStore : null,
-
-    _make : function(){
-        this._weakMapStore = new WeakMap();
-        this._objFallBackStore = {};
-    },
-
-    get : function(object) {
-        if (typeof object !== 'object') {
-            return this._objFallBackStore[object];
-        } else {
-            return this._weakMapStore.get(object);
-        }
-    },
-
-    set : function(object, value) {
-        if (typeof object !== 'object') {
-            return this._objFallBackStore[object] = value;
-        } else {
-            return this._weakMapStore.set(object, value);
-        }
-    },
-
-    has : function(object) {
-        if (typeof object !== 'object') {
-            return object in this._objFallBackStore;
-        } else {
-            return this._weakMapStore.has(object);
-        }
-    },
-
-    delete : function(object) {
-        if (typeof object !== 'object') {
-            delete this._objFallBackStore[object];
-        } else {
-            this._weakMapStore.delete(object);
-        }
-    }
-}
-
 let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
 
     /**
@@ -81,8 +39,8 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
     _make : function(){
         Binding._make.apply(this);
 
-        this.itemNodeList = Make(AdvancedWeakMap)();
-        this.itemScopeList = Make(AdvancedWeakMap)();
+        this.itemNodeList = new Map();
+        this.itemScopeList = new Map();
         this.modelBackup = [];
     },
 

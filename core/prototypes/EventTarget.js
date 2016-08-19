@@ -32,11 +32,11 @@ let EventTarget = {
      */
     emit : function(type, data){
         if (this._listeners[type]) {
-            this._listeners[type].forEach(listener => {
-                setTimeout(() => {
-                    listener.apply(this, [data]);
-                }, 0);
-            });
+            setTimeout(() =>
+                this._listeners[type].forEach(listener =>
+                    listener.apply(this, [data]
+                )
+            ), 0);
         }
     }
 };
