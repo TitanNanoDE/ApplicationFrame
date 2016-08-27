@@ -1,14 +1,25 @@
+/**
+ * @module DataBinding/Template
+ */
+
 import { Make } from '../../util/make.js';
 import { bindNode } from './Bind.js';
 import { importTemplate } from './TemplateLoader.js';
 import { parseExpression } from './Parser';
 import { polyInvoke } from './Util.js';
-/**
- * @var {RenderEngine} RenderEngine
- */
 import RenderEngine from './RenderEngine';
 import ScopePrototype from './ScopePrototype.js';
 
+/**
+ * Instanciates a template based on a specified element.
+ *
+ * @param  {HTMLTemplateElement}               template    the template to instanciate
+ * @param  {module:DataBinding.ScopePrototype} scope       the scope to operate on
+ * @param  {Application}                       application the application this binding belongs to
+ * @param  {Node}                              item        the original node
+ *
+ * @return {void}
+ */
 let makeElementFromTemplate = function(template, scope, application, item) {
     RenderEngine.schedulePostRenderTask(() => {
     let node = document.importNode(template.content, true);
@@ -55,10 +66,13 @@ let makeElementFromTemplate = function(template, scope, application, item) {
  * creates a new instance of an HTML template and applies the binding with
  * the given scope.
  *
+ * @function
+ *
  * @param {Node|string} template - the template to render
  * @param {ScopePrototype} scope - the scope for this template to bind to
  * @param {Application} [application] - the application this template belongs to
  * @param {ScopePrototype} [parentScope] - the surounding scope of this template node
+ *
  * @return {Object} - collection of scope and rendered element
  */
 export let makeTemplate = function (template, scope, application, parentScope) {

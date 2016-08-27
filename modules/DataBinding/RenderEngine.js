@@ -1,18 +1,33 @@
+/**
+ * @module RenderEngine
+ */
+
 import { Make } from '../../util/make';
 import TaskList from './RenderEngine/TaskList';
 
-/**
- * @module RednerEngine
- * @memberof DataBinding
- */
-
+/** @type {Function[]} */
 let preRenderHooks = [];
+
+/** @type {Function[]} */
 let postRenderHooks = [];
+
+/** @type {module:RenderEngine.TaskList} */
 let renderTasks = Make(TaskList)();
+
+/** @type {Function[]} */
 let postRenderTasks = [];
+
+/** @type {Function[]} */
 let nextPostRenderTasks = [];
+
+/** @type {boolean} */
 let active = false;
 
+/**
+ * performs all render tasks from one frame. This is one render cycle.
+ *
+ * @return {void}
+ */
 let renderCycle = function() {
     active = false;
 
@@ -40,6 +55,12 @@ let renderCycle = function() {
     scheduleNextFrame();
 };
 
+/**
+ * Schedules a new render cycle in the browsers rendeing engine.
+ * The cycle is performed as soon as the browser is ready to render a new frame.
+ *
+ * @return {void}
+ */
 let scheduleNextFrame = function() {
     if (!active && (postRenderHooks.length > 0 || preRenderHooks.length > 0 ||
         renderTasks.length > 0 || postRenderTasks.length > 0 || nextPostRenderTasks.length > 0)) {
@@ -50,11 +71,16 @@ let scheduleNextFrame = function() {
 }
 
 
+/**
+ * RenderEngine Singleton
+ *
+ * @namespace
+ */
 let RenderEngine = {
 
     /**
-     * @param {Function} f - a hook function to execute before each render cycle
-     * @return {Function} - returns the function which has been passed in
+     * @param {Function} f a hook function to execute before each render cycle
+     * @return {Function} returns the function which has been passed in
      */
     addPreRenderHook: function(f) {
         preRenderHooks.push(f);
@@ -65,7 +91,7 @@ let RenderEngine = {
 
     /**
      * @param {Function} f - a hook function to execute after each render cycle
-     * @return {Function} - returns the function which has been passed in.
+     * @return {Function} returns the function which has been passed in.
      */
     addPostRenderHook: function(f) {
         postRenderHooks.push(f);
@@ -88,7 +114,7 @@ let RenderEngine = {
      * Removes a previously added post render hook
      *
      * @param  {Function} f - the function which was previously added
-     * @return {*}   see Array.prototype.splice
+     * @return {*} {@link Array.prototype.splice}
      */
     removePostRenderHook: function(f) {
         return postRenderHooks.splice(postRenderHooks.indexOf(f), 1);
@@ -97,7 +123,7 @@ let RenderEngine = {
     /**
      * @param {Function} f - the task to preform in the next render cycle.
      * @param {string} [id] optional task id
-     * @return {Function} - the function which has been passed in.
+     * @return {Function} the function which has been passed in.
      */
     scheduleRenderTask: function(f, id) {
         renderTasks.push(f, id);
@@ -108,7 +134,7 @@ let RenderEngine = {
 
     /**
      * @param {Function} f - the task to preform after the next render cycle.
-     * @return {Function} - the function which has been passed in.
+     * @return {Function} the function which has been passed in.
      */
     schedulePostRenderTask: function(f) {
         nextPostRenderTasks.push(f);
@@ -129,4 +155,8 @@ let RenderEngine = {
     }
 };
 
+/**
+ * @member {module:RenderEngine~RenderEngine} RenderEngine
+ * @static
+ */
 export default RenderEngine;

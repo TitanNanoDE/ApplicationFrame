@@ -2,6 +2,7 @@ import { hasPrototype } from '../../util/make';
 import { parseExpression } from './Parser.js';
 import { polyInvoke } from './Util.js';
 
+/** @lends module:DataBinding.Binding.prototype */
 let Binding = {
 
     /**
@@ -29,10 +30,25 @@ let Binding = {
      */
     singleExpression : false,
 
-    _make : function(){
+    /**
+     * The basic prototype for bindings. Any binding should inherit form this prototype.
+     *
+     * @constructs
+     * @return {void}
+     */
+    _make : function() {
         this.properties = [];
     },
 
+    /**
+     * updates a binding. The model will be checked for changes
+     * and new data will be applied to the binding target.
+     *
+     * @param  {module:DataBinding.ScopePrototype} scope the scope on which
+     *                                             this binding should operate.
+     *
+     * @return {void}
+     */
     update : function(scope){
         let text = this.originalNodeValue;
         let values = this.properties.map(key => {

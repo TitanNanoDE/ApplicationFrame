@@ -2,8 +2,13 @@ import { parseExpression } from './Parser';
 import { recycle, watcherList, destoryScope } from './Bind.js';
 
 /**
-* Prototype for data binding scopes.
-*/
+ * @class ScopePrototype
+ * @memberof module:DataBinding
+ */
+
+/**
+ * @lends module:DataBinding.ScopePrototype.prototype
+ */
 let ScopePrototype = {
 
     /**
@@ -22,6 +27,14 @@ let ScopePrototype = {
         return recycle(localRecycle ? this : null);
     },
 
+    /**
+     * starts to watch the given expression and fires when the value changes.
+     *
+     * @param  {string}   expression the expression to watch
+     * @param  {Function} cb         will be called once the value changes
+     *
+     * @return {void}
+     */
     __watch__ : function(expression, cb) {
         if (!watcherList.has(this)) {
             watcherList.set(this, []);
@@ -33,6 +46,13 @@ let ScopePrototype = {
         });
     },
 
+    /**
+     * destorys a scope
+     *
+     * @param  {boolean} inProgress whenever this is an initial call or not
+     *
+     * @return {boolean} status
+     */
     __destroy__ : function(inProgress) {
         return destoryScope(this, inProgress);
     },

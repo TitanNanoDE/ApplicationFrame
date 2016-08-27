@@ -5,8 +5,6 @@
  * License. - http://www.apache.org/licenses/LICENSE-2.0         *
  *****************************************************************/
 
-"use strict";
-
 import Accessor from './prototypes/Accessor.js';
 import AsyncLoop from './prototypes/AsyncLoop.js';
 import AsyncQueue from './prototypes/AsyncQueue.js';

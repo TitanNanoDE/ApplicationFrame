@@ -1,3 +1,8 @@
+/**
+ * @file MozillaAddonScopeInterface
+ * @deprecated Don't use this anymore. It will be removed soon.
+ */
+
 /* global require */
 
 import { Make } from '../../util/make.js';

@@ -1,3 +1,8 @@
+/**
+ * @file ServiceScopeInterface
+ * @deprecated Don't use this anymore. It will be removed soon.
+ */
+
 import { Make } from '../../util/make.js';
 import { createUniqueId } from '../../util/functions.js';
 import Scopes from '../objects/Scopes.js';

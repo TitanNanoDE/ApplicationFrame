@@ -1,3 +1,7 @@
+/**
+ * @module DataBinding/ViewPort
+ */
+
 import { DataBinding } from '../DataBinding.js';
 import { Make } from '../../util/make.js';
 import { polyInvoke } from './Util.js';
@@ -5,29 +9,59 @@ import RenderEngine from './RenderEngine';
 
 const LIST_HAS_ITEMS = 0;
 
-/**
- * @lends {ViewPortInstance.Prototype}
- */
+/** @lends module:DataBinding/ViewPort.ViewPortInstance# */
 let ViewPortInstance = {
+
+    /**
+     * @private
+     * @type {module:DataBinding.ScopePrototype}
+     */
     _scope : null,
+
+    /**
+     * @private
+     * @type {boolean}
+     */
     _bound : false,
+
+    /**
+     * @private
+     * @type {module:DataBinding.ScopePrototype}
+     */
     _innerScope : null,
+
+    /**
+     * @private
+     * @type {HTMLTemplateElement}
+     */
     _originalTemplate : null,
 
-    /** @type {Application} */
+    /**
+     * @private
+     * @type {Application}
+     */
     _application : null,
 
     /**
      * @constructs
-     * @param  {ScopePrototype} scope    the scope of this viewport instance
+     *
+     * @param  {module:DataBinding.ScopePrototype} scope    the scope of this viewport instance
      * @param  {Application} application the application this viewport instance belongs to
-     * @return {[type]}             [description]
+     *
+     * @return {void}
      */
     _make : function(scope, application) {
         this._scope = scope;
         this._application = application;
     },
 
+    /**
+     * binds the ViewPort to a scope so it can be filled with content
+     *
+     * @param  {Object} context a collection of properties to configure the viewport
+     *
+     * @return {Promise.<module:DataBinding/ViewPort.ViewPortInstance>}  promise for when the viewport is bound
+     */
     bind : function(context) {
         return new Promise((done, error) => {
             if (!this._bound) {
@@ -59,10 +93,22 @@ let ViewPortInstance = {
         });
     },
 
+    /**
+     * updates the inner scope of the viewport
+     *
+     * @param  {...*} args arguments to be passed on to {@link module:DataBinding.ScopePrototype#__apply__}
+     *
+     * @return {void}
+     */
     update : function(...args) {
         return this._innerScope.__apply__(...args);
     },
 
+    /**
+     * the scope if ViewPort content
+     *
+     * @type {module:DataBinding.ScopePrototype}
+     */
     get scope() {
         return this._innerScope;
     },
@@ -81,17 +127,39 @@ let ViewPortInstance = {
         }
     },
 
+    /**
+     * enables the viewport content to overflow the viewports bounds
+     *
+     * @return {void}
+     */
     alowOverflow : function() {
         this._scope.overflow = 'overflow';
         this._scope.__apply__();
     },
 };
 
+/**
+ * the interface for the ViewPort module
+ *
+ * @namespace
+ * @static
+ */
 let ViewPort = {
 
+    /**
+     * all instanciated ViewPorts
+     *
+     * @private
+     * @type {Map.<module:DataBinding.ScopePrototype>}
+     */
     _elements : new Map(),
 
-    /** @type {Application} */
+    /**
+     * the applicaion the viewports are registered to
+     *
+     * @private
+     * @type {Application}
+     */
     _application : null,
 
     /**
@@ -140,6 +208,13 @@ let ViewPort = {
         DataBinding.makeTemplate(template, () => { return {} }, application);
     },
 
+    /**
+     * fetches a viewPort instance by a name
+     *
+     * @param  {string} name the name to look for
+     *
+     * @return {Promise.<module:DataBinding.ScopePrototype>}  the matching scope
+     */
     getInstance : function(name){
         return new Promise((success) => {
             if (this._elements[name]) {
@@ -150,6 +225,13 @@ let ViewPort = {
         });
     },
 
+    /**
+     * destorys an viewPort instance
+     *
+     * @param  {module:DataBinding/ViewPort.ViewPortInstance} instance the instance to destroy
+     *
+     * @return {void}
+     */
     free : function(instance){
         this._elements[instance._scope.name] = null;
 

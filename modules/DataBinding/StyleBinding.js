@@ -1,3 +1,7 @@
+/**
+ * @module DataBinding/StyleBinding
+ */
+
 import { Make } from '../../util/make';
 import { ObjectParser, assignExpression } from './Parser';
 
@@ -24,12 +28,15 @@ let readStyleProperties = function(container, scope) {
     });
 }
 
-/**
-* @extends {Binding}
-*/
-let StyleBinding = Make(/** @lends StyleBinding.prototype */{
+let StyleBinding = Make(/** @lends module:DataBinding/StyleBinding~StyleBinding# */{
     bindings: null,
 
+    /**
+     * @constructs
+     * @extends {module:DataBinding.Binding}
+     *
+     * @return {void}
+     */
     _make: function() {
         this.bindings = ObjectParser(this.bindings);
     },
@@ -39,4 +46,9 @@ let StyleBinding = Make(/** @lends StyleBinding.prototype */{
     }
 }, Binding).get();
 
+/**
+ * @member StyleBinding
+ * @type {module:DataBinding/StyleBinding~StyleBinding}
+ * @static
+ */
 export default StyleBinding;

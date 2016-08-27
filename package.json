@@ -9,11 +9,13 @@
     "eslint": "^1.5.1",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
+    "ink-docstrap": "^1.2.1",
     "merge-stream": "^1.0.0",
     "mocha": "^2.4.5"
   },
   "scripts": {
-    "test": "./node_modules/.bin/mocha .travis/main.js"
+    "test": "./node_modules/.bin/mocha .travis/main.js",
+    "jsdoc": "jsdoc af.js core/ modules/ util/ -r -p -a all -P package.json -c jsdoc.conf.json -t node_modules/ink-docstrap/template"
   },
   "repository": {
     "type": "git",

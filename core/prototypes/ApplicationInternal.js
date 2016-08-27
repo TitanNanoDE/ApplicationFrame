@@ -1,3 +1,5 @@
+
+/** @lends ApplicationInternal# */
 let ApplicationInternal = {
     /**
      * @type {Thread}
@@ -10,7 +12,7 @@ let ApplicationInternal = {
     workers : null,
 
     /**
-     * @type {Array}
+     * @type {Function[]}
      */
     listeners : null,
 
@@ -23,8 +25,8 @@ let ApplicationInternal = {
      * this prototype defines a new application scope
      *
      * @constructs
-     * @param {string} name
-     * @implements {Scope}
+     *
+     * @return {void}
      */
     _make : function(){
         this.workers= [];

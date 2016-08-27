@@ -1,9 +1,5 @@
 
-/**
- * @module RenderEngine
- */
-
-/** @lends TaskList.Prototypes */
+/** @lends module:RenderEngine.TaskList.prototype */
 let TaskList = {
 
     /** @type Array */
@@ -13,6 +9,8 @@ let TaskList = {
     registeredIds: null,
 
     /**
+     * Render TaskList to manage rendertaks and optionally track duplicates by ids.
+     *
      * @constructs
      * @return {void}
      */

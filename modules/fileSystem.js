@@ -1,11 +1,9 @@
-/*****************************************************************
- * fileSystem.js v2.0.0  part of the ApplicationFrame              *
- * © copyright by Jovan Gerodetti (TitanNano.de)                 *
- * The following Source is licensed under the Appache 2.0        *
- * License. - http://www.apache.org/licenses/LICENSE-2.0         *
- *****************************************************************/
-
-'use strict';
+/**
+ * @module fileSystem.js
+ * @version v1.2.0
+ * @copyright by Jovan Gerodetti (TitanNano.de)
+ * @license The following Source is licensed under the Appache 2.0 License. - http://www.apache.org/licenses/LICENSE-2.0
+ */
 
 import Af from '../af.js';
 
@@ -184,6 +182,7 @@ let getStaticFilePointerFromPath= function({ system = DEFAULTSYSTEM, path }){
 };
 
 /*let getStaticFilePointerFromFile = function(DbFile){
+
 // @ToDo: implement this!! basically just call URL.createObjectURL...
 };*/
 

@@ -1,7 +1,11 @@
+/**
+ * @module DataBinding/Bind
+ */
+
 import { Make, hasPrototype } from '../../util/make.js';
 import { ObjectParser, parseExpression, assignExpression } from './Parser.js';
 import { attributeNames } from './Mapping.js';
-import { selectElement, polyInvoke } from './Util.js';
+import { polyInvoke } from './Util.js';
 import AutoBinding from './AutoBinding.js';
 import Binding from './Binding.js';
 import BindingRegistry from './BindingRegistry.js';
@@ -38,10 +42,11 @@ let expressionTracking = {};
 /**
  * applies the binding to the node for the given scope.
  *
+ * @function
  * @param {Node|string} node - the node which should be bound
  * @param {Object} scope - the scope which should be bound to
  * @param {boolean} isolated - indicates if this scope should be recycled isolated
- * @return {ScopePrototype} - the scope this node is bound to
+ * @return {module:DataBinding~ScopePrototype} the scope this node is bound to
  */
 export let bindNode = function(node, scope, isolated) {
 	scope = hasPrototype(scope, ScopePrototype) ? scope : Make(scope, ScopePrototype)();
@@ -64,7 +69,7 @@ export let bindNode = function(node, scope, isolated) {
  * Travels through a node and it's children searching for binding expressions
  *
  * @param {Node} node - the node to check
- * @param {ScopePrototype} scope - the scope this node should be bound to
+ * @param {module:DataBinding.ScopePrototype} scope - the scope this node should be bound to
  * @param {Node} parentNode - the parent of the provided node
  * @return {void}
  */
@@ -140,7 +145,7 @@ let checkNode = function(node, scope, parentNode) {
  * creates a two way binding
  *
  * @param {string} text - the attribute text
- * @param {ScopePrototype} scope - the scope for this binding
+ * @param {module:DataBinding.ScopePrototype} scope - the scope for this binding
  * @param {Object} scopeInfo - the scopeInfo for this binding
  * @param {Node} node - the attribute node
  * @param {Node} parentNode - the actual node
@@ -187,7 +192,7 @@ let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
  * Compares for changes in the UI in a two way binding
  *
  * @param {string} newValue - the new value to compare
- * @param {ScopePrototype} scope - the scope of the comparison
+ * @param {module:DataBinding.ScopePrototype} scope - the scope of the comparison
  * @param {TwoWayBinding} binding - the binding to compare
  * @return {void}
  */
@@ -205,11 +210,10 @@ let compareTwoWay = function(newValue, scope, binding){
 /**
  * creates a simple binding
  *
- * @param {string} text
- * @param {Node} node
- * @param {string[]} variables
- * @param {ScopePrototype} scope
- * @param {ScopeInfo} scopeInfo
+ * @param {string} text the initial text of the node
+ * @param {Node} node the text or attribute node of the binding
+ * @param {string[]} variables list of expressions
+ * @param {Object} scopeInfo meta data of the current scope
  * @param {boolean} singleExpression - indicates if text contains only one expression
  * @return {void}
  */
@@ -226,6 +230,16 @@ let bindSimple = function(text, node, variables, scopeInfo, singleExpression, pa
     scopeInfo.bindings.push(binding);
 }
 
+/**
+ * binds an object expression to node.className.
+ *
+ * @param  {string} text      the initial text value of the binding node
+ * @param  {Node}   node        the binding node
+ * @param  {Object} scopeInfo the meta data of the current scope
+ * @param  {Node}   parentNode  the parent of the binding node
+ *
+ * @return {void}
+ */
 let bindClasses = function(text, node, scopeInfo, parentNode) {
     let binding = Make({
         originalNodeValue : text,
@@ -237,6 +251,15 @@ let bindClasses = function(text, node, scopeInfo, parentNode) {
     scopeInfo.bindings.push(binding);
 };
 
+/**
+ * binds an expression to the disabled attribute.
+ *
+ * @param  {string} text       the initial value of the binding node
+ * @param  {Object} scopeInfo  the meta data of the current scope
+ * @param  {Node}   parentNode the parent of the binding node
+ *
+ * @return {void}
+ */
 let bindEnabled = function(text, scopeInfo, parentNode) {
     let binding = Make({
         originalNodeValue : text,
@@ -246,6 +269,14 @@ let bindEnabled = function(text, scopeInfo, parentNode) {
     scopeInfo.bindings.push(binding);
 };
 
+/**
+ * binds a template to an array or list. The template is repeated for each list item.
+ *
+ * @param  {Node}   template  the template node
+ * @param  {Object} scopeInfo the meta data of the current scope
+ *
+ * @return {void}
+ */
 let bindTemplateRepeat = function(template, scopeInfo) {
     let text = template.hasAttribute('bind-repeat') ?
                             template.getAttribute('bind-repeat') :
@@ -266,9 +297,9 @@ let bindTemplateRepeat = function(template, scopeInfo) {
 /**
  * Binds the events specified for a Node
  *
- * @param {string[]} events - a string representation of the object with all the event / expression pairs.
- * @param {Node} node - the node on which the event listeners should be registered.
- * @param {ScopePrototype} scope - the data scope on which the binding happens.
+ * @param {string[]}                          events a string representation of the object with all the event / expression pairs.
+ * @param {Node}                              node   the node on which the event listeners should be registered.
+ * @param {module:DataBinding~ScopePrototype} scope  the data scope on which the binding happens.
  * @return {void}
  */
 let bindEvents = function(events, node, scope){
@@ -302,6 +333,15 @@ let bindEvents = function(events, node, scope){
 	});
 };
 
+/**
+ * automatically binds a template to a property of the current scope
+ *
+ * @param  {string} text      the binding text
+ * @param  {Object} scopeInfo the meta data of the current scope
+ * @param  {Node}   template  the template node
+ *
+ * @return {void}
+ */
 let bindAuto = function(text, scopeInfo, template) {
     let binding = Make({
         scopeName : text,
@@ -311,7 +351,16 @@ let bindAuto = function(text, scopeInfo, template) {
     scopeInfo.bindings.push(binding);
 }
 
-
+/**
+ * binds visual properties to the scope
+ *
+ * @param  {string}                            text       the binding text
+ * @param  {Object}                            scopeInfo  the meta data of the scope
+ * @param  {module:DataBinding~ScopePrototype} scope      the current scope
+ * @param  {Node}                              parentNode the parent of the binding node
+ *
+ * @return {void}
+ */
 let bindStyle = function(text, scopeInfo, scope, parentNode) {
     let binding = Make({
         bindings: text,
@@ -321,6 +370,13 @@ let bindStyle = function(text, scopeInfo, scope, parentNode) {
     scopeInfo.bindings.push(binding);
 }
 
+/**
+ * executes every watcher for the given scope.
+ *
+ * @param  {module:DataBinding~ScopePrototype} scope the current scope
+ *
+ * @return {void}
+ */
 let executeWatchers = function(scope) {
     watcherList.get(scope) && watcherList.get(scope).forEach(watcher => {
         let value = parseExpression(watcher.expression, scope);
@@ -338,7 +394,9 @@ let executeWatchers = function(scope) {
 /**
  * Checks every binding for the given scope and updates every value.
  *
- * @param {ScopePrototype} scope? - the scope to recycle
+ * @function
+ * @param {module:DataBinding~ScopePrototype} [scope] the scope to recycle
+ *
  * @return {void}
  */
 export let recycle = function (scope) {
@@ -385,6 +443,13 @@ export let recycle = function (scope) {
     }, scope || 'DataBindingRecycle');
 };
 
+/**
+ * destories a scope.
+ *
+ * @function
+ * @param {module:DataBinding~ScopePrototype} scope the scope to destory
+ * @param {boolean} inProgress                indicates if this is an initial call or not.
+ */
 export let destoryScope = function(scope, inProgress) {
     console.log(scopeList);
     let scopeInfo = scopeList.get(scope);
@@ -419,8 +484,9 @@ export let destoryScope = function(scope, inProgress) {
 /**
  * Returns the value of an DOM Node
  *
- * @param {Node} node - the node to fetch the value from
- * @return {*} - value of this node
+ * @param {Node} node the node to fetch the value from
+ *
+ * @return {string} value of this node
  */
 let getElementValue = function(node){
     if (node.localName === 'input') {

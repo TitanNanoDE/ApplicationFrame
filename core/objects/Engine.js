@@ -1,4 +1,9 @@
 /**
+ * @file Engine
+ * @deprecated Don't use this anymore. It will be removed soon.
+ */
+
+/**
  * @module Engine
  * @author Jovan Gerodetti <jovan@titannao.de>
  * @copyright by TitanNano / Jovan Gerodetti - {@link http://www.titannano.de}

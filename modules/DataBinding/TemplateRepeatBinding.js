@@ -4,7 +4,7 @@ import { parseExpression } from './Parser.js';
 import { bindNode } from './Bind.js';
 import { polyInvoke, getPolyParent } from './Util.js';
 
-let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
+let TemplateRepeatBinding = Make(/** @lends module:DataBinding.TemplateRepeatBinding# */{
 
     /**
      * @type {WeakMap}
@@ -51,10 +51,10 @@ let TemplateRepeatBinding = Make(/** @lends TemplateRepeatBinding.prototype*/{
      * @param  {ScopePrototype} scope      [description]
      * @param  {string} itemName   [description]
      * @param  {DocumentFragment} fragment   [description]
-     * @param  {[type]} polyParent [description]
-     * @param  {[type]} item       [description]
-     * @param  {[type]} index      [description]
-     * @return {[type]}            [description]
+     * @param  {Node} polyParent [description]
+     * @param  {Object} item       [description]
+     * @param  {number} index      [description]
+     * @return {void}            [description]
      */
     renderItem : function(model, scope, itemName, fragment, polyParent, item, index){
         let node = null;

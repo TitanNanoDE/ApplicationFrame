@@ -1,3 +1,8 @@
+/**
+ * @file ScopeWorker
+ * @deprecated Don't use this anymore. It will be removed soon.
+ */
+
 import Engine from '../objects/Engine.js';
 
 // this prototype defines a new scope worker

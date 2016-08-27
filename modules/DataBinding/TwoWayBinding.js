@@ -4,7 +4,13 @@ import { parseExpression, assignExpression } from './Parser.js';
 import { polyInvoke } from './Util.js';
 import Binding from './Binding.js';
 
-let TwoWayBinding = Make(/** @lends TwoWayBinding.prototype*/{
+/**
+ * @class TwoWayBinding
+ * @extends module:DataBinding.Binding
+ * @memberof module:DataBinding
+ */
+
+let TwoWayBinding = Make(/** @lends module:DataBinding.TwoWayBinding# */{
     /**
      * @type {string}
      */

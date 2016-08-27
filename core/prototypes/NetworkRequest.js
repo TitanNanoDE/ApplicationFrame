@@ -1,6 +1,14 @@
+/**
+ * @module NetworkRequest
+ */
+
 
 /**
- * @param {Object} object
+ * removes angulars hashKey property from an object
+ *
+ * @param {Object} object the object to operate on
+ *
+ * @return {Object} the initial object
  */
 let stripHashKey = function(object){
 	if (Array.isArray(object)) {
@@ -22,7 +30,7 @@ let stripHashKey = function(object){
 }
 
 /**
- * @lends NetworkRequest.prototype
+ * @lends module:NetworkRequest.NetworkRequest#
  */
 let NetworkRequest = {
     /**
@@ -54,6 +62,7 @@ let NetworkRequest = {
 
     /**
      * @type {function[]}
+     * @private
      */
     _listeners : null,
 
@@ -61,11 +70,13 @@ let NetworkRequest = {
 	 * The constructor for the NetworkRequest. It simply sets up the properties.
 	 *
 	 * @constructs
-	 * @param {string} url
-	 * @param {Object} config
-	 * @return {NetworkRequest}
+	 *
+	 * @param {string} url the url this request should be made to
+	 * @param {Object} config addintional configuartion for the request
+	 *
+	 * @return {NetworkRequest} the request it self
 	 */
-	_make : function(url, { method='GET', type='none' }){
+	_make : function(url, { method = 'GET', type = 'none' } = {}){
 		this.type = type;
 		this.method = method;
         this._headers = {};
@@ -76,8 +87,9 @@ let NetworkRequest = {
 	/**
 	 * this method will set the given object as the request body.
 	 *
-	 * @param {Object} data
-	 * @return {NetworkRequest}
+	 * @param {Object} data body data for this request
+	 *
+	 * @return {NetworkRequest} the request it self
 	 */
 	body : function(data){
 		this._body = data;
@@ -88,8 +100,9 @@ let NetworkRequest = {
 	/**
 	 * This method will set the request headers, in case custom headers are required.
 	 *
-	 * @param {Object} headers
-	 * @return {NetworkRequest}
+	 * @param {Object} headers a object with all header properties for this request
+	 *
+	 * @return {NetworkRequest} the request it self
 	 */
 	headers : function(headers) {
 		this._headers = headers;
@@ -100,9 +113,10 @@ let NetworkRequest = {
     /**
      * Sets a single header for this request.
      *
-     * @param {string} key
-     * @param {string} value
-     * @return {NetworkRequest}
+     * @param {string} key the header key
+     * @param {string} value the header value
+     *
+     * @return {NetworkRequest} the request it self
      */
     setHeader : function(key, value) {
         this._headers[key] = value;
@@ -111,7 +125,11 @@ let NetworkRequest = {
     },
 
     /**
-     * @param {function} fn
+     * sets a callback for when the request is ready
+     *
+     * @param {function} fn a callback function as soon as the data is ready
+     *
+     * @return {void}
      */
     onReady : function(fn){
         this._listeners.push(fn);
@@ -120,7 +138,7 @@ let NetworkRequest = {
 	/**
 	 * This will actually create the network connection and initiate the request.
 	 *
-	 * @return {Promise}
+	 * @return {Promise} resolves when the request is done
 	 */
 	send : function(){
 		let self = this;

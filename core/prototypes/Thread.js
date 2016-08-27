@@ -1,3 +1,8 @@
+/**
+ * @file Thread
+ * @deprecated Don't use this anymore. It will be removed soon.
+ */
+
 import Shared from '../objects/Shared.js';
 
 /**

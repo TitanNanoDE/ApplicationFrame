@@ -1,53 +1,63 @@
-/*****************************************************************
- * Canvas.js v1.1  part of the ApplicationFrame                  *
- * © copyright by Jovan Gerodetti (TitanNano.de)                 *
- * The following Source is licensed under the Appache 2.0        *
- * License. - http://www.apache.org/licenses/LICENSE-2.0         *
- *****************************************************************/
-"use strict";
+/**
+ * @module Canvas
+ */
 
-import { Make }    from 'util/make';
-import { classes } from 'modules/classes';
+import { Make, hasPrototype } from '../util/make';
 
-var $$ = window;
+let elementMetaData = new WeakMap();
 
-var { Accessor } = classes;
-var { attributes } = Make(Accessor)();
-
-// Functions
-var getZLevelMax= function(element){
-    var max= 0;
-    element._elements.forEach(item => {
-        if(item.zLevel > max)
-            max= item.zLevel;
+let sortElements = function(element){
+    element._elements.sort((a, b) => {
+        if (a.zLevel > b.zLevel) {
+            return 1;
+        } else if (a.zLevel < b.zLevel) {
+            return -1;
+        } else {
+            return 0;
+        }
     });
-    return max;
 };
 
-var sortElements= function(element, zLevels){
-    var newOrder= [];
-    var loop= function(item, i){
-        if(item.zLevel == i)
-            newOrder.push(item);
-    };
-    for(var i= 0; i <= zLevels; i++){
-        element._elements.forEach(loop);
-    }
-    element._elements= newOrder;
+let layerRender = function(context, canvas){
+    sortElements(this);
+    this.elements.forEach(item => item.render(context, canvas));
 };
 
-var layerRender= function(context, canvas){
-//  sortElements
-    var { closed } = attributes(this);
-    var zLevel_max= getZLevelMax(closed);
-    sortElements(closed, zLevel_max);
-    closed.elements.forEach(item => item.render(context, canvas));
-};
-
-var Context = {
+/**
+ * A local render context.
+ *
+ * @lends Context.prototype
+ */
+let Context = {
     yOffset : 0,
     xOffset : 0,
     available : true,
+    rendering : false,
+
+    /**
+     * the last usable render data.
+     *
+     * @type {RenderData}
+     */
+    lastRenderData: null,
+
+    /**
+     * the current dom element.
+     *
+     * @type {HTMLCanvasElement}
+     */
+    canvasDomElement: null,
+
+    /**
+     * @constructs
+     *
+     * @param {HTMLCanvasElement} canvasDomElement the html element of the canvas.
+     *
+     * @return {void}
+     */
+    _make: function(canvasDomElement) {
+        this.canvasDomElement = canvasDomElement;
+    },
 
     finally : function(){},
 
@@ -61,173 +71,229 @@ var Context = {
     }
 };
 
-var verifyOpacity= function(n){
-    if(n > 1)
+/**
+ * Meta data object for canvas elements
+ *
+ * @lends ElementMetaData.prototype
+ */
+let ElementMetaData = {
+    /**
+     * @type {RenderData}
+     */
+    backgroundRenderData : null,
+    isRendered: false,
+};
+
+/**
+ * Coordinates and bitmap for a canvas image data.
+ *
+ * @lends RenderData
+ */
+let RenderData = {
+    left: 0,
+    top: 0,
+
+    /**
+     * @type {ImageData}
+     */
+    data: null,
+
+    _make: function(x, y, data) {
+        this.x = x;
+        this.y = y;
+        this.data = data;
+    }
+}
+
+let verifyOpacity = function(n){
+    if (n > 1)
         return 1;
-    else if(n < 0)
+    else if (n < 0)
         return 0;
     else
         return n;
 };
 
 // Classes
-var Canvas = {
+export let Canvas = {
 
     cursor : 'default',
     maxFps : 60,
     fpsLock : true,
     fpsOverlay : false,
+    _elements: [],
+    _dom : null,
+    context: null,
+    renderStart: 0,
+    fpsOverlay: null,
+    _fps: 0,
+    _frames: 0,
 
     _make : function(target){
-        var { open, closed } = attributes(this, {
-            dom : target,
-            elements : [],
-            context : target.getContext('2d'),
-            renderStart : 0,
-            fpsOverlay : null,
-            fps : 0,
-            frames : 0
-        });
+        this._dom = target;
+        this._elements = [];
+        this.context = target.getContext('2d');
 
-    //  catch events
-    //  mousemove / over, out, move
-        closed.dom.addEventListener('mousemove', function(e){
-            var mouse= { x : e.layerX, y : e.layerY };
-            var context= new Context();
+        // set up cursor handling
+        this._dom.addEventListener('mousemove', function(e){
+            let mouse = { x : e.layerX, y : e.layerY };
+            let context = Make(Context)();
 
-            sortElements(closed, getZLevelMax(closed));
-            for(var i= closed.elements.length-1; i >= 0; i--){
-                var element= closed.elements[i].checkMouse(mouse, context);
-                if(element){
-                    var style= element.cursor || open.cursor;
-                    if(this.style.getPropertyValue('cursor') != style)
+            sortElements(this);
+
+            for(let i = this._elements.length-1; i >= 0; i--){
+                let element = this._elements[i].checkMouse(mouse, context);
+
+                if (element) {
+                    let style = element.cursor || this.cursor;
+
+                    if (this.style.getPropertyValue('cursor') != style) {
                         this.style.setProperty('cursor', style);
+                        break;
+                    }
                 }
             }
             context.finally();
 
-            if(context.available && this.style.getPropertyValue() != open.cursor)
-                this.style.setProperty('cursor', open.cursor);
-        }, false);
+            if(context.available && this.style.getPropertyValue() != this.cursor) {
+                this.style.setProperty('cursor', this.cursor);
+            }
+        }, { passive: true });
 
-    //  suppress contextmenu
-        closed.dom.addEventListener('contextmenu', function(e){
-            e.preventDefault();
+        /**
+         * suppress contextmenu
+         *
+         * @param {MouseEvent} event the mouse event
+         *
+         * @return {void}
+         */
+        this._dom.addEventListener('contextmenu', (event) => {
+            event.preventDefault();
             return false;
         }, false);
 
-    //  mouseclick
-        closed.dom.addEventListener('click', function(e){
-            var context= new Context();
-            var mouse= { x : e.layerX, y : e.layerY };
+        /**
+         * capture clicks
+         *
+         * @param {MouseEvent} event the click event
+         *
+         * @return {void}
+         */
+        this._dom.addEventListener('click', (event) => {
+            let context = Make(Context)();
+            let mouse = { x : event.layerX, y : event.vlayerY };
 
-            sortElements(closed, getZLevelMax(closed));
-            for(var i= closed.elements.length-1; i >= 0; i--){
-                if(closed.elements[i].checkClick(mouse, context))
-                    return;
-            }
-        }, false);
+            sortElements(this);
 
-    //  create FPS overlay
-        closed.fpsOverlay= new Layer(10, this._dom.height - 60, 0);
-        closed.fpsOverlay.addElement(new FilledRect(0, 0, 150, 60, '#000', 0));
-        closed.fpsOverlay.addElement(new TextBox('FPS: 0', 0, 0, 1));
-        closed.fpsOverlay.elements(1).color= '#fff';
-        closed.fpsOverlay.addElement(new TextBox('Frames: 0', 0, 15, 1));
-        closed.fpsOverlay.elements(2).color= '#fff';
-        closed.fpsOverlay.addElement(new TextBox('FPS Lock: off', 0, 30, 1));
-        closed.fpsOverlay.elements(3).color= '#fff';
-    },
-
-    render : function(){
-        var { open, closed } = attributes(this);
-
-        if(this.isRunning){
-            var context= Make(Context);
-            var start= Date.now();
-
-            closed.context.save();
-            closed.context.clearRect(0, 0, closed.dom.width, closed.dom.height);
-            closed.context.globalAlpha= 1;
-            layerRender.apply(open, [context, closed.context]);
-
-            if(this.fpsOverlay){
-                closed.fpsOverlay.elements(1).content= 'FPS: ' + Math.round(open.fps);
-                closed.fpsOverlay.elements(2).content= 'Frames: ' + open.frames;
-                closed.fpsOverlay.elements(3).content= 'FPS Lock: ' + ((open.fpsLock) ? 'on' : 'off');
-                closed.fpsOverlay.render(context, closed.context);
-            }
-
-            var duration= (Date.now() - closed.renderStart) / 1000;
-            var renderTime= (Date.now() - start) / 1000;
-            closed.fps=  1 / duration;
-            closed.frames++;
-            var c= this;
-
-//          fps lock
-            if(this.fpsLock){
-                var timeForFrame= 1 / this.maxFps;
-                if(renderTime < timeForFrame){
-                    var timeOut= (timeForFrame - renderTime) * 1000;
-                    this._renderStart= Date.now();
-                    $$.setTimeout(function(){ $$.requestAnimationFrame(function(){ c._render(); }); }, timeOut);
+            for(let i= this._elements.length-1; i >= 0; i--){
+                if (this._elements[i].checkClick(mouse, context)) {
                     return;
                 }
             }
-            closed.renderStart= Date.now();
-            $$.requestAnimationFrame(function(){ closed.render(); });
+        }, false);
+
+        // create FPS overlay
+        this.fpsOverlay = Make(Layer)(10, this._dom.height - 60, 0);
+        this.fpsOverlay.addElement(Make(FilledRect)(0, 0, 150, 60, '#000', 0));
+        this.fpsOverlay.addElement(Make(TextBox)('FPS: 0', 0, 0, 1));
+        this.fpsOverlay.elements(1).color= '#fff';
+        this.fpsOverlay.addElement(Make(TextBox)('Frames: 0', 0, 15, 1));
+        this.fpsOverlay.elements(2).color= '#fff';
+        this.fpsOverlay.addElement(Make(TextBox)('FPS Lock: off', 0, 30, 1));
+        this.fpsOverlay.elements(3).color= '#fff';
+    },
+
+    render : function() {
+        if (this.isRunning) {
+            let context= Make(Context);
+            let start= window.performance.now();
+
+            this.context.save();
+            this.context.clearRect(0, 0, this._dom.width, this._dom.height);
+            this.context.globalAlpha= 1;
+            layerRender.apply(this, [context, this.context]);
+
+            if(this.fpsOverlay){
+                this.fpsOverlay.elements(1).content= 'FPS: ' + Math.round(this.fps);
+                this.fpsOverlay.elements(2).content= 'Frames: ' + this.frames;
+                this.fpsOverlay.elements(3).content= 'FPS Lock: ' + ((this.fpsLock) ? 'on' : 'off');
+                this.fpsOverlay.render(context, this.context);
+            }
+
+            let duration= (Date.now() - this.renderStart) / 1000;
+            let renderTime= (Date.now() - start) / 1000;
+            this.fps=  1 / duration;
+            this.frames++;
+
+//          fps lock
+            if(this.fpsLock) {
+                let timeForFrame = 1 / this.maxFps;
+                if(renderTime < timeForFrame){
+                    let timeOut = (timeForFrame - renderTime) * 1000;
+                    this._renderStart = window.performance.now();
+                    window.setTimeout(() => window.requestAnimationFrame(this.render.bind(this)), timeOut);
+                    return;
+                }
+            }
+            this.renderStart = window.performance.now();
+            window.requestAnimationFrame(this.render.bind(this));
         }
     },
 
     start : function(){
-        var { open, closed } = attributes(this);
-        open.isRunning= true;
-        $$.requestAnimationFrame(function(){ closed.render(); });
+        this.isRunning = true;
+        window.requestAnimationFrame(this.render.bind(this));
     },
 
     stop : function(){
-        this.isRunning= false;
+        this.isRunning = false;
     },
 
-    addElement : function(element){
-        attributes(this).closed.elements.push(element);
+    addElement : function(element) {
+        element = Make(element, Object.getPrototypeOf(element));
+        Object.freeze(element);
+
+        if (!elementMetaData.has(element)) {
+            elementMetaData.set(element, Make(ElementMetaData)());
+        }
+
+        this._elements.push(element);
     },
 
     get height(){
-        return attributes(this).closed.dom.height;
+        return this._dom.height;
     },
 
     get width(){
-        return attributes(this).closed.dom.width;
+        return this._dom.width;
     },
 
     get fps(){
-        return attributes(this).closed.fps;
+        return this._fps;
     },
 
     get frames(){
-        return attributes(this).closed.frames;
+        return this._frames;
     },
 
-    measureText : function(textElement){
-        var { closed } = attributes(this);
-        closed.context.font= textElement.font;
-        closed.context.textAling= textElement.aling;
-        closed.context.fillStyle= textElement.color;
-        closed.context.textBaseline= 'top';
-        return closed.context.measureText(textElement.content);
+    measureText : function(textElement) {
+        this.context.font = textElement.font;
+        this.context.textAling = textElement.aling;
+        this.context.fillStyle = textElement.color;
+        this.context.textBaseline = 'top';
+        return this.context.measureText(textElement.content);
     },
 
-    measureTextWidth : function(textElement){
-        var { closed } = attributes(this);
-        var lines= textElement.content.split('\n');
-        var linesWidth= [];
+    measureTextWidth : function(textElement) {
+        let lines = textElement.content.split('\n');
+        let linesWidth = [];
 
-        closed.context.font= textElement.font;
-        closed.context.textAling= textElement.aling;
-        closed.context.fillStyle= textElement.color;
-        closed.context.textBaseline= 'top';
-        lines.forEach(item => linesWidth.push(closed.context.measureText(item).width));
+        this.context.font = textElement.font;
+        this.context.textAling = textElement.aling;
+        this.context.fillStyle = textElement.color;
+        this.context.textBaseline = 'top';
+        lines.forEach(item => linesWidth.push(this.context.measureText(item).width));
+
         return Math.max.apply(Math, linesWidth);
     },
 
@@ -239,33 +305,70 @@ var Canvas = {
     },
 
     elements : function(index){
-        return attributes(this).closed.elements[index];
+        return this._elements[index];
     }
 };
 
-var Layer = {
+/**
+ * Basic canvas element.
+ *
+ * @lends {Element.prototype}
+ */
+let Element = {
+
+    /**
+     * saves the image data that has been rendered before this element.
+     *
+     * @param  {Context} context the local render context
+     * @param  {CanvasRenderingContext2D} canvas the canvas render context
+     *
+     * @return {void}
+     */
+    render: function(context, canvas) {
+        /** @type {ElementMetaData} */
+        let metaData = elementMetaData.get(this);
+
+        if (metaData.backgroundRenderData) {
+            let height = this.height || context.canvasDomElement.height - context.yOffset;
+            let width = this.width || context.canvasDomElement.width - context.xOffset;
+            let imageData = canvas.getImageData(context.xOffset, context.yOffset, width, height);
+
+            metaData.backgroundRenderData = Make(RenderData)(context.xOffset, context.yOffset, imageData);
+        } else {
+            canvas.putImageData(metaData.backgroundRenderData.data,
+                                metaData.backgroundRenderData.left,
+                                metaData.backgroundRenderData.top);
+        }
+
+        metaData.isRendered = true;
+    },
+}
+
+export let Layer = Make({
     x : 0,
     y : 0,
     opacity : 1,
-    hidden : false,
+    _elements: null,
 
-    _make : function(x, y, zLevel){
-        attributes(this, {
-            elements : []
-        });
-
-        this.zLevel= zLevel || 0;
-        this.x= x || 0;
-        this.y= y || 0;
+    _make : function(x = 0, y = 0, zLevel = 0) {
+        this._elements = [];
+        this.zLevel = zLevel;
+        this.x = x;
+        this.y = y;
 
         this._make = null;
     },
 
-    render : function(context, canvas){
-        if(!this.hidden){
+    render : function(context, canvas) {
+        /** @type {ElementMetaData} */
+        let metaData = elementMetaData.get(this);
+
+        if (!metaData.isRendered) {
+            Element.render.apply(this, [context, canvas]);
+
             context.addOffset(this.x, this.y);
             canvas.save();
-            canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
+            canvas.globalAlpha = verifyOpacity(canvas.globalAlpha - (1-this.opacity));
             layerRender.apply(this, [context, canvas]);
             context.removeOffset(this.x, this.y);
             canvas.restore();
@@ -275,56 +378,58 @@ var Layer = {
     addElement : Canvas.addElement,
 
     checkMouse : function(mouse, context){
-        var element= null;
-        var { closed } = attributes(this);
+        let element = null;
 
         context.addOffset(this.x, this.y);
-        sortElements(this, getZLevelMax(this));
-        for(var i= closed.elements.length-1; i >= 0; i--){
-            var item= closed.elements[i].checkMouse(mouse, context);
-            if(item)
-                element= item;
+        sortElements(this);
+
+        for(let i = this._elements.length-1; i >= 0; i--){
+            let item = this._elements[i].checkMouse(mouse, context);
+
+            if (item) {
+                element = item;
+                break;
+            }
         }
+
         context.removeOffset(this.x, this.y);
         return element;
     },
 
     checkClick : function(mouse, context){
-        var { closed } = attributes(this);
         context.addOffset(this.x, this.y);
-        sortElements(this, getZLevelMax(this));
-        for(var i= closed.elements.length-1; i >= 0; i--){
-            if(closed.elements[i].checkClick(mouse, context))
+        sortElements(this);
+
+        for (let i = this._elements.length-1; i >= 0; i--) {
+            if (this._elements[i].checkClick(mouse, context)) {
                 return true;
+            }
         }
+
         context.removeOffset(this.x, this.y);
     },
 
     clear : function(){
-        attributes(this).closed.elements= [];
+        this._elements = [];
     },
 
-    elements : Canvas.elements
-};
+}, Element).get();
 
-var RectShapeElement = {
+let RectShapeElement = {
     x : 0,
     y : 0,
     zLevel : 0,
-    hidden : false,
     width : 0,
     height : 0,
     opacity : 1,
     cursor : null,
+    mouse: false,
     onmouseover : function(){},
     onmouseout : function(){},
     onmousemove : function(){},
     onclick : function(){},
 
     _make : function(x, y, zLevel, width, height){
-        attributes(this, {
-            mouse : false
-        });
         this.x= x || 0;
         this.y= y || 0;
         this.zLevel= zLevel || 0;
@@ -333,30 +438,29 @@ var RectShapeElement = {
     },
 
     checkMouse : function(mouse, context){
-        var { open, closed } = attributes(this);
-        if(!open.hidden &&
+        if(!this.hidden &&
            mouse.x >= (context.xOffset + this.x) &&
            mouse.x <= (context.xOffset + this.x +this.width) &&
            mouse.y >= (context.yOffset + this.y) &&
            mouse.y <= (context.yOffset + this.y + this.height) &&
            context.available){
-            if(!closed.mouse){
-                closed.mouse= true;
-                context.finally= function(){
-                    open.onmouseover(mouse);
-                    open.onmousemove(mouse);
+            if(!this.mouse){
+                this.mouse = true;
+                context.finally = function(){
+                    this.onmouseover(mouse);
+                    this.onmousemove(mouse);
                 };
             }else{
-                context.finally= function(){
-                    open.onmousemove(mouse);
+                context.finally = function(){
+                    this.onmousemove(mouse);
                 };
             }
-            context.available= false;
+            context.available = false;
             return this;
         }else{
-            if(closed.mouse){
-                closed.mouse= false;
-                open.onmouseout(mouse);
+            if(this._mouse){
+                this._mouse = false;
+                this.onmouseout(mouse);
             }
             return null;
         }
@@ -376,59 +480,62 @@ var RectShapeElement = {
     }
 };
 
-var FilledRect= function(x, y, width, height, color, zLevel){
-    RectShapeElement.apply(this, [x, y, width, height, zLevel]);
-    this.cursor= null;
-};
-
-FilledRect = Make({
+export let FilledRect = Make({
     color : null,
     cursor : null,
 
     _make : function(x, y, width, height, color, zLevel){
-        Object.getPrototypeOf(this)._make.apply(this, [x, y, width, height, zLevel]);
+        RectShapeElement._make.apply(this, [x, y, width, height, zLevel]);
         this.color= color;
 
         this.make = null;
     },
 
-    render : function(context, canvas){
-        if(!this.hidden){
+    render : function(context, canvas) {
+        let metaData = elementMetaData.get(this);
+
+        if (!metaData.isRendered) {
+            Element.render.apply(this, [context, canvas]);
+
             canvas.save();
-            canvas.fillStyle= this.color;
-            canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
+            canvas.fillStyle = this.color;
+            canvas.globalAlpha = verifyOpacity(canvas.globalAlpha - (1-this.opacity));
             canvas.fillRect(context.xOffset + this.x, context.yOffset + this.y, this.width, this.height);
             canvas.restore();
         }
-    }
-}, RectShapeElement);
 
-var CImage =  Make({
+
+    }
+}, RectShapeElement).get();
+
+export let CImage =  Make({
     crop : null,
     source : null,
+    _width: 0,
+    _height: 0,
 
     _make : function(source, x, y, zLevel){
-        Object.getPrototypeOf(this)._make.apply(this, [x, y, null, null, zLevel]);
-
-        attributes(this, {
-            width : null,
-            height : null
-        });
+        RectShapeElement._make.apply(this, [x, y, null, null, zLevel]);
 
         this.source = source;
     },
 
-    render : function(context, canvas){
-        if(!this.hidden){
+    render : function(context, canvas) {
+        /** @type {ElementMetaData} */
+        let metaData = elementMetaData.get(this);
+
+        if (!metaData.isRendered) {
+            Element.render.apply(this, [context, canvas]);
+
             canvas.save();
-            canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
-            if(this.crop){
-                var sourceX= this.crop.left;
-                var sourceY= this.crop.top;
-                var sourceWidth= this.source.naturalWidth - this.crop.left - this.crop.right;
-                var sourceHeight= this.source.naturalHeight - this.crop.top - this.crop.bottom;
-                var targetX= context.xOffset + this.x;
-                var targetY= context.yOffset + this.y;
+            canvas.globalAlpha = verifyOpacity(canvas.globalAlpha - (1-this.opacity));
+            if (this.crop) {
+                let sourceX = this.crop.left;
+                let sourceY = this.crop.top;
+                let sourceWidth = this.source.naturalWidth - this.crop.left - this.crop.right;
+                let sourceHeight = this.source.naturalHeight - this.crop.top - this.crop.bottom;
+                let targetX = context.xOffset + this.x;
+                let targetY = context.yOffset + this.y;
                 canvas.drawImage(this.source, sourceX, sourceY, sourceWidth, sourceHeight, targetX, targetY, this.width, this.height);
             }else{
                 canvas.drawImage(this.source, context.xOffset + this.x, context.yOffset + this.y, this.width, this.height);
@@ -437,24 +544,24 @@ var CImage =  Make({
         }
     },
 
-    get width(){
-        return (attributes(this).closed.width || this.source.naturalWidth || 0);
+    get width() {
+        return this._width || this.source.naturalWidth || 0;
     },
 
-    set width(width){
-        attributes(this).closed.width= width;
+    set width(width) {
+        this._width = width;
     },
 
-    get height(){
-        return (attributes(this).closed.height || this.source.naturalHeight || 0);
+    get height() {
+        return this._height || this.source.naturalHeight || 0;
     },
 
-    set height(height){
-        attributes(this).closed.height= height;
+    set height(height) {
+        this._height = height;
     }
-}, RectShapeElement);
+}, RectShapeElement).get();
 
-var TextBox = {
+export let TextBox = Make({
     x : 0,
     y : 0,
     content : null,
@@ -469,7 +576,7 @@ var TextBox = {
     cursor : null,
     textBaseLine : 'top',
 
-    _make : function(content= '', x= 0, y=0, zLevel= 0){
+    _make : function(content= '', x= 0, y=0, zLevel= 0) {
         this.x= x;
         this.y= y;
         this.content= content;
@@ -478,187 +585,189 @@ var TextBox = {
         this._make = null;
     },
 
-    _render : function(context, canvas){
-        if(!this.hidden){
-            canvas.globalAlpha= verifyOpacity(canvas.globalAlpha - (1-this.opacity));
-            canvas.font= this.font;
-            canvas.textAling= this.aling;
-            canvas.fillStyle= this.color;
-            canvas.textBaseline= 'top';
+    render : function(context, canvas) {
+        /** @type {ElementMetaData} */
+        let metaData = elementMetaData.get(this);
 
-            if(this.aling == 'center'){
-                var t= this;
-                var lines= this.content.split('\n');
-                var linesWidth= [];
+        if (!metaData.isRendered) {
+            Element.render.apply(this, [context, canvas]);
+
+            canvas.globalAlpha = verifyOpacity(canvas.globalAlpha - (1-this.opacity));
+            canvas.font = this.font;
+            canvas.textAling = this.aling;
+            canvas.fillStyle = this.color;
+            canvas.textBaseline = 'top';
+
+            if (this.aling == 'center') {
+                let t= this;
+                let lines= this.content.split('\n');
+                let linesWidth= [];
                 lines.forEach(item => linesWidth.push(canvas.measureText(item).width));
-                var largest= Math.max.apply(Math, linesWidth);
+                let largest= Math.max.apply(Math, linesWidth);
                 lines.forEach((item, i) => {
-                    var dist= (largest - linesWidth[i]) / 2;
+                    let dist= (largest - linesWidth[i]) / 2;
                     canvas.fillText(item, context.xOffset + dist + t.x, context.yOffset + (t.lineHeight * i) + t.y);
                 });
-            }else{
+            } else {
                 canvas.fillText(this.content, context.xOffset + this.x, context.yOffset + this.y);
             }
-            canvas.globalAlpha= verifyOpacity(canvas.globalAlpha + (1-this.opacity));
+
+            canvas.globalAlpha = verifyOpacity(canvas.globalAlpha + (1-this.opacity));
         }
     },
-    _checkMouse : function(){
+
+    _checkMouse : function() {
         return null;
     },
-    _checkClick : function(){
+
+    _checkClick : function() {
         return null;
     },
-    get font(){
+
+    get font() {
         return this.fontStyle+' '+this.fontWeight+' '+this.fontSize+'px/'+this.lineHeight+'px '+this.fontFamily;
     },
-    get lineHeight(){
+
+    get lineHeight() {
         return (this._lineHeight) ? this._lineHeight : (this.fontSize + 6);
     },
-    set lineHeight(value){
-        this._lineHeight= value;
+
+    set lineHeight(value) {
+        this._lineHeight = value;
     }
-};
+}, Element).get();
 
-var HitArea = Make({
+export let HitArea = Make({
 
-    _render : function(){}
+    render : function(){}
 
-}, RectShapeElement);
+}, RectShapeElement).get();
 
-var ImageCrop = {
+export let ImageCrop = {
     top : 0,
     right : 0,
     bottom : 0,
     left : 0,
 
-    _make : function(top, right, bottom, left){
-        this.top= top || 0;
-        this.right= right || 0;
-        this.bottom= bottom || 0;
-        this.left= left || 0;
+    _make : function(top=0, right=0, bottom=0, left=0){
+        this.top = top;
+        this.right = right;
+        this.bottom = bottom;
+        this.left = left;
     }
 };
 
 // animations
-var fadeOut= function(element, time, callback){
-    var timeOut= 20; // milliseconds
-    time*= 1000;     //convert to milliseconds
-    var updates= Math.round(time / timeOut);
-    var ammount= 1 / updates;
-    var update= function(){
+export let fadeOut = function(element, time, callback){
+    let timeOut = 20; // milliseconds
+    time *= 1000;     //convert to milliseconds
+    let updates = Math.round(time / timeOut);
+    let ammount = 1 / updates;
+
+    let update = function() {
         updates--;
-        element.opacity-= ammount;
+        element.opacity -= ammount;
 
         if(updates > 0)
-            $$.setTimeout(update, timeOut);
+            window.setTimeout(update, timeOut);
         else if(callback){
-            element.opacity= 0;
+            element.opacity = 0;
             callback();
         }
     };
-    element.opacity= 1;
+
+    element.opacity = 1;
     update();
 };
 
-var fadeIn= function(element, time, callback){
-    var timeOut= 20; // milliseconds
-    time*= 1000;     //convert to milliseconds
-    var updates= Math.round(time / timeOut);
-    var ammount= 1 / updates;
-    var update= function(){
+export let fadeIn = function(element, time, callback){
+    let timeOut = 20; // milliseconds
+    time *= 1000;     //convert to milliseconds
+    let updates = Math.round(time / timeOut);
+    let ammount = 1 / updates;
+
+    let update= function() {
         updates--;
-        element.opacity+= ammount;
+        element.opacity += ammount;
 
         if(updates > 0)
-            $$.setTimeout(update, timeOut);
+            window.setTimeout(update, timeOut);
         else if(callback){
             element.opacity= 1;
             callback();
         }
     };
+
     element.opacity= 0;
     update();
 };
 
-var zoomIn= function(element, target, amount, time, callback){
-    if(!(element instanceof CImage)){
-        $$.console.error('element is not a instance of CImage');
+export let zoomIn = function(element, target, amount, time, callback) {
+    if (!hasPrototype(element, CImage)) {
+        console.error('element is not a instance of CImage');
         return false;
     }
-    var topAmount= Math.round((target[1] / 100) * amount);
-    var leftAmount= Math.round((target[0] / 100) * amount);
-    var bottomAmount= Math.round(((element.height - target[1]) / 100) * amount);
-    var rightAmount= Math.round(((element.width - target[0]) / 100) * amount);
-    time*= 1000; // to milliseconds
-    var timeOut= 20;
-    var updates= Math.round(time / timeOut);
-    var lot= 1 / updates;
-    var update= function(){
-        updates--;
-        element.crop.top+= topAmount * lot;
-        element.crop.right+= rightAmount * lot;
-        element.crop.bottom+= bottomAmount * lot;
-        element.crop.left+= leftAmount * lot;
 
-        if(updates > 0){
-            $$.setTimeout(update, timeOut);
-        }else if(callback){
+    let topAmount = Math.round((target[1] / 100) * amount);
+    let leftAmount = Math.round((target[0] / 100) * amount);
+    let bottomAmount = Math.round(((element.height - target[1]) / 100) * amount);
+    let rightAmount = Math.round(((element.width - target[0]) / 100) * amount);
+    time *= 1000; // to milliseconds
+    let timeOut = 20;
+    let updates = Math.round(time / timeOut);
+    let lot = 1 / updates;
+
+    let update = function(){
+        updates--;
+        element.crop.top += topAmount * lot;
+        element.crop.right += rightAmount * lot;
+        element.crop.bottom += bottomAmount * lot;
+        element.crop.left += leftAmount * lot;
+
+        if (updates > 0) {
+            window.setTimeout(update, timeOut);
+        } else if(callback) {
             callback();
         }
     };
-    if(!element.crop)
-        element.crop= new ImageCrop();
+
+    if (!element.crop) {
+        element.crop = Make(ImageCrop)();
+    }
     update();
 };
 
-var zoomOut= function(element, target, amount, time, callback){
+export let zoomOut = function(element, target, amount, time, callback) {
     if(!(element instanceof CImage)){
-        $$.console.error('element is not a instance of CImage');
+        console.error('element is not a instance of CImage');
         return false;
     }
-    var topAmount= Math.round((target[1] / 100) * amount);
-    var leftAmount= Math.round((target[0] / 100) * amount);
-    var bottomAmount= Math.round(((element.height - target[1]) / 100) * amount);
-    var rightAmount= Math.round(((element.width - target[0]) / 100) * amount);
-    time*= 1000; // to milliseconds
-    var timeOut= 20;
-    var updates= Math.round(time / timeOut);
-    var lot= 1 / updates;
-    var update= function(){
-        updates--;
-        element.crop.top-= topAmount * lot;
-        element.crop.right-= rightAmount * lot;
-        element.crop.bottom-= bottomAmount * lot;
-        element.crop.left-= leftAmount * lot;
 
-        if(updates > 0){
-            $$.setTimeout(update, timeOut);
+    let topAmount = Math.round((target[1] / 100) * amount);
+    let leftAmount = Math.round((target[0] / 100) * amount);
+    let bottomAmount = Math.round(((element.height - target[1]) / 100) * amount);
+    let rightAmount = Math.round(((element.width - target[0]) / 100) * amount);
+    time *= 1000; // to milliseconds
+    let timeOut = 20;
+    let updates = Math.round(time / timeOut);
+    let lot = 1 / updates;
+
+    let update = function() {
+        updates--;
+        element.crop.top -= topAmount * lot;
+        element.crop.right -= rightAmount * lot;
+        element.crop.bottom -= bottomAmount * lot;
+        element.crop.left -= leftAmount * lot;
+
+        if (updates > 0) {
+            window.setTimeout(update, timeOut);
         }else if(callback){
-            element.crop= null;
+            element.crop = null;
             callback();
         }
     };
-    if(!element.crop)
-        element.crop= new ImageCrop(topAmount, rightAmount, bottomAmount, leftAmount);
+    if (!element.crop) {
+        element.crop = Make(ImageCrop)(topAmount, rightAmount, bottomAmount, leftAmount);
+    }
     update();
-};
-
-export var canvas = {
-    Canvas : Canvas,
-    Layer : Layer,
-    FilledRect : FilledRect,
-    CImage : CImage,
-    TextBox : TextBox,
-    HitArea : HitArea,
-    ImageCrop : ImageCrop,
-    fadeIn : fadeIn,
-    fadeOut : fadeOut,
-    zoomIn : zoomIn,
-    zoomOut : zoomOut
-};
-
-export var config = {
-    author : 'Jovan Gerodetti',
-    main : 'canvas',
-    version : '1.1'
 };

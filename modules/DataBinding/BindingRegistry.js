@@ -1,6 +1,21 @@
+/**
+ * @module DataBinding/BindingRegistry
+ */
 
+/**
+ * Registry of all bindings.
+ *
+ * @type {Object}
+ */
 let registry = {};
 
+
+/**
+ * Public Singleton Interface for the binding registry.
+ *
+ * @class BindingRegistry
+ */
+/** @lends module:DataBinding/BindingRegistry~BindingRegistry.prototype */
 let BindingRegistry = {
 
     /**
@@ -27,4 +42,9 @@ let BindingRegistry = {
     }
 }
 
+/**
+ * @member BindingRegistry
+ * @static
+ * @type module:DataBinding/BindingRegistry~BindingRegistry
+ */
 export default BindingRegistry;

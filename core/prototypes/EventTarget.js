@@ -1,3 +1,4 @@
+/** @lends EventTarget# */
 let EventTarget = {
 
     /** @type {Object} */
@@ -5,6 +6,8 @@ let EventTarget = {
 
     /**
      * @constructs
+     *
+     * @return {void}
      */
     _make : function(){
         this._listeners = {};
@@ -13,8 +16,10 @@ let EventTarget = {
     /**
      * registers a new listener for the given event.
      *
-     * @param {string} type
-     * @param {function} listener
+     * @param {string} type the type of event
+     * @param {function} listener callback to execute when the event fires
+     *
+     * @return {void}
      */
     on : function(type, listener){
         if (!this._listeners[type]) {
@@ -27,15 +32,16 @@ let EventTarget = {
     /**
      * emmits a new event on this object
      *
-     * @param {string} type
-     * @param {*} data
+     * @param {string} type the type of event
+     * @param {*} data data to send to the callbacks
+     *
+     * @return {void}
      */
     emit : function(type, data){
         if (this._listeners[type]) {
             setTimeout(() =>
                 this._listeners[type].forEach(listener =>
-                    listener.apply(this, [data]
-                )
+                    listener.apply(this, [data])
             ), 0);
         }
     }

@@ -26,6 +26,16 @@ import NetworkRequest from '../../core/prototypes/NetworkRequest.js';
     }
 };*/
 
+/**
+ * imports a template node from an external HTML file.
+ *
+ * @function
+ * 
+ * @param {string} source the url of the file that holds the template to import
+ * @param {HTMLTemplateElement} template the template element to contain the import
+ *
+ * @return {HTMLTemplateElement} returns the provided template node, but now holding the imported nodes.
+ */
 export let importTemplate = function(source, template) {
     let request = Make(NetworkRequest)(source, {});
 

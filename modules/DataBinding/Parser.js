@@ -1,9 +1,12 @@
+/**
+ * @module DataBinding/Parser
+ */
 
 /**
  * Parses an object expression
  *
  * @param {string} source - the string to parse.
- * @return {Object} - the parsed result.
+ * @return {Object} the parsed result.
  */
 export let ObjectParser = function(source){
     let target = null;
@@ -42,7 +45,7 @@ export let ObjectParser = function(source){
  *
  * @param {string} expression - the expression to parse.
  * @param {ScopePrototype} scope - the scope on which the expression should be parsed.
- * @return {*} - the result value.
+ * @return {*} the result value.
  */
 export let parseExpression = function(expression, scope){
 	let chain = expression.split('.');
@@ -65,15 +68,17 @@ export let parseExpression = function(expression, scope){
         }
     });
 
-    return (typeof scope !== 'null' && typeof scope !== 'undefined') ? scope : '';
+    return (scope !== null && typeof scope !== "undefined") ? scope : '';
 };
 
 /**
  * Assings an value to an expression in an given scope
  *
- * @param {string} expression
- * @param {ScopePrototype} scope
- * @param {string} value
+ * @param {string} expression the expression on whith the value should be assigned
+ * @param {ScopePrototype} scope the scope to operate on
+ * @param {string} value the value to assign
+ *
+ * @return {void}
  */
 export let assignExpression = function(expression, scope, value){
     let chain = expression.split('.');

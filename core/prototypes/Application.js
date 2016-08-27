@@ -4,6 +4,7 @@ import ApplicationInternal from './ApplicationInternal.js';
 
 let Internal = new WeakMap();
 
+/** @lends Application.prototype */
 let Application = {
 
     /**
