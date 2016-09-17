@@ -14,6 +14,6 @@ Modules:
 
 ==================================
 
-Application Frame 0.2-preview http://github.com/TitanNano/ApplicationFrame
+Application Frame 0.2 https://github.com/TitanNano/ApplicationFrame/tree/v0.2.0
 
 Application Frame 0.1 https://github.com/TitanNano/ApplicationFrame/tree/v0.1
