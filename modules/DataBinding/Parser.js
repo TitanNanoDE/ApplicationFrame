@@ -47,26 +47,38 @@ export let ObjectParser = function(source){
  * @param {ScopePrototype} scope - the scope on which the expression should be parsed.
  * @return {*} the result value.
  */
-export let parseExpression = function(expression, scope){
-	let chain = expression.split('.');
+export let parseExpression = function(expression, ...contexts){
+	let chain = expression.match(/\w+(?:\([^\(\)]*\))*/g);
+    let scope = null;
+    let functionTest = /\(((([\w\.]+)(, |,|))+)\)/;
 
-    chain.forEach((item) => {
-        let pos = item.search(/\(\)$/);
+    for (let i = 0; i < contexts.length; i++) {
+        scope = contexts[i];
 
-        if (scope) {
-            if (pos > 0) {
-                let scopeChild = scope[item.substring(0, pos)];
+        chain.forEach((item) => {
+            let pos = item.search(functionTest);
 
-                if (scopeChild) {
-                    scope = scopeChild.apply(scope);
+            if (scope) {
+                if (pos > 0) {
+                    let args = item.match(functionTest)[1].split(',').map(item => item.trim());
+                    let scopeChild = scope[item.substring(0, pos)];
+
+                    if (scopeChild) {
+                        args = args.map(arg => parseExpression(arg, ...contexts));
+                        scope = scopeChild.apply(scope, args);
+                    } else {
+                        return null;
+                    }
                 } else {
-                    return '';
+                    scope = scope[item];
                 }
-            } else {
-                scope = scope[item];
             }
+        });
+
+        if (scope !== null && scope !== undefined) {
+            break;
         }
-    });
+    }
 
     return (scope !== null && typeof scope !== "undefined") ? scope : '';
 };
