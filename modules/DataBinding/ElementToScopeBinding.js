@@ -1,6 +1,7 @@
 import { Make } from '../../util/make';
 import { assignExpression, parseExpression } from './Parser';
 import Binding from './Binding';
+import BindingRegistry from './BindingRegistry.js';
 
 let ElementToScopeBinding = Make(/** @lends module:DataBinding.ElementToScopeBinding.prototype */{
 
@@ -31,6 +32,7 @@ let ElementToScopeBinding = Make(/** @lends module:DataBinding.ElementToScopeBin
         this.text = text;
 
         scopeInfo.bindings.push(this);
+
     },
 
     update: function(scope) {
@@ -39,9 +41,12 @@ let ElementToScopeBinding = Make(/** @lends module:DataBinding.ElementToScopeBin
 
         if (currentValue !== this.parentNode) {
             assignExpression(this.text, scope, this.parentNode);
+            scope.__apply__(null, true);
         }
-    }
+    },
 
-}, Binding);
+}, Binding).get();
+
+BindingRegistry.register(ElementToScopeBinding);
 
 export default ElementToScopeBinding;
