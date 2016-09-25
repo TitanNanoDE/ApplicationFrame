@@ -11,6 +11,10 @@ import { recycle, watcherList, destoryScope } from './Bind.js';
  */
 let ScopePrototype = {
 
+    _make: function() {
+        this.__apply__ = this.__apply__.bind(this);
+    },
+
     /**
     * will apply the current state of the bound model.
     *
@@ -20,7 +24,7 @@ let ScopePrototype = {
     * @return {void}
     */
     __apply__ : function(fn, localRecycle){
-        if (fn) {
+        if (fn && typeof fn === 'function') {
             fn();
         }
 
