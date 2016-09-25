@@ -4,9 +4,9 @@
 
 import { Make } from '../../util/make.js';
 import { bindNode } from './Bind.js';
+import { getPolyParent, polyInvoke } from './Util.js';
 import { importTemplate } from './TemplateLoader.js';
 import { parseExpression } from './Parser';
-import { polyInvoke } from './Util.js';
 import RenderEngine from './RenderEngine';
 import ScopePrototype from './ScopePrototype.js';
 
@@ -137,11 +137,20 @@ export let makeTemplate = function (template, scope, application, parentScope) {
             }
         }
 
+        let parentNode = template.parentNode;
+
+        if (template.getAttribute('poly-parent')) {
+            let parentName = template.getAttribute('poly-parent');
+
+            parentNode = getPolyParent(template, parentName);
+        }
+
         if (isReplace) {
             console.log('replace template');
-            polyInvoke(template.parentNode).replaceChild(node, template);
+
+            polyInvoke(parentNode).replaceChild(node, template);
         } else if (isInsert) {
-            polyInvoke(template.parentNode).insertBefore(node, template);
+            polyInvoke(parentNode).insertBefore(node, template);
         }
 
         return {　node : node, scope : scope };
