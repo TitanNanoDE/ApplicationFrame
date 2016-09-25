@@ -12,6 +12,9 @@ let preRenderHooks = [];
 let postRenderHooks = [];
 
 /** @type {module:RenderEngine.TaskList} */
+let preRenderTasks = Make(TaskList)();
+
+/** @type {module:RenderEngine.TaskList} */
 let renderTasks = Make(TaskList)();
 
 /** @type {Function[]} */
@@ -42,8 +45,13 @@ let renderCycle = function() {
     // run the pre render hooks before we start to do render stuff.
     preRenderHooks.forEach(hook => hook());
 
+    // run pre render tasks
+    let tasks = preRenderTasks.tasks;
+    preRenderTasks.flush();
+    tasks.forEach(task => task());
+
     //run all render tasks.
-    let tasks = renderTasks.tasks;
+    tasks = renderTasks.tasks;
     renderTasks.flush();
     tasks.forEach(task => task());
 
@@ -118,6 +126,18 @@ let RenderEngine = {
      */
     removePostRenderHook: function(f) {
         return postRenderHooks.splice(postRenderHooks.indexOf(f), 1);
+    },
+
+    /**
+     * @param {Function} f - the task to preform in the next render cycle.
+     * @param {string} [id] optional task id
+     * @return {Function} the function which has been passed in.
+     */
+    schedulePreRenderTask: function(f, id) {
+        preRenderTasks.push(f, id);
+        scheduleNextFrame();
+
+        return f;
     },
 
     /**
