@@ -195,4 +195,14 @@ let sha1 = function(message) {
     return hex32Bit(h0.toString(16)) + hex32Bit(h1.toString(16)) + hex32Bit(h2.toString(16)) + hex32Bit(h3.toString(16)) + hex32Bit(h4.toString(16));
 }
 
+export const hashToBuffer = function(hashString) {
+    let buffer = new Uint8Array(hashString.length / 2);
+
+    hashString.match(/[0-9a-zA-Z]{2}/g).forEach((byte, index) => {
+        buffer[index] = parseInt(byte, 16);
+    })
+
+    return buffer.buffer;
+}
+
 export default sha1;
