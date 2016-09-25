@@ -43,6 +43,16 @@ let TwoWayBinding = Make(/** @lends module:DataBinding.TwoWayBinding# */{
             if (value !== oldValue) {
                 assignExpression(this.viewBinding, this.parentNode, value);
                 this.currentValue = value;
+
+                if (document.activeElement === this.parentNode) {
+                    let range = document.createRange();
+                    let selection = window.getSelection();
+                    
+                    range.selectNodeContents(this.parentNode);
+                    range.collapse(false);
+                    selection.removeAllRanges();
+                    selection.addRange(range);
+                }
             }
         }
     }
