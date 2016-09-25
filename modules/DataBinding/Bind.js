@@ -156,6 +156,7 @@ let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
     let property = text.replace(/[{}]/g, '');
     let value = parseExpression(property, scope);
     let [event, viewBinding, eventBinding, preventDefault] = (parentNode.getAttribute(attributeNames.get('modelEvent')) || '').split(':');
+    let debounce = null;
 
     /** @type {TwoWayBinding} */
     let binding = Make({
@@ -176,14 +177,26 @@ let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
                 e.preventDefault();
             }
 
-            console.log(e);
-            let value = parseExpression(eventBinding, e);
-            compareTwoWay(value, scope, binding);
+            if (debounce) {
+                clearTimeout(debounce);
+            }
+
+            debounce = setTimeout(() =>{
+                let value = parseExpression(eventBinding, e);
+                compareTwoWay(value, scope, binding);
+            }, 500);
         });
     } else if(node.name === attributeNames.get('value')) {
         parentNode.addEventListener('keyup', e => {
             e.preventDefault();
-            compareTwoWay(getElementValue(e.target), scope, binding);
+
+            if (debounce) {
+                clearTimeout(debounce);
+            }
+
+            debounce = setTimeout(() => {
+                compareTwoWay(getElementValue(e.target), scope, binding);
+            }, 500);
         });
     }
 };
@@ -215,6 +228,8 @@ let compareTwoWay = function(newValue, scope, binding){
  * @param {string[]} variables list of expressions
  * @param {Object} scopeInfo meta data of the current scope
  * @param {boolean} singleExpression - indicates if text contains only one expression
+ * @param {Node} parentNode the element that contains the text node or attribute
+ *
  * @return {void}
  */
 let bindSimple = function(text, node, variables, scopeInfo, singleExpression, parentNode){
@@ -306,7 +321,7 @@ let bindEvents = function(events, node, scope){
 	events = ObjectParser(events);
 
 	Object.keys(events).forEach(name => {
-		let method = events[name];
+		let [method, modifier] = events[name].split('|');
 
         if (scope.$methods && scope.$methods[method.trim()]) {
             node.addEventListener(name.trim(), e => {
@@ -328,7 +343,7 @@ let bindEvents = function(events, node, scope){
 
                 if (!canceled)
                     scope.__apply__();
-            });
+            }, modifier === 'capture');
         }
 	});
 };
@@ -449,6 +464,8 @@ export let recycle = function (scope) {
  * @function
  * @param {module:DataBinding~ScopePrototype} scope the scope to destory
  * @param {boolean} inProgress                indicates if this is an initial call or not.
+ *
+ * @return {void}
  */
 export let destoryScope = function(scope, inProgress) {
     console.log(scopeList);
