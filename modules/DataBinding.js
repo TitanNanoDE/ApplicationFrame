@@ -11,6 +11,7 @@ import { bindNode } from './DataBinding/Bind.js';
 import ViewPort from './DataBinding/ViewPort.js';
 import './DataBinding/IfBinding.js';
 import './DataBinding/ElementToScopeBinding.js';
+import './DataBinding/AttributeBinding.js';
 
 NodeList.prototype.forEach = NamedNodeMap.prototype.forEach = Array.prototype.forEach;
 
