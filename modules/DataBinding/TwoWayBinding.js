@@ -12,6 +12,8 @@ import Binding from './Binding.js';
 
 let TwoWayBinding = Make(/** @lends module:DataBinding.TwoWayBinding# */{
     /**
+     * the last known view value
+     *
      * @type {string}
      */
     currentValue : '',
@@ -31,23 +33,29 @@ let TwoWayBinding = Make(/** @lends module:DataBinding.TwoWayBinding# */{
      */
     viewBinding : '',
 
-    update : function(scope){
+    update : function(scope) {
+        // the current value on the scope
         let value = parseExpression(this.properties[0], scope);
-        let attribute = attributeNames.rename(this.node.name);
 
         if (!this.indirect) {
+            let attribute = attributeNames.rename(this.node.name);
+
             polyInvoke(this.parentNode).setAttribute(attribute, value);
         } else {
-            let oldValue = parseExpression(this.viewBinding, this.parentNode);
+            // the current view value
+            //let viewValue = parseExpression(this.viewBinding, this.parentNode);
 
-            if (value !== oldValue) {
+            // check if our current scope value is different from the last value.
+            // Then check if the view value doesn't have unassigned changes.
+            // Only apply the scope value to the view if both rules apply.
+            if (value !== this.currentValue) {
                 assignExpression(this.viewBinding, this.parentNode, value);
                 this.currentValue = value;
 
                 if (document.activeElement === this.parentNode) {
                     let range = document.createRange();
                     let selection = window.getSelection();
-                    
+
                     range.selectNodeContents(this.parentNode);
                     range.collapse(false);
                     selection.removeAllRanges();

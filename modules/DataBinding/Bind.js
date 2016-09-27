@@ -153,14 +153,14 @@ let checkNode = function(node, scope, parentNode) {
  * @return {void}
  */
 let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
-    let property = text.replace(/[{}]/g, '');
-    let value = parseExpression(property, scope);
-    let [event, viewBinding, eventBinding, preventDefault] = (parentNode.getAttribute(attributeNames.get('modelEvent')) || '').split(':');
+    let expression = text.replace(/[{}]/g, '');
+    let value = parseExpression(expression, scope);
+    let [eventType, viewBinding, eventBinding, preventDefault] = (parentNode.getAttribute(attributeNames.get('modelEvent')) || '').split(':');
     let debounce = null;
 
     /** @type {TwoWayBinding} */
     let binding = Make({
-        properties : [property],
+        properties : [expression],
         originalNodeValue : text,
         currentValue : value,
         node : node,
@@ -172,19 +172,21 @@ let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
     scopeInfo.bindings.push(binding);
 
     if (node.name === attributeNames.get('model')) {
-        parentNode.addEventListener(event, e => {
+        parentNode.addEventListener(eventType, event => {
             if (preventDefault === 'true') {
-                e.preventDefault();
+                event.preventDefault();
             }
 
             if (debounce) {
                 clearTimeout(debounce);
             }
 
-            debounce = setTimeout(() =>{
-                let value = parseExpression(eventBinding, e);
+            debounce = setTimeout(() => {
+                // read current value in view
+                let value = parseExpression(eventBinding, event);
+
                 compareTwoWay(value, scope, binding);
-            }, 500);
+            }, 300);
         });
     } else if(node.name === attributeNames.get('value')) {
         parentNode.addEventListener('keyup', e => {
@@ -196,7 +198,7 @@ let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
 
             debounce = setTimeout(() => {
                 compareTwoWay(getElementValue(e.target), scope, binding);
-            }, 500);
+            }, 200);
         });
     }
 };
