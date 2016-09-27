@@ -117,7 +117,7 @@ export let polyInvoke = function(node) {
  * @param {Node} node the base node
  * @param {string} parentName the node name to search for
  *
- * @return {Node} the node we where searching for 
+ * @return {Node} the node we where searching for
  */
 export let getPolyParent = function(node, parentName){
     while (node && node.localName !== parentName) {
@@ -125,4 +125,16 @@ export let getPolyParent = function(node, parentName){
     }
 
     return node;
+}
+
+export let sanitizeText = function(rawText) {
+    let text = rawText.replace(/\&nbsp\;/g, '\u00a0').replace(/<br>/, '\n');
+
+    // html escape
+    text = document.createTextNode(text).textContent;
+
+    //fix legal HTML
+    text = text.replace(/\n/g, '<br>').replace(/  /g, ' &nbsp;');
+
+    return text;
 }
