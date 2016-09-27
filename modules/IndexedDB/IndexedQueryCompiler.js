@@ -124,7 +124,7 @@ const IndexedQueryCompiler = {
         this._allQueries.push(this._currentQuery);
         this._currentQuery = null;
 
-        return this._execute(limit);
+        return this._execute(...limit);
     },
 
     _execute: function(start, end) {
