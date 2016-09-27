@@ -61,20 +61,19 @@ let Binding = {
         if (this.singleExpression) {
                 text = parseExpression(text, localNode, scope);
         } else {
+            text = text.toString().trim().split(/\s+/).join(' ');
+
             values.forEach(pair => {
                 text = text.replace(`\{\{${pair.name}\}\}`, pair.value);
             });
         }
 
-        text = text.toString().trim().split(/\s+/).join(' ');
 
         if (hasPrototype(this.node, window.Attr)) {
             if (this.parentNode.getAttribute(this.node.name) !== text) {
                 polyInvoke(this.parentNode).setAttribute(this.node.name, text);
             }
         } else {
-            text = text.toString().replace(/\&nbsp\;/g, '\u00a0');
-
             if (this.node.textContent !== text) {
                 this.node.textContent = text;
             }
