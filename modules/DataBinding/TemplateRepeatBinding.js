@@ -147,6 +147,8 @@ let TemplateRepeatBinding = Make(/** @lends module:DataBinding.TemplateRepeatBin
                     polyInvoke(this.marker.parentNode).appendChild(fragment);
                 }
             }
+
+            scope.__apply__();
         }
     },
 
