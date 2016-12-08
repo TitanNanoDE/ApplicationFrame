@@ -50,11 +50,13 @@ let ClassBinding = Make(/** @lends module:DataBinding.ClassBinding.prototype */{
             .filter(key => key.indexOf('!') === 0)
             .forEach(this.applyClass.bind(this, scope, classes));
 
-        RenderEngine.scheduleRenderTask(() => {
-            Object.keys(classes)
-                .filter(key => key.indexOf('!') !== 0)
-                .forEach(this.applyClass.bind(this, scope, classes));
-        });
+        let applyAssync = Object.keys(classes).filter(key => key.indexOf('!') !== 0);
+
+        if (applyAssync.length > 0) {
+            RenderEngine.scheduleRenderTask(() => {
+                applyAssync.forEach(this.applyClass.bind(this, scope, classes));
+            });
+        }
     }
 
 }, Binding).get();

@@ -138,3 +138,13 @@ export let sanitizeText = function(rawText) {
 
     return text;
 }
+
+/**
+ * checks if a node is currenty visible on the viewport
+ *
+ * @param  {Node} node - the node to check
+ * @return {boolean} - the visibility status of the node
+ */
+export let nodeIsVisible = function(node) {
+    return node.offsetHeight === 0 && node.offsetWidth === 0;
+}

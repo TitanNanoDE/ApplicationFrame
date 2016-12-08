@@ -39,6 +39,8 @@ export let watcherList = new Map();
  */
 let expressionTracking = {};
 
+let rendering = [];
+
 /**
  * applies the binding to the node for the given scope.
  *
@@ -417,47 +419,62 @@ let executeWatchers = function(scope) {
  * @return {void}
  */
 export let recycle = function (scope) {
-    RenderEngine.scheduleRenderTask(() => {
-        let t0 = window.performance.now();
+    scope = scope ||　null;
+    let isRendering = rendering.indexOf(scope) >= 0;
 
-        if (scope) {
-            executeWatchers(scope);
-            scopeList.get(scope).bindings.forEach(binding => binding.update(scope));
+    if (!isRendering) {
+        rendering.push(scope);
 
-        } else {
-            scopeIndex.forEach(scope => {
-                executeWatchers(scope);
-    	        scopeList.get(scope).bindings.forEach(binding => binding.update(scope));
-            });
-        }
+        RenderEngine.scheduleRenderTask(() => {
+            let t0 = window.performance.now();
 
-        Object.keys(expressionTracking).forEach(expr => {
-            expr = expressionTracking[expr];
+            try {
+                if (scope) {
+                    executeWatchers(scope);
+                    scopeList.get(scope).bindings.forEach((/** @type {Binding} */binding) => {
+                        binding.update(scope);
+                    });
 
-            expr.value = expr.newValue;
-        });
+                } else {
+                    scopeIndex.forEach(scope => {
+                        executeWatchers(scope);
+            	        scopeList.get(scope).bindings.forEach((/** @type {Binding} */binding) =>{
+                            binding.update(scope);
+                        });
+                    });
+                }
 
-        let t1 = window.performance.now();
-        let duration = ((t1 - t0) / 1000);
-        let color = null;
+                Object.keys(expressionTracking).forEach(expr => {
+                    expr = expressionTracking[expr];
 
-        if (duration >= 0.033) {
-            color = 'red';
-        } else if (duration >= 0.016) {
-            color = 'yellow';
-        } else {
-            color = 'green';
-        }
+                    expr.value = expr.newValue;
+                });
+            } catch (e) {
+                console.error(e);
+            }
 
-        color = `color: ${color};`;
-        duration = duration.toFixed(2);
+            let t1 = window.performance.now();
+            let duration = ((t1 - t0) / 1000);
+            let color = null;
 
-        if (scope) {
-            console.log(`scope recycled in %c${duration}s`, color);
-        } else {
-            console.log(`full recycle in %c${duration}s`, color);
-        }
-    }, scope || 'DataBindingRecycle');
+            if (duration >= 0.033) {
+                color = 'red';
+            } else if (duration >= 0.016) {
+                color = 'yellow';
+            } else {
+                color = 'green';
+            }
+
+            color = `color: ${color};`;
+            duration = duration.toFixed(2);
+
+            if (scope) {
+                console.log(`scope recycled in %c${duration}s`, color);
+            } else {
+                console.log(`full recycle in %c${duration}s`, color);
+            }
+        }, scope || 'DataBindingRecycle');
+    }
 };
 
 /**

@@ -36,8 +36,31 @@ let renderCycle = function() {
 
     // run all post render hooks after a frame has been painted. So this happens
     // at the beginning of the next cycle.
-    postRenderHooks.forEach(hook => hook());
-    postRenderTasks.forEach(task => task());
+    postRenderHooks.forEach(hook => {
+        let startTime = window.performance ? window.performance.now() : Date.now();
+
+        hook();
+
+        let endTime = window.performance ? window.performance.now() : Date.now();
+        let duration = endTime - startTime;
+
+        if (duration > 100) {
+            console.warn(`a pre render hook is taking too much time! ${duration.round()}ms`);
+        }
+    });
+
+    let startTime = window.performance ? window.performance.now() : Date.now();
+
+    postRenderTasks.forEach(task => {
+        task();
+
+        let endTime = window.performance ? window.performance.now() : Date.now();
+        let duration = endTime - startTime;
+
+        if (duration >= 500) {
+
+        }
+    });
 
     // init render cycle.
     // nothing at the moment.
