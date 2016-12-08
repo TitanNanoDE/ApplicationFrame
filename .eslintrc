@@ -4,7 +4,7 @@
         "node" : true,
         "es6" : true
     },
-    ecmaFeatures: { modules: true },
+    "ecmaFeatures": { "modules": true },
     "rules" : {
         "no-unused-vars" : 2,
         "no-undef" : 2,
