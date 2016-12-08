@@ -48,9 +48,9 @@ export let ObjectParser = function(source){
  * @return {*} the result value.
  */
 export let parseExpression = function(expression, ...contexts){
-	let chain = expression.match(/\w+(?:\([^\(\)]*\))*/g);
+	let chain = expression.match(/\w+(?:\([^)]*\))*/g) || [];
     let scope = null;
-    let functionTest = /\(((([\w\.]+)(, |,|))+)\)/;
+    let functionTest = /\(([^)]*)\)/;
 
     for (let i = 0; i < contexts.length; i++) {
         scope = contexts[i];
