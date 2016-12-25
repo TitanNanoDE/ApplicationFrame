@@ -115,7 +115,12 @@ let TemplateRepeatBinding = Make(/** @lends module:DataBinding.TemplateRepeatBin
                     if (polyParent) {
                         polyInvoke(getPolyParent(this.marker, polyParent)).removeChild(this.itemNodeList.get(item));
                     } else {
-                        polyInvoke(this.marker.parentNode).removeChild(this.itemNodeList.get(item));
+                        let node = this.itemNodeList.get(item);
+
+                        // if the node doesn't exist something went totally wrong... but it happens :/
+                        if (node) {
+                            polyInvoke(this.marker.parentNode).removeChild(node);
+                        }
                     }
 
                     this.itemScopeList.delete(item);
