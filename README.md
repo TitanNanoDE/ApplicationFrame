@@ -1,4 +1,8 @@
-Application Frame [![Build Status](https://travis-ci.org/TitanNanoDE/ApplicationFrame.svg?branch=master)](https://travis-ci.org/TitanNanoDE/ApplicationFrame)
+Application Frame
+[![Build Status](https://travis-ci.org/TitanNanoDE/ApplicationFrame.svg?branch=master)](https://travis-ci.org/TitanNanoDE/ApplicationFrame)
+[![npm version](https://badge.fury.io/js/application-frame.svg)](https://badge.fury.io/js/application-frame)
+[![Coverage Status](https://coveralls.io/repos/github/TitanNanoDE/ApplicationFrame/badge.svg?branch=master)](https://coveralls.io/github/TitanNanoDE/ApplicationFrame?branch=master)
+
 =================================
 
 Application Frame is a small JavaScript Framework, written in ES6.
