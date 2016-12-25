@@ -50,7 +50,10 @@ let TwoWayBinding = Make(/** @lends module:DataBinding.TwoWayBinding# */{
             // Only apply the scope value to the view if both rules apply.
             if (value !== this.currentValue) {
                 assignExpression(this.viewBinding, this.parentNode, value);
-                this.currentValue = value;
+
+                if (parseExpression(this.viewBinding, this.parentNode) === value) {
+                    this.currentValue = value;
+                }
 
                 if (document.activeElement === this.parentNode) {
                     let range = document.createRange();

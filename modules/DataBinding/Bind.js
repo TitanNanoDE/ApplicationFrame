@@ -49,20 +49,20 @@ let expressionTracking = {};
  * @return {module:DataBinding~ScopePrototype} the scope this node is bound to
  */
 export let bindNode = function(node, scope, isolated) {
-	scope = hasPrototype(scope, ScopePrototype) ? scope : Make(scope, ScopePrototype)();
+    scope = hasPrototype(scope, ScopePrototype) ? scope : Make(scope, ScopePrototype)();
     node = hasPrototype(node, Node) ? node : document.querySelector(node);
 
-	scopeList.set(scope, {
-		node : node,
-		bindings : []
-	});
+    scopeList.set(scope, {
+        node : node,
+        bindings : []
+    });
 
     scopeIndex.push(scope);
 
-	checkNode(node, scope);
+    checkNode(node, scope);
     recycle(isolated ? scope : false);
 
-	return scope;
+    return scope;
 };
 
 /**
@@ -77,17 +77,17 @@ let checkNode = function(node, scope, parentNode) {
     let dataRegex = /{{[^{}]*}}/g;
     let scopeInfo = scopeList.get(scope);
 
-	if (node.nodeName == '#text' || node.nodeType === 2) {
+    if (node.nodeName == '#text' || node.nodeType === 2) {
     	let text = node.value || polyInvoke(node).textContent,
-            variables = text.match(dataRegex),
-            visibilityBinding = (node.name === attributeNames.get('visible')),
-            transparencyBinding = (node.name === attributeNames.get('transparent')),
-            enabledAttribute = node.name === attributeNames.get('enabled'),
-            classes = (node.name === attributeNames.get('classes')),
-            modelBinding = node.name === attributeNames.get('model'),
-            autoBinding = node.name === 'bind',
-            twoWay = (node.name === attributeNames.get('value') || modelBinding),
-            styleBinding = (node.name === 'bind-style');
+        variables = text.match(dataRegex),
+        visibilityBinding = (node.name === attributeNames.get('visible')),
+        transparencyBinding = (node.name === attributeNames.get('transparent')),
+        enabledAttribute = node.name === attributeNames.get('enabled'),
+        classes = (node.name === attributeNames.get('classes')),
+        modelBinding = node.name === attributeNames.get('model'),
+        autoBinding = node.name === 'bind',
+        twoWay = (node.name === attributeNames.get('value') || modelBinding),
+        styleBinding = (node.name === 'bind-style');
 
         let singleBinding = visibilityBinding || transparencyBinding;
 
@@ -133,7 +133,7 @@ let checkNode = function(node, scope, parentNode) {
         	if (events !== null) {
         		bindEvents(events, node, scope);
 
-				polyInvoke(node).removeAttribute(attributeNames.get('events'));
+            polyInvoke(node).removeAttribute(attributeNames.get('events'));
        		}
         }
 
@@ -162,7 +162,8 @@ let bindTwoWay = function(text, scope, scopeInfo, node, parentNode, indirect){
     let binding = Make({
         properties : [expression],
         originalNodeValue : text,
-        currentValue : value,
+//      disable this so the value gets applied to the DOM the first time
+//        currentValue : value,
         node : node,
         parentNode : parentNode,
         indirect : indirect,
@@ -220,7 +221,7 @@ let compareTwoWay = function(newValue, scope, binding){
 
         recycle();
     }
-}
+};
 
 /**
  * creates a simple binding
@@ -245,7 +246,7 @@ let bindSimple = function(text, node, variables, scopeInfo, singleExpression, pa
     }, Binding).get();
 
     scopeInfo.bindings.push(binding);
-}
+};
 
 /**
  * binds an object expression to node.className.
@@ -320,10 +321,10 @@ let bindTemplateRepeat = function(template, scopeInfo) {
  * @return {void}
  */
 let bindEvents = function(events, node, scope){
-	events = ObjectParser(events);
+    events = ObjectParser(events);
 
-	Object.keys(events).forEach(name => {
-		let [method, modifier] = events[name].split('|');
+    Object.keys(events).forEach(name => {
+        let [method, modifier] = events[name].split('|');
 
         if (scope.$methods && scope.$methods[method.trim()]) {
             node.addEventListener(name.trim(), e => {
@@ -339,7 +340,7 @@ let bindEvents = function(events, node, scope){
 
                 e.cancleRecycle = function(){
                     canceled = true;
-                }
+                };
 
                 method.apply(scope, [e]);
 
@@ -347,7 +348,7 @@ let bindEvents = function(events, node, scope){
                     scope.__apply__();
             }, modifier === 'capture');
         }
-	});
+    });
 };
 
 /**
@@ -366,7 +367,7 @@ let bindAuto = function(text, scopeInfo, template) {
     }, AutoBinding)();
 
     scopeInfo.bindings.push(binding);
-}
+};
 
 /**
  * binds visual properties to the scope
@@ -385,7 +386,7 @@ let bindStyle = function(text, scopeInfo, scope, parentNode) {
     }, StyleBinding)(scope);
 
     scopeInfo.bindings.push(binding);
-}
+};
 
 /**
  * executes every watcher for the given scope.
@@ -406,7 +407,7 @@ let executeWatchers = function(scope) {
             expressionTracking[watcher.expression].newValue = value;
         }
     });
-}
+};
 
 /**
  * Checks every binding for the given scope and updates every value.
@@ -432,8 +433,8 @@ export let recycle = function (scope) {
                 scopeIndex.forEach(scope => {
                     executeWatchers(scope);
         	        scopeList.get(scope).bindings.forEach((/** @type {Binding} */binding) =>{
-                        binding.update(scope);
-                    });
+                    binding.update(scope);
+                });
                 });
             }
 
@@ -523,4 +524,4 @@ let getElementValue = function(node){
     } else {
         return 'UNKNOWN NODE!';
     }
-}
+};
