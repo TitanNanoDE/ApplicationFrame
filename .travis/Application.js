@@ -5,7 +5,7 @@ const expect = require('chai').expect;
 
 
 describe('Application', () => {
-    const applicationModule = Import('../../dist/core/prototypes/Application');
+    const applicationModule = Import('../../testable/core/prototypes/Application');
     let instance = null;
 
     it('should construct a new application', () => {

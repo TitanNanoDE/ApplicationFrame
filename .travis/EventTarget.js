@@ -11,7 +11,7 @@ describe('EventTarget', () => {
 
     it('should construct a new instance', () => {
         const { default: EventTarget } = EventTargetModule.value;
-        const { Make } = require('../dist/util/make');
+        const { Make } = require('../testable/util/make');
 
         instance = Make(EventTarget)();
 
