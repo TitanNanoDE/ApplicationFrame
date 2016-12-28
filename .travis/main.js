@@ -2,8 +2,9 @@
 
 'use strict';
 
-let exec = require('child_process').exec;
-let assert = require('assert');
+const exec = require('child_process').exec;
+const Import = require('./tools/import');
+const expect = require('chai').expect;
 
 console.log('### Application Frame Tests ###');
 
@@ -28,54 +29,58 @@ describe('compile', function(){
 })
 
 describe('core', () => {
-    let Af = null;
-    let share = { Af : null };
 
-    it('should import the main script', () => {
-        Af = require('../dist/af.js').default;
-        share.Af = Af;
+    describe('Make Util', () => {
+        let makeModule = Import('../../dist/util/make');
 
-        assert.notEqual(null, Af);
-    })
+        describe('Make()', () => {
+            it('make()() should create a new instance', () => {
+                let { Make } = makeModule.value;
+                let TestPrototype = {};
+                let instance = Make(TestPrototype)();
 
-    describe('public Util methods', () => {
-        let makejs = null;
+                expect(Object.getPrototypeOf(instance)).to.equal(TestPrototype);
+                expect(instance).to.not.equal(TestPrototype);
+            });
 
-        it('should import the make util', () => {
-            makejs = require('../dist/util/make.js');
+            it('make() should return a constructor', () => {
+                let { Make } = makeModule.value;
 
-            assert.notEqual(null, makejs);
+                let TestPrototype = {};
+                let constructor = Make(TestPrototype);
+
+                expect(constructor).to.be.a('function');
+            });
         });
 
-        it('should expose the Make function', () => {
-            assert.equal(makejs.Make, Af.Util.Make);
-        });
+        describe('hasPrototype()', () => {
 
-        it('should expose the hasPrototype function', () => {
-            assert.equal(makejs.hasPrototype, Af.Util.hasPrototype);
-        });
+            it('should return true if object has prototype', () => {
+                let { hasPrototype } = makeModule.value;
 
-        it('should expose the Mixin function', () => {
-            assert.equal(makejs.Mixin, Af.Util.Mixin);
+                let testPrototype = {};
+                let instance = Object.create(testPrototype);
 
+                expect(hasPrototype(instance, testPrototype)).to.be.true;
+            });
+
+            it('should return false if object doesn\'t have prototype', () => {
+                let { hasPrototype } = makeModule.value;
+
+                let testPrototype = {};
+                let instance = {};
+
+                expect(hasPrototype(instance, testPrototype)).to.be.false;
+            })
         });
     });
 
-    describe('public prototypes', () => {
-        it('should expose the Application prototype', () => {
-            let application = require('../dist/core/prototypes/Application.js').default;
+    describe('Prototypes', () => {
+        require('./Application.js');
+        require('./EventTarget.js');
+        require('./Catalog');
 
-            assert.equal(application, Af.Prototypes.Application);
-        });
-
-        it('should expose the EventTarget prototype', () => {
-            let eventTarget = require('../dist/core/prototypes/EventTarget.js').default;
-
-            assert.equal(eventTarget, Af.Prototypes.EventTarget);
-        });
+        Import('../../dest/core/prototypes/NetworkRequest');
+        Import('../../dest/core/objects/ArrayUtil');
     });
-
-    require('./Application.js');
-
-    require('./EventTarget.js').test(assert, share);
 });

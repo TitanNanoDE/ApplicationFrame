@@ -1,49 +1,46 @@
 /* eslint-env mocha */
+const assert = require('assert');
+const expect = require('chai').expect;
+const Import = require('./tools/import');
 
 'use strict';
 
-exports.test = function(assert, share){
-    describe('EventTarget Prototype', function(){
-        let EventTarget = null;
-        let instance = null;
+describe('EventTarget', () => {
+    let EventTargetModule = Import('../../dist/core/prototypes/EventTarget');
+    let instance = null;
 
-        it('should load the Prototype', () => {
-            EventTarget = require('../dist/core/prototypes/EventTarget.js').default;
+    it('should construct a new instance', () => {
+        const { default: EventTarget } = EventTargetModule.value;
+        const { Make } = require('../dist/util/make');
 
-            assert.notEqual(null, EventTarget);
-        });
+        instance = Make(EventTarget)();
 
-        it('should construct a new instance of EventTarget', () => {
-            instance = share.Af.Util.Make(EventTarget)();
-
-            assert.equal(EventTarget, Object.getPrototypeOf(instance));
-        });
-
-        it('should broadcast an event on the object when calling emit', (done) => {
-            instance.on('test#1', () => done());
-
-            instance.emit('test#1');
-        });
-
-        it('should only call listeners of the same event type', (done) => {
-            let fail = false;
-
-            instance.on('test#1', () => fail = true);
-            instance.emit('test#2');
-
-            setTimeout(() => {
-                done(assert.equal(false, fail));
-            }, 5);
-        });
-
-        it('should provide the emited data to the listener', (done) => {
-            let testData = 'test data';
-
-            instance.on('test#3', (data) => {
-                done(assert.equal(testData, data));
-            });
-
-            instance.emit('test#3', testData);
-        })
+        expect(Object.getPrototypeOf(instance)).to.equal(EventTarget);
     });
-};
+
+    it('should broadcast an event on the object when calling emit', (done) => {
+        instance.on('test#1', () => done());
+        instance.emit('test#1');
+    });
+
+    it('should only call listeners of the same event type', (done) => {
+        let fail = false;
+
+        instance.on('test#1', () => fail = true);
+        instance.emit('test#2');
+
+        setTimeout(() => {
+            done(assert.equal(false, fail));
+        }, 1);
+    });
+
+    it('should provide the emited data to the listener', (done) => {
+        let testData = 'test data';
+
+        instance.on('test#3', (data) => {
+            done(assert.equal(testData, data));
+        });
+
+        instance.emit('test#3', testData);
+    })
+});

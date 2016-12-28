@@ -1,30 +1,20 @@
 /* eslint-env mocha */
 
-'use strict';
+const Import = require('./tools/import');
+const expect = require('chai').expect;
 
-let assert = require('assert');
 
-describe('Application Prototype', () => {
-    let Application = null;
-    let Af = null;
+describe('Application', () => {
+    const applicationModule = Import('../../dist/core/prototypes/Application');
     let instance = null;
 
-    it('should load the core', () => {
-        Af = require('../dist/af.js').default;
-
-        assert.notEqual(null, Af);
-    });
-
-    it('should load the Application Prototype', () => {
-        Application = require('../dist/core/prototypes/Application.js').default;
-
-        assert.notEqual(null, Application);
-    });
-
     it('should construct a new application', () => {
-        instance = Af.Util.Make(Application)();
+        const { Make } = require('../dist/util/make');
+        const { default: Application } = applicationModule.value;
 
-        assert.equal(Application, Object.getPrototypeOf(instance));
+        instance = Make(Application)();
+        
+        expect(Object.getPrototypeOf(instance)).to.equal(Application);
     });
 
     it('should broadcast an event on the application', (done) => {

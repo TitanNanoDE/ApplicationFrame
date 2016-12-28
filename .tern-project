@@ -1,12 +1,14 @@
 {
   "ecmaVersion": 6,
   "libs": [
-    "browser"
+    "browser",
+    "chai"
   ],
   "loadEagerly": [
     "core/**/*.js",
     "libs/**/*js",
     "modules/**/*.js",
     "util/**/*.js"
-  ]
+  ],
+  "plugins": {}
 }
