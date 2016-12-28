@@ -9,11 +9,11 @@ describe('Application', () => {
     let instance = null;
 
     it('should construct a new application', () => {
-        const { Make } = require('../dist/util/make');
+        const { Make } = require('../testable/util/make');
         const { default: Application } = applicationModule.value;
 
         instance = Make(Application)();
-        
+
         expect(Object.getPrototypeOf(instance)).to.equal(Application);
     });
 

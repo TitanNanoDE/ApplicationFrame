@@ -8,30 +8,10 @@ const expect = require('chai').expect;
 
 console.log('### Application Frame Tests ###');
 
-let codeReady = new Promise((success, failed) => {
-    exec('gulp', (error, stdout, stderr) => {
-        if (error) {
-            console.error('compiler:', stderr);
-            failed(error);
-        }
-
-        success();
-    });
-});
-
-describe('compile', function(){
-    this.slow(10000);
-    this.timeout(0);
-
-    it('should compile the source code so we can test it', () => {
-        return codeReady;
-    })
-})
-
 describe('core', () => {
 
     describe('Make Util', () => {
-        let makeModule = Import('../../dist/util/make');
+        let makeModule = Import('../../testable/util/make');
 
         describe('Make()', () => {
             it('make()() should create a new instance', () => {
@@ -76,7 +56,7 @@ describe('core', () => {
     });
 
     describe('ArrayUtil', () => {
-        Import('../../dist/core/objects/ArrayUtil');
+        Import('../../testable/core/objects/ArrayUtil');
     });
 
     describe('Prototypes', () => {
@@ -85,7 +65,7 @@ describe('core', () => {
         require('./Catalog');
 
         describe('NetworkReqest', () => {
-            Import('../../dist/core/prototypes/NetworkRequest');
+            Import('../../testable/core/prototypes/NetworkRequest');
         });
     });
 });

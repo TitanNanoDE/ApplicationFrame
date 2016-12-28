@@ -5,7 +5,7 @@ const Import = require('./tools/import');
 
 describe('Catalog', () => {
 
-    const catalogModule = Import('../../dist/core/prototypes/Catalog');
+    const catalogModule = Import('../../testable/core/prototypes/Catalog');
     let instance = null;
 
     it('should be possible to create an instance', () => {
