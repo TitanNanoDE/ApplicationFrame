@@ -75,12 +75,17 @@ describe('core', () => {
         });
     });
 
+    describe('ArrayUtil', () => {
+        Import('../../dist/core/objects/ArrayUtil');
+    });
+
     describe('Prototypes', () => {
         require('./Application.js');
         require('./EventTarget.js');
         require('./Catalog');
 
-        Import('../../dest/core/prototypes/NetworkRequest');
-        Import('../../dest/core/objects/ArrayUtil');
+        describe('NetworkReqest', () => {
+            Import('../../dist/core/prototypes/NetworkRequest');
+        });
     });
 });
