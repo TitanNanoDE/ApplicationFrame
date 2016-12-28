@@ -11,6 +11,7 @@
     "eslint": "^3.11.1",
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
+    "gulp-clean": "^0.3.2",
     "ink-docstrap": "^1.2.1",
     "istanbul": "^0.4.5",
     "merge-stream": "^1.0.0",
