@@ -1,5 +1,6 @@
 script:
     - npm run test
+    - npm run coveralls
 branches:
     only:
         - master

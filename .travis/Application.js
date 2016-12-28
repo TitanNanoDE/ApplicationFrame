@@ -4,7 +4,7 @@
 
 let assert = require('assert');
 
-describe('Application Prototype', function(){
+describe('Application Prototype', () => {
     let Application = null;
     let Af = null;
     let instance = null;
