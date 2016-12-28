@@ -1,5 +1,4 @@
 import { Make } from '../../util/make.js';
-import Thread from './Thread.js';
 import ApplicationInternal from './ApplicationInternal.js';
 
 let Internal = new WeakMap();
@@ -102,21 +101,6 @@ let Application = {
 
             setTimeout(() => scope.listeners[type].forEach(f => f(data)), 0);
         }
-    },
-
-    /**
-    * Creates a new thread for this applicaion.
-    *
-    * @param {function} f function to execute in a new thread
-    *
-    * @return {ApplicationScopeInterface} this applicaion scope
-    */
-    thread : function(f){
-        let scope= Internal.get(this);
-
-        scope.workers.push(Make(Thread)(f));
-
-        return this;
     },
 
     /**

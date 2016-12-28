@@ -1,6 +1,7 @@
 /**
  * @module ApplicationFrame
  * @version 0.1.0
+ * @deprecated
  * @copyright by TitanNano / Jovan Gerodetti - {@link http://www.titannano.de}
  */
 
@@ -13,7 +14,7 @@ import { Make, hasPrototype, Mixin } from './util/make.js';
 import Application from './core/prototypes/Application.js';
 import EventTarget from './core/prototypes/EventTarget.js';
 
-var $$ = (typeof window == 'object') ? window : global;
+let $$ = (typeof window == 'object') ? window : global;
 
 /**
  * @param {navigator.userAgent} userAgentString - the userAgent string.
