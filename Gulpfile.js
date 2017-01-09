@@ -3,6 +3,7 @@
 let gulp = require('gulp');
 let babel = require('gulp-babel');
 const clean = require('gulp-clean');
+const sourcemaps = require('gulp-sourcemaps');
 let merge = require ('merge-stream');
 
 const dist = 'testable/';
@@ -19,11 +20,15 @@ gulp.task('clean', () => {
 gulp.task('default', ['clean'], () => {
 
     let core = gulp.src(['core/**/*.js'])
+        .pipe(sourcemaps.init())
         .pipe(babel(babelConfig))
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest(dist + 'core/'));
 
     let util = gulp.src(['util/**/*.js'])
+        .pipe(sourcemaps.init())
         .pipe(babel(babelConfig))
+        .pipe(sourcemaps.write())
         .pipe(gulp.dest(dist + 'util'));
 
     return merge(core, util);
