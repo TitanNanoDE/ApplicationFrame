@@ -12,7 +12,7 @@
     "gulp": "^3.9.1",
     "gulp-babel": "^6.1.2",
     "gulp-clean": "^0.3.2",
-    "gulp-sourcemaps": "^2.2.3",
+    "gulp-sourcemaps": "^2.4.0",
     "ink-docstrap": "^1.2.1",
     "istanbul": "^0.4.5",
     "merge-stream": "^1.0.0",
