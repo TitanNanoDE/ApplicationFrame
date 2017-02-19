@@ -15,7 +15,7 @@ const IndexedQuery = {
 
     /** @type {*} */
     rangeEnd: null,
-}
+};
 
 /**
  * the query compiler for indexedDB requests.
@@ -158,7 +158,7 @@ const IndexedQueryCompiler = {
 
                         if (matches.indexOf(JSON.stringify(cursor.primaryKey)) < 0) {
                             let doesMatch = true;
-                            let keyCount = query.rangeStart && query.rangeStart.length || 
+                            let keyCount = query.rangeStart && query.rangeStart.length ||
                                            query.rangeEnd && query.rangeEnd.length;
 
                             if (start > 0) {
