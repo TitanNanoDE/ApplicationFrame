@@ -6,7 +6,7 @@ const Import = require('./tools/import');
 'use strict';
 
 describe('EventTarget', () => {
-    let EventTargetModule = Import('../../testable/core/prototypes/EventTarget');
+    let EventTargetModule = Import('../../testable/core/EventTarget');
     let instance = null;
 
     it('should construct a new instance', () => {
@@ -42,5 +42,5 @@ describe('EventTarget', () => {
         });
 
         instance.emit('test#3', testData);
-    })
+    });
 });

@@ -2,7 +2,6 @@
 
 'use strict';
 
-const exec = require('child_process').exec;
 const Import = require('./tools/import');
 const expect = require('chai').expect;
 
@@ -51,12 +50,12 @@ describe('core', () => {
                 let instance = {};
 
                 expect(hasPrototype(instance, testPrototype)).to.be.false;
-            })
+            });
         });
     });
 
     describe('ArrayUtil', () => {
-        Import('../../testable/core/objects/ArrayUtil');
+        Import('../../testable/util/array');
     });
 
     describe('Prototypes', () => {
@@ -65,7 +64,7 @@ describe('core', () => {
         require('./Catalog');
 
         describe('NetworkReqest', () => {
-            Import('../../testable/core/prototypes/NetworkRequest');
+            Import('../../testable/core/NetworkRequest');
         });
     });
 });

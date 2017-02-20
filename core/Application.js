@@ -1,4 +1,4 @@
-import { Make } from '../../util/make.js';
+import { Make } from '../util/make.js';
 import ApplicationInternal from './ApplicationInternal.js';
 
 let Internal = new WeakMap();

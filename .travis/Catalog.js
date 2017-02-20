@@ -5,11 +5,11 @@ const Import = require('./tools/import');
 
 describe('Catalog', () => {
 
-    const catalogModule = Import('../../testable/core/prototypes/Catalog');
+    const catalogModule = Import('../../testable/core/Catalog');
     let instance = null;
 
     it('should be possible to create an instance', () => {
-        const {　default: Catalog } = catalogModule.value;
+        const { default: Catalog } = catalogModule.value;
 
         instance = Object.create(Catalog);
         instance._make();
