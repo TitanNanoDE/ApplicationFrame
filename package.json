@@ -23,11 +23,9 @@
     "build": "gulp --gulpfile .travis/Gulpfile.js --cwd ./",
     "test": "node_modules/.bin/mocha .travis/main.js",
     "coverage": "node_modules/.bin/istanbul cover node_modules/.bin/_mocha -- .travis/main.js --report json",
-    "remap-core": "node_modules/.bin/remap-istanbul -i coverage/coverage.json -o coverage/mapped.core.json -b ./core -e util",
-    "remap-util": "node_modules/.bin/remap-istanbul -i coverage/coverage.json -o coverage/mapped.util.json -b ./util -e core",
-    "remap-cov": "npm run coverage && npm run remap-core && npm run remap-util && ./node_modules/.bin/istanbul report --include \"coverage/mapped.*.json\" lcov",
-    "coveralls": "npm run remap-cov && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage",
-    "jsdoc": "jsdoc af.js core/ modules/ util/ -r -p -a all -P package.json -c jsdoc.conf.json -t node_modules/ink-docstrap/template"
+    "remap-core": "node_modules/.bin/remap-istanbul -i coverage/coverage.json -o coverage/mapped.json -b ./",
+    "remap-cov": "npm run coverage && npm run remap-core && ./node_modules/.bin/istanbul report --include \"coverage/mapped.json\" lcov",
+    "coveralls": "npm run remap-cov && cat ./coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js && rm -rf ./coverage"
   },
   "repository": {
     "type": "git",
