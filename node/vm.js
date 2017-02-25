@@ -32,7 +32,7 @@ const VM = {
             return;
         }
 
-        vm.runInContext(file, this._context);
+        vm.runInContext(file, this._context, { filename: path });
 
         // done running module
         return this._context;

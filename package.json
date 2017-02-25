@@ -3,10 +3,11 @@
   "version": "0.6.0",
   "description": "Application Frame is a small JavaScript Framework / Library at a realy early stage.",
   "main": "af.js",
-  "dependencies": {},
+  "dependencies": {
+    "callsite": "^1.0.0"
+  },
   "devDependencies": {
     "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
-    "callsite": "^1.0.0",
     "chai": "^3.5.0",
     "coveralls": "^2.11.15",
     "eslint": "^3.11.1",
