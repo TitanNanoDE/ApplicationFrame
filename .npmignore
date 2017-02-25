@@ -1,0 +1,13 @@
+.project
+.buildconfig
+*-compiler/
+node_modules/
+dist/
+out/
+coverage/
+testable/
+.sync/
+docs/
+.travis.yml
+.tern-project
+.gitattibutes
