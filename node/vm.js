@@ -1,6 +1,7 @@
 const vm = require('vm');
 const fs = require('fs');
-const util = require('util');
+const Path = require('path');
+const callsite = require('callsite');
 
 const VM = {
 
@@ -16,7 +17,16 @@ const VM = {
         let file = null;
 
         try {
-            file = fs.openFileSync(path);
+            const callerDir = Path.dirname(callsite()[1].getFileName());
+
+            // resolve the relative path
+            path = Path.resolve(callerDir, path);
+
+            // find the actual module file
+            path = require.resolve(path);
+
+            // read the file content
+            file = fs.readFileSync(path, 'utf-8');
         } catch (e) {
             console.error('unable to locate module', path, e);
             return;
@@ -25,7 +35,7 @@ const VM = {
         vm.runInContext(file, this._context);
 
         // done running module
-        return util.inspect(this._context);
+        return this._context;
     }
 };
 
