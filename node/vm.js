@@ -7,10 +7,16 @@ const VM = {
 
     _context: null,
 
+    _hooks: [],
+
     constructor(globals = {}) {
         this._context = vm.createContext(globals);
 
         return this;
+    },
+
+    addLoadHook(fn) {
+        this._hooks.push(fn);
     },
 
     runModule(path) {
@@ -31,6 +37,8 @@ const VM = {
             console.error('unable to locate module', path, e);
             return;
         }
+
+        this._hooks.forEach(fn => { file = fn(file, path); });
 
         vm.runInContext(file, this._context, { filename: path });
 
