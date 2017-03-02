@@ -2,8 +2,8 @@
  * @module RenderEngine
  */
 
-import { Make } from '../../../util/make';
-import TaskList from './RenderEngine/TaskList';
+import { Make } from './util/make';
+import TaskList from './rendering/TaskList';
 
 /** @type {Function[]} */
 let preRenderHooks = [];
