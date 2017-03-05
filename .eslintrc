@@ -5,6 +5,9 @@
         "es6" : true
     },
     "ecmaFeatures": { "modules": true },
+    "plugins": [
+        "scanjs-rules"
+    ],
     "rules" : {
         "no-unused-vars" : 2,
         "no-undef" : 2,
@@ -15,7 +18,16 @@
         "no-redeclare" : 2,
         "yoda" : 2,
         "no-var" : 2,
-        "prefer-arrow-callback" : 2
+        "prefer-arrow-callback" : 2,
+
+        "scanjs-rules/assign_to_onmessage": 1,
+        "scanjs-rules/assign_to_location": 1,
+        "scanjs-rules/assign_to_hostname": 1,
+        "scanjs-rules/assign_to_search": 1,
+        "scanjs-rules/assign_to_protocol": 1,
+        "scanjs-rules/assign_to_href": 1,
+        "scanjs-rules/assign_to_src": 1,
+        "scanjs-rules/assign_to_pathname": 1
     },
     "parserOptions": {
         "sourceType": "module",
