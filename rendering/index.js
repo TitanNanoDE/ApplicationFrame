@@ -2,8 +2,9 @@
  * @module RenderEngine
  */
 
-import { Make } from './util/make';
-import TaskList from './rendering/TaskList';
+import { Make } from '../util/make';
+import TaskList from './TaskList';
+import CurrentFrameInterface from './CurrentFrameInterface';
 
 /** @type {Function[]} */
 let preRenderHooks = [];
@@ -30,15 +31,19 @@ const getNow = function() {
     return window.performance ? window.performance.now() : Date.now();
 };
 
+const renderConfig = {
+    lightray: false,
+};
+
 /**
  * performs all render tasks from one frame. This is one render cycle.
  *
+ * @param {number} startTime - the time the render cycle started
+ *
  * @return {void}
  */
-let renderCycle = function() {
+let renderCycle = function(startTime) {
     active = false;
-
-    const cycleStart = getNow();
 
     // run all post render hooks after a frame has been painted. So this happens
     // at the beginning of the next cycle.
@@ -55,8 +60,6 @@ let renderCycle = function() {
         }
     });
 
-    const startTime = getNow();
-
     postRenderTasks.forEach(task => {
         task();
 
@@ -69,27 +72,31 @@ let renderCycle = function() {
     });
 
     // init render cycle.
-    // nothing at the moment.
+    const currentFrameInterface = Object.create(CurrentFrameInterface)
+        .constructor({
+            startTime: startTime,
+            maxFrameDuration: renderConfig.lightray ? (1000 / 60) : (1000 / 30),
+        });
 
     // run the pre render hooks before we start to do render stuff.
-    preRenderHooks.forEach(hook => hook());
+    preRenderHooks.forEach(hook => hook(currentFrameInterface));
 
     // run pre render tasks
     let tasks = preRenderTasks.tasks;
     preRenderTasks.flush();
-    tasks.forEach(task => task());
+    tasks.forEach(task => task(currentFrameInterface));
 
     //run all render tasks.
     tasks = renderTasks.tasks;
     renderTasks.flush();
-    tasks.forEach(task => task());
+    tasks.forEach(task => task(currentFrameInterface));
 
     //finish rendering, final steps
     postRenderTasks = nextPostRenderTasks;
     nextPostRenderTasks = [];
 
     //create performance data
-    const cycleDuration = getNow() - cycleStart;
+    const cycleDuration = getNow() - startTime;
     const frameRate = 1000 / cycleDuration;
 
     RenderEngine.performance.lastFrameDuration = cycleDuration;
@@ -122,6 +129,14 @@ let scheduleNextFrame = function() {
  * @namespace
  */
 let RenderEngine = {
+
+    get lightray() {
+        return renderConfig.lightray;
+    },
+
+    set lightray(value) {
+        return renderConfig.lightray = value;
+    },
 
     performance: {
         fps: 0,
