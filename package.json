@@ -1,6 +1,6 @@
 {
   "name": "application-frame",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "description": "Application Frame is a small JavaScript Framework / Library at a realy early stage.",
   "main": "af.js",
   "dependencies": {
