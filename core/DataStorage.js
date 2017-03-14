@@ -2,7 +2,7 @@ import EventTarget from './EventTarget';
 
 const whenFilled = function(successCallback) {
     if (successCallback && typeof successCallback === 'function') {
-        this._filledCallbacks.push({ once: false, callback: successCallback });
+        this._filledCallbacks.push({ once: false, callback: successCallback });
     }
 
     if (this._value) {
@@ -14,12 +14,12 @@ const whenNext = function(callback) {
     if (callback && typeof callback === 'function') {
         this._filledCallbacks.push({ once: true, callback: callback });
     }
-}
+};
 
 const once = function(callback) {
     if (callback && typeof callback === 'function') {
         if (!this._value) {
-            this._filledCallbacks.push({ once: true, callback: callback });
+            this._filledCallbacks.push({ once: true, callback: callback });
         } else {
             callback(this._value);
         }
@@ -27,12 +27,18 @@ const once = function(callback) {
 };
 
 // fake then if this should be handed to something that expects a promise
-whenFilled.then = whenNext.then = once.then = function(...args) {
-    this(...args);
+whenFilled.then = whenNext.then = once.then = function(callback) {
+    return (new Promise((done) => {
+        this(done);
+    })).then(callback);
 };
 
-// dummy catch incase someone tries to use it
-whenFilled.catch = whenNext.then = once.then = function() {};
+// dummy catch in case someone tries to use it
+whenFilled.catch = whenNext.catch = once.catch = function(callback) {
+    return (new Promise((done) => {
+        this(done);
+    })).catch(callback);
+};
 
 const DataStorage = {
     _value: null,
@@ -43,10 +49,12 @@ const DataStorage = {
     },
 
     constructor() {
-        this.whenFilled = whenFilled.bind(this);
+        this.when = whenFilled.bind(this);
         this.whenNext = whenNext.bind(this);
         this.once = once.bind(this);
         this._filledCallbacks = [];
+
+        return this;
     },
 
     fill(value) {
