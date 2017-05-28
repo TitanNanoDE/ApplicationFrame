@@ -2,8 +2,7 @@
  * @module RenderEngine
  */
 
-import { Make } from '../util/make';
-import TaskList from './TaskList';
+import Frame from './Frame';
 import CurrentFrameInterface from './CurrentFrameInterface';
 
 /** @type {Function[]} */
@@ -12,17 +11,9 @@ let preRenderHooks = [];
 /** @type {Function[]} */
 let postRenderHooks = [];
 
-/** @type {module:RenderEngine.TaskList} */
-let preRenderTasks = Make(TaskList)();
+const frameBuffer = [];
 
-/** @type {module:RenderEngine.TaskList} */
-let renderTasks = Make(TaskList)();
-
-/** @type {Function[]} */
-let postRenderTasks = [];
-
-/** @type {Function[]} */
-let nextPostRenderTasks = [];
+frameBuffer.last = function() { return this[this.length-1]; }
 
 /** @type {boolean} */
 let active = false;
@@ -48,53 +39,51 @@ let renderCycle = function(startTime) {
     // run all post render hooks after a frame has been painted. So this happens
     // at the beginning of the next cycle.
     postRenderHooks.forEach(hook => {
-        const startTime = getNow();
-
         hook();
-
-        const endTime = getNow();
-        const duration = endTime - startTime;
-
-        if (duration > 100) {
-            console.warn(`a pre render hook is taking too much time! ${duration.round()}ms`);
-        }
     });
 
-    postRenderTasks.forEach(task => {
+    frameBuffer[0].postRenderTasks.filter(task => {
         task();
-
-        let endTime = getNow();
-        let duration = endTime - startTime;
-
-        if (duration >= 500) {
-            console.warn(`a post render task is taking too much time! ${duration.round()}ms`);
-        }
     });
 
-    // init render cycle.
+    // init render cycle START
+    const frame = frameBuffer[1];
+
+    // migrate remaining tasks to this Frame
+    frameBuffer[0].preRenderTasks.getAll().forEach((task) => {
+        frame.preRenderTasks.unshift(task.work, task.id);
+    });
+
+    frameBuffer[0].renderTasks.getAll().forEach((task) => {
+        frame.renderTasks.unshift(task.work, task.id);
+    });
+
+    frameBuffer[0].postRenderTasks.getAll().forEach((task) => {
+        frame.postRenderTasks.unshift(task.work, task.id);
+    });
+
+    frameBuffer.shift();
+
+    if (frameBuffer.length < 2) {
+        frameBuffer.push(Object.create(Frame).constructor());
+    }
+
     const currentFrameInterface = Object.create(CurrentFrameInterface)
         .constructor({
             startTime: startTime,
             maxFrameDuration: renderConfig.lightray ? (1000 / 60) : (1000 / 30),
         });
 
+    // init render cycle END
+
     // run the pre render hooks before we start to do render stuff.
     preRenderHooks.forEach(hook => hook(currentFrameInterface));
 
     // run pre render tasks
-    let tasks = preRenderTasks.tasks;
-    preRenderTasks.flush();
-    tasks.forEach(task => task(currentFrameInterface));
+    frame.preRenderTasks.run(currentFrameInterface);
 
     //run all render tasks.
-    tasks = renderTasks.tasks;
-    renderTasks.flush();
-    tasks.forEach(task => task(currentFrameInterface));
-
-    //finish rendering, final steps
-    postRenderTasks = nextPostRenderTasks;
-    nextPostRenderTasks = [];
-
+    frame.renderTasks.run(currentFrameInterface);
     //create performance data
     const cycleDuration = getNow() - startTime;
     const frameRate = 1000 / cycleDuration;
@@ -108,14 +97,18 @@ let renderCycle = function(startTime) {
 };
 
 /**
- * Schedules a new render cycle in the browsers rendeing engine.
+ * Schedules a new render cycle in the browsers rendering engine.
  * The cycle is performed as soon as the browser is ready to render a new frame.
  *
  * @return {void}
  */
 let scheduleNextFrame = function() {
-    if (!active && (postRenderHooks.length > 0 || preRenderHooks.length > 0 ||
-        renderTasks.length > 0 || postRenderTasks.length > 0 || nextPostRenderTasks.length > 0)) {
+    if (!active && frameBuffer.length > 0) {
+
+        if (frameBuffer.length === 2 && frameBuffer[0].emtpy && frameBuffer[1].empty) {
+            return;
+        }
+
         window.requestAnimationFrame(renderCycle);
 
         active = true;
@@ -128,7 +121,9 @@ let scheduleNextFrame = function() {
  *
  * @namespace
  */
-let RenderEngine = {
+const RenderEngine = {
+
+    _currentFrame: 1,
 
     get lightray() {
         return renderConfig.lightray;
@@ -192,7 +187,7 @@ let RenderEngine = {
      * @return {Function} the function which has been passed in.
      */
     schedulePreRenderTask: function(f, id) {
-        preRenderTasks.push(f, id);
+        frameBuffer[this._currentFrame].preRenderTasks.push(f, id);
         scheduleNextFrame();
 
         return f;
@@ -204,7 +199,7 @@ let RenderEngine = {
      * @return {Function} the function which has been passed in.
      */
     scheduleRenderTask: function(f, id) {
-        renderTasks.push(f, id);
+        frameBuffer[this._currentFrame].renderTasks.push(f, id);
         scheduleNextFrame();
 
         return f;
@@ -215,7 +210,7 @@ let RenderEngine = {
      * @return {Function} the function which has been passed in.
      */
     schedulePostRenderTask: function(f) {
-        nextPostRenderTasks.push(f);
+        frameBuffer[this._currentFrame].postRenderTasks.push(f);
         scheduleNextFrame();
 
         return f;
@@ -230,8 +225,22 @@ let RenderEngine = {
         if(!active) {
             scheduleNextFrame();
         }
+    },
+
+    skipFrame() {
+        const frameIndex = this._currentFrame + 1;
+
+        if (!frameBuffer[frameIndex]) {
+            frameBuffer.push(Object.create(Frame).constructor());
+        }
+
+        return { _currentFrame: frameIndex, __proto__: RenderEngine };
     }
 };
+
+// init zero frame
+frameBuffer.push(Object.create(Frame).constructor());
+frameBuffer.push(Object.create(Frame).constructor());
 
 /**
  * @member {module:RenderEngine~RenderEngine} RenderEngine
