@@ -2,6 +2,7 @@
  * @module RenderEngine
  */
 
+import { allocate, release } from '../memory';
 import Frame from './Frame';
 import CurrentFrameInterface from './CurrentFrameInterface';
 
@@ -13,7 +14,7 @@ let postRenderHooks = [];
 
 const frameBuffer = [];
 
-frameBuffer.last = function() { return this[this.length-1]; }
+frameBuffer.last = function() { return this[this.length-1]; };
 
 /** @type {boolean} */
 let active = false;
@@ -62,17 +63,24 @@ let renderCycle = function(startTime) {
         frame.postRenderTasks.unshift(task.work, task.id);
     });
 
-    frameBuffer.shift();
+    const oldFrame = frameBuffer.shift();
+    release(oldFrame);
 
     if (frameBuffer.length < 2) {
-        frameBuffer.push(Object.create(Frame).constructor());
+        frameBuffer.push(allocate('Frame', Frame));
+//        frameBuffer.push(Object.create(Frame).constructor());
     }
 
-    const currentFrameInterface = Object.create(CurrentFrameInterface)
+    const currentFrameInterface = allocate('CurrentFrameInterface', CurrentFrameInterface);
+
+    currentFrameInterface._startTime = startTime;
+    currentFrameInterface._maxFrameDuration = renderConfig.lightray ? (1000 / 60) : (1000 / 30);
+
+     /*Object.create(CurrentFrameInterface)
         .constructor({
             startTime: startTime,
             maxFrameDuration: renderConfig.lightray ? (1000 / 60) : (1000 / 30),
-        });
+        });*/
 
     // init render cycle END
 
@@ -231,7 +239,8 @@ const RenderEngine = {
         const frameIndex = this._currentFrame + 1;
 
         if (!frameBuffer[frameIndex]) {
-            frameBuffer.push(Object.create(Frame).constructor());
+            frameBuffer.push(allocate('Frame', Frame));
+//            frameBuffer.push(Object.create(Frame).constructor());
         }
 
         return { _currentFrame: frameIndex, __proto__: RenderEngine };
@@ -239,8 +248,10 @@ const RenderEngine = {
 };
 
 // init zero frame
-frameBuffer.push(Object.create(Frame).constructor());
-frameBuffer.push(Object.create(Frame).constructor());
+frameBuffer.push(allocate('Frame', Frame));
+frameBuffer.push(allocate('Frame', Frame));
+//frameBuffer.push(Object.create(Frame).constructor());
+//frameBuffer.push(Object.create(Frame).constructor());
 
 /**
  * @member {module:RenderEngine~RenderEngine} RenderEngine

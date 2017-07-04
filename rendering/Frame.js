@@ -1,4 +1,5 @@
 import TaskList from './TaskList';
+import { allocate } from '../memory';
 
 const Frame = {
     preRenderTasks: null,
@@ -12,9 +13,9 @@ const Frame = {
     },
 
     constructor() {
-        this.preRenderTasks = Object.create(TaskList).constructor();
-        this.renderTasks = Object.create(TaskList).constructor();
-        this.postRenderTasks = Object.create(TaskList).constructor();
+        this.preRenderTasks = allocate('TaskList', TaskList); // Object.create(TaskList).constructor();
+        this.renderTasks = allocate('TaskList', TaskList); //Object.create(TaskList).constructor();
+        this.postRenderTasks = allocate('TaskList', TaskList); //Object.create(TaskList).constructor();
 
         return this;
     }

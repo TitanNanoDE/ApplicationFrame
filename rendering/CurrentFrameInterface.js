@@ -2,7 +2,7 @@ const CurrentFrameInterface = {
     _startTime: 0,
     _maxFrameDuration: 0,
 
-    constructor({ startTime, maxFrameDuration }) {
+    constructor({ startTime, maxFrameDuration } = {}) {
         this._startTime = startTime;
         this._maxFrameDuration = maxFrameDuration;
 

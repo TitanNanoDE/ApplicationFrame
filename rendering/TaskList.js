@@ -1,4 +1,5 @@
 import CurrentFrameInterface from './CurrentFrameInterface';
+import { allocate, release } from '../memory';
 
 /** @lends module:RenderEngine.TaskList.prototype */
 let TaskList = {
@@ -26,8 +27,8 @@ let TaskList = {
      * @return {void}
      */
     constructor() {
-        this.tasks = [];
-        this.registeredIds = [];
+        this.tasks = allocate(0);
+        this.registeredIds = allocate(0);
 
         return this;
     },
@@ -50,7 +51,7 @@ let TaskList = {
     },
 
     unshift(task, id = null) {
-        if (!id || this.registeredIds.indexOf(id) < 0) {
+        if (!id || this.registeredIds.indexOf(id) < 0) {
             this.tasks.unshift({ id: id, work: task });
 
             if (id) {
@@ -65,7 +66,7 @@ let TaskList = {
     },
 
     filter(callback) {
-        const newList = [];
+        const newList = allocate(0);
 
         for (let i = 0; i < this.length; i++) {
             const item = this.tasks[i];
@@ -75,6 +76,7 @@ let TaskList = {
             }
         }
 
+        release(this.tasks);
         this.tasks = newList;
     },
 
