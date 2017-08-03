@@ -20,7 +20,7 @@
     "merge-stream": "^1.0.0",
     "mocha": "^3.2.0",
     "remap-istanbul": "^0.9.0",
-    "eslint-plugin-scanjs-rules": "^0.1.4"
+    "eslint-plugin-scanjs-rules": "^0.2.1"
   },
   "scripts": {
     "build": "gulp --gulpfile .travis/Gulpfile.js --cwd ./",
