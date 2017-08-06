@@ -44,6 +44,14 @@ const VM = {
 
         // done running module
         return this._context;
+    },
+
+    getContext() {
+        return this._context;
+    },
+
+    updateContext(update) {
+        Object.assign(this._context, update);
     }
 };
 

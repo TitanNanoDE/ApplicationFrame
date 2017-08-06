@@ -1,5 +1,7 @@
 const istanbul = require('istanbul');
 const VM = require('./vm');
+const callsite = require('callsite');
+const Path = require('path');
 
 const instrumenter = new istanbul.Instrumenter();
 
@@ -35,4 +37,21 @@ module.exports = function(data = {}) {
     }
 
     return vm;
+};
+
+module.exports.applyNodeEnv = function(vm) {
+    vm.updateContext({
+        module: { exports: {} },
+        require(path) {
+            let cwd = callsite()[1].getFileName();
+            cwd = Path.dirname(cwd);
+            path = Path.resolve(cwd, path);
+
+            return require(path);
+        },
+    });
+
+    vm.updateContext({
+        exports: vm.getContext().module.exports,
+    });
 };
