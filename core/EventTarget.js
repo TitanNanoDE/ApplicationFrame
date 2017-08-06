@@ -1,5 +1,7 @@
+import async from './async';
+
 /** @lends EventTarget# */
-let EventTarget = {
+const EventTarget = {
 
     /** @type {Object} */
     _listeners : null,
@@ -7,10 +9,21 @@ let EventTarget = {
     /**
      * @constructs
      *
-     * @return {void}
+     * @return {this} [description]
      */
-    _make : function(){
+    constructor() {
         this._listeners = {};
+
+        return this;
+    },
+
+    /**
+     * @deprecated Do not use the make constructors
+     *
+     * @return {this}      [description]
+     */
+    _make(...args) {
+        return this.constructor(...args);
     },
 
     /**
@@ -39,12 +52,28 @@ let EventTarget = {
      */
     emit : function(type, data){
         if (this._listeners[type]) {
-            setTimeout(() =>
-                this._listeners[type].forEach(listener =>
-                    listener.apply(this, [data])
-            ), 0);
+            async(() => {
+                this._listeners[type]
+                    .forEach(listener => listener.apply(this, [data]));
+            });
         }
-    }
+    },
+
+    /**
+    * removes a previously attached listener function.
+    *
+    * @param  {string} type     the listener type
+    * @param  {Function} listener the listener function to remove
+    *
+    * @return {void}
+    */
+    removeListener: function(type, listener) {
+        if (this._listeners[type]) {
+            const index = this._listeners[type].indexOf(listener);
+
+            this._listeners[type].splice(index, 1);
+        }
+    },
 };
 
 export default EventTarget;

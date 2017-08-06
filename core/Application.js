@@ -1,7 +1,4 @@
-import { Make } from '../util/make.js';
-import ApplicationInternal from './ApplicationInternal.js';
-
-let Internal = new WeakMap();
+import EventTarget from './EventTarget';
 
 /** @lends Application.prototype */
 let Application = {
@@ -25,13 +22,14 @@ let Application = {
     */
     author : '',
 
-    /**
-    * @constructs
-    *
-    * @return {void}
-    */
-    _make : function(){
-        Internal.set(this, Make(ApplicationInternal)());
+    constructor() {
+        super.constructor();
+
+        return this;
+    },
+
+    _make(...args) {
+        return this.constructor(...args);
     },
 
     /**
@@ -43,66 +41,6 @@ let Application = {
         console.log(`Initialzing Application "${this.name}"!`);
     },
 
-
-    /**
-    * Registers a new event listener for the given event type.
-    *
-    * @param {string} type the event type
-    * @param {function} listener the listener function
-    *
-    * @return {Application} this application
-    */
-    on : function(type, listener){
-        let scope = Internal.get(this);
-
-        if (!scope.listeners[type]) {
-            scope.listeners[type] = [];
-        }
-
-        scope.listeners[type].push(listener);
-
-        return this;
-    },
-
-    /**
-    * removes a previously attached listener function.
-    *
-    * @param  {string} type     the listener type
-    * @param  {Function} listener the listener function to remove
-    *
-    * @return {void}
-    */
-    removeListener: function(type, listener) {
-        let scope = Internal.get(this);
-
-        if (scope.listeners[type]) {
-            let index = scope.listeners[type].indexOf(listener);
-
-            scope.listeners[type].splice(index, 1);
-        }
-    },
-
-    /**
-    * Emmits a new event on this application.
-    *
-    * @param {string} type event type
-    * @param {Object} data event data
-    *
-    * @return {void}
-    */
-    emit : function(type, data){
-        let scope = Internal.get(this);
-        let name = this.name ? `${this.name}:%c ` : '%c%c';
-
-        if (scope.listeners[type]) {
-            console.log(`%c${name}${type} event emitted`,
-                'font-weight: 900; text-decoration: underline;',
-                'font-weight: initial; text-decoration: initial;');
-
-            setTimeout(() => scope.listeners[type].forEach(f => f(data)), 0);
-        }
-    },
-
     /**
     * This function will try to terminate the application by emitting the termination event.
     *
@@ -112,7 +50,9 @@ let Application = {
     */
     terminate : function(reason){
         this.emit('terminate', reason);
-    }
+    },
+
+    __proto__: EventTarget,
 
 };
 
