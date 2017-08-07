@@ -40,14 +40,30 @@ module.exports = function(data = {}) {
 };
 
 module.exports.applyNodeEnv = function(vm) {
+
+    const moduleSystem = require('module');
+    const cache = moduleSystem._cache;
+    const vmCache = {};
+
     vm.updateContext({
         module: { exports: {} },
+
         require(path) {
+            const parsedPath = Path.parse(path);
             let cwd = callsite()[1].getFileName();
             cwd = Path.dirname(cwd);
-            path = Path.resolve(cwd, path);
 
-            return require(path);
+            if (!(parsedPath.root === '' && parsedPath.dir === '')) {
+                path = Path.resolve(cwd, path);
+            }
+
+            moduleSystem._cache = vmCache;
+
+            const module = require(path);
+
+            moduleSystem._cache = cache;
+
+            return module;
         },
     });
 
