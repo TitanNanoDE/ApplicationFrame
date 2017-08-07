@@ -1,0 +1,1 @@
+global.instance.terminate('because');

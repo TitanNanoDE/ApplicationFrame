@@ -2,6 +2,7 @@
 
 const { expect } = require('chai');
 const VM = require('../../testable/node/vm');
+const istanbulVM = require('../../testable/node/istanbulVM');
 
 describe('Node VM', () => {
     let vmInstance = null;
@@ -28,5 +29,17 @@ describe('Node VM', () => {
 
         expect(result.data.x).to.be.equal(100);
         expect(result.data.hello).to.be.equal('text');
+    });
+
+    it('should throw an error if a module can\'t be found', () => {
+        const vm = istanbulVM();
+
+        istanbulVM.applyNodeEnv(vm);
+
+        vm.runModule('../../testable/node/vm');
+
+        const result = vm.runModule('../testTasks/node/vm/invalidRequire');
+
+        expect(result.console.stats.error).to.be.equal(1);
     });
 });
