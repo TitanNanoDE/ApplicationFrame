@@ -12,7 +12,7 @@
     "coveralls": "^2.11.15",
     "eslint": "^4.1.0",
     "gulp": "^3.9.1",
-    "gulp-babel": "^6.1.2",
+    "gulp-babel": "^7.0.0",
     "gulp-clean": "^0.3.2",
     "gulp-sourcemaps": "^2.4.0",
     "ink-docstrap": "^1.2.1",
