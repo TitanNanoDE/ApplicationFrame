@@ -23,9 +23,11 @@ gulp.task('default', ['clean'], () => {
         'core/**/*.js',
         'util/**',
         'IndexedDB.js',
+        'IndexedDB/**/*.js',
         'rendering.js',
         'rendering/**/*.js',
         'IndexedDB/**/*.js',
+        'memory/**/*.js',
         'node/**/*.js',
     ], { base: './', })
         .pipe(sourcemaps.init())
