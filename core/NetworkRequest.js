@@ -76,12 +76,25 @@ let NetworkRequest = {
 	 *
 	 * @return {NetworkRequest} the request it self
 	 */
-    _make : function(url, { method = 'GET', type = 'none' } = {}){
+    constructor (url, { method = 'GET', type = 'none' } = {}) {
         this.type = type;
         this.method = method;
         this._headers = {};
         this.url = url;
         this._listeners = [];
+
+        return this;
+    },
+
+    /**
+     * [_make description]
+     *
+     * @deprecated use the constructor
+     * @param  {[type]} args [description]
+     * @return {[type]}      [description]
+     */
+    _make(...args) {
+        return this.constructor(...args);
     },
 
 	/**
