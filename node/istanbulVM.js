@@ -1,5 +1,7 @@
 const istanbul = require('istanbul');
 const VM = require('./vm');
+const callsite = require('callsite');
+const Path = require('path');
 
 const instrumenter = new istanbul.Instrumenter();
 
@@ -35,4 +37,37 @@ module.exports = function(data = {}) {
     }
 
     return vm;
+};
+
+module.exports.applyNodeEnv = function(vm) {
+
+    const moduleSystem = require('module');
+    const cache = moduleSystem._cache;
+    const vmCache = {};
+
+    vm.updateContext({
+        module: { exports: {} },
+
+        require(path) {
+            const parsedPath = Path.parse(path);
+            let cwd = callsite()[1].getFileName();
+            cwd = Path.dirname(cwd);
+
+            if (!(parsedPath.root === '' && parsedPath.dir === '')) {
+                path = Path.resolve(cwd, path);
+            }
+
+            moduleSystem._cache = vmCache;
+
+            const module = require(path);
+
+            moduleSystem._cache = cache;
+
+            return module;
+        },
+    });
+
+    vm.updateContext({
+        exports: vm.getContext().module.exports,
+    });
 };

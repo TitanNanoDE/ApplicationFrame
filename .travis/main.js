@@ -54,10 +54,6 @@ describe('Make Util', () => {
     });
 });
 
-describe('ArrayUtil', () => {
-    Import('../../testable/util/array');
-});
-
 describe('Prototypes', () => {
     require('./Application.js');
     require('./EventTarget.js');
@@ -67,3 +63,11 @@ describe('Prototypes', () => {
         Import('../../testable/core/NetworkRequest');
     });
 });
+
+describe('Web', () => {
+    require('./web/Manifest');
+});
+
+require('./util/array');
+
+require('./rendering');

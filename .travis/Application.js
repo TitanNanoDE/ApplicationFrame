@@ -1,24 +1,40 @@
 /* eslint-env mocha */
 
-const Import = require('./tools/import');
+const istanbulVM = require('../testable/node/istanbulVM');
 const expect = require('chai').expect;
 
 
 describe('Application', () => {
-    const applicationModule = Import('../../testable/core/Application');
-    let instance = null;
+    const vm = istanbulVM();
+
+    istanbulVM.applyNodeEnv(vm);
+
+    vm.runModule('../testable/core/Application');
 
     it('should construct a new application', () => {
-        const { Make } = require('../testable/util/make');
-        const { default: Application } = applicationModule.value;
+        const result = vm.runModule('./testTasks/Application/construct');
 
-        instance = Make(Application)();
+        expect(Object.getPrototypeOf(result.instance)).to.equal(result.Application);
+    });
 
-        expect(Object.getPrototypeOf(instance)).to.equal(Application);
+    it('should init the application', () => {
+        const result = vm.runModule('./testTasks/Application/init');
+
+        expect(result.console.stats.log).to.equal(1);
     });
 
     it('should broadcast an event on the application', (done) => {
-        instance.on('test#1', () => done());
-        instance.emit('test#1', true);
+        vm.getContext().instance.on('test#1', () => done());
+
+        vm.runModule('./testTasks/Application/broadcast');
     });
+
+    it('should emit a termination event when terminating', (done) => {
+        vm.getContext().instance.on('terminate', (value) => {
+            expect(value).to.be.eql('because');
+            done();
+        });
+
+        vm.runModule('./testTasks/Application/termination');
+    })
 });
