@@ -17,12 +17,11 @@ const descriptionTag = document.querySelector('meta[name="description"]');
 const themeTag = document.querySelector('meta[name="theme-color"]');
 
 const Manifest = {
-    theme: '#fff',
     background_color: (() => {
         const htmlBG = window.getComputedStyle(document.body.parentElement).backgroundColor;
-        const bodyBG = window.getComputedStyle(document.body).backgroundColor;
+        let bodyBG = window.getComputedStyle(document.body).backgroundColor;
 
-        bodyBG = rgbToHex(htmlBG);
+        bodyBG = rgbToHex(bodyBG);
 
         if (bodyBG !== '#000') {
             return bodyBG;

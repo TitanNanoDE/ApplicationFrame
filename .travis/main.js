@@ -64,6 +64,10 @@ describe('Prototypes', () => {
     });
 });
 
+describe('Web', () => {
+    require('./web/Manifest');
+});
+
 require('./util/array');
 
 require('./rendering');
