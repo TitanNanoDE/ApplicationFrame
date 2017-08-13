@@ -43,4 +43,26 @@ describe('EventTarget', () => {
 
         instance.emit('test#3', testData);
     });
+
+    it('should remove a listener', () => {
+        const listener = function() {
+            return true;
+        };
+
+        instance.on('event', listener);
+
+        expect(instance._listeners.event).to.contain(listener);
+
+        instance.removeListener('event', listener);
+
+        expect(instance._listeners.event).not.to.contain(listener);
+    });
+
+    it('should do nothing when listener doesn\'t exist', () => {
+        instance.on('event', () => {});
+
+        instance.removeListener('test', () => {});
+
+        expect(instance._listeners.event).to.have.lengthOf(1);
+    })
 });
