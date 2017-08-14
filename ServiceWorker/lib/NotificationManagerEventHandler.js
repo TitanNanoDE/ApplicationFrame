@@ -1,8 +1,8 @@
 const NotificationManagerEventHandler = {
 
     constructor() {
-        self.onnotificationclick = this.onNotificationClicked.bind(this);
-        self.onnotificationclose = this.onNotificationClosed.bind(this);
+        self.onnotificationclick = (event) => this.onNotificationClicked(event);
+        self.onnotificationclose = (event) => this.onNotificationClosed(event);
 
         return this;
     },

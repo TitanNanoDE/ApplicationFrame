@@ -1,8 +1,8 @@
 const PushManagerEventHandler = {
 
     constructor() {
-        self.onpush = this.onPush.bind(this);
-        self.onpushsubscriptionChanged = this.onSubscriptionChanged.bind(this);
+        self.onpush = (event) => this.onPush(event);
+        self.onpushsubscriptionChanged = (event) => this.onSubscriptionChanged(event);
     },
 
     onPush() {

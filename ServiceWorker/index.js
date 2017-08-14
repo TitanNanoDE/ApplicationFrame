@@ -12,9 +12,9 @@ const ServiceWorker = {
     init() {
         this.constructor();
 
-        self.onactivate = this.onActivate.bind(this);
-        self.onfetch = this.onActivate.bind(this);
-        self.oninstall = this.onInstall.bind(this);
+        self.onactivate = (event) => this.onActivate(event);
+        self.onfetch = (event) => this.onActivate(event);
+        self.oninstall = (event) => this.onInstall(event);
     },
 
     __proto__: ServiceWorkerEventTarget,
