@@ -1,6 +1,4 @@
-/**
- * @module NetworkRequest
- */
+import EventTarget from './EventTarget';
 
 
 /**
@@ -153,7 +151,7 @@ let NetworkRequest = {
 	 *
 	 * @return {Promise} resolves when the request is done
 	 */
-    send : function(){
+    send() {
         let self = this;
         let xhr = new XMLHttpRequest();
 
@@ -189,6 +187,9 @@ let NetworkRequest = {
             xhr.setRequestHeader(key, self._headers[key]);
         });
 
+        xhr.addEventListener('progress', (e) => this.emit('progress.receive', e));
+        xhr.upload.addEventListener('progress', (e) => this.emit('progress.send', e))
+
         if (this.type === 'json') {
             let body = this._body;
 
@@ -205,7 +206,9 @@ let NetworkRequest = {
         }
 
         return promise;
-    }
+    },
+
+    __proto__: EventTarget,
 };
 
 export default NetworkRequest;
