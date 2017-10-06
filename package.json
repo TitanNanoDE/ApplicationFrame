@@ -10,7 +10,7 @@
     "babel-core": "^6.25.0",
     "babel-plugin-transform-es2015-modules-commonjs": "^6.18.0",
     "chai": "^4.0.1",
-    "coveralls": "^2.11.15",
+    "coveralls": "^3.0.0",
     "eslint": "^4.1.0",
     "eslint-plugin-scanjs-rules": "^0.2.1",
     "gulp": "^3.9.1",
