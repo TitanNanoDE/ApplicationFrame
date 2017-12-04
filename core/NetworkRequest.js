@@ -28,9 +28,10 @@ let stripHashKey = function(object){
 };
 
 /**
- * @lends module:NetworkRequest.NetworkRequest#
+ * @class
+ * @augments EventTarget
  */
-let NetworkRequest = {
+const NetworkRequest = {
     /**
      * @private
      * @type {Object}
@@ -64,16 +65,23 @@ let NetworkRequest = {
      */
     _listeners : null,
 
-	/**
-	 * The constructor for the NetworkRequest. It simply sets up the properties.
-	 *
-	 * @constructs
-	 *
-	 * @param {string} url the url this request should be made to
-	 * @param {Object} config addintional configuartion for the request
-	 *
-	 * @return {NetworkRequest} the request it self
-	 */
+    /**
+     * [completed description]
+     *
+     * @type {Boolean}
+     */
+    completed: false,
+
+    /**
+     * The constructor for the NetworkRequest. It simply sets up the properties.
+     *
+     * @constructs
+     *
+     * @param {string} url the url this request should be made to
+     * @param {Object} config addintional configuartion for the request
+     *
+     * @return {NetworkRequest} the request it self
+     */
     constructor (url, { method = 'GET', type = 'none' } = {}) {
         this.type = type;
         this.method = method;
@@ -95,26 +103,26 @@ let NetworkRequest = {
         return this.constructor(...args);
     },
 
-	/**
-	 * this method will set the given object as the request body.
-	 *
-	 * @param {Object} data body data for this request
-	 *
-	 * @return {NetworkRequest} the request it self
-	 */
+    /**
+     * this method will set the given object as the request body.
+     *
+     * @param {Object} data body data for this request
+     *
+     * @return {NetworkRequest} the request it self
+     */
     body : function(data){
         this._body = data;
 
         return this;
     },
 
-	/**
-	 * This method will set the request headers, in case custom headers are required.
-	 *
-	 * @param {Object} headers a object with all header properties for this request
-	 *
-	 * @return {NetworkRequest} the request it self
-	 */
+    /**
+     * This method will set the request headers, in case custom headers are required.
+     *
+     * @param {Object} headers a object with all header properties for this request
+     *
+     * @return {NetworkRequest} the request it self
+     */
     headers : function(headers) {
         this._headers = headers;
 
@@ -146,11 +154,11 @@ let NetworkRequest = {
         this._listeners.push(fn);
     },
 
-	/**
-	 * This will actually create the network connection and initiate the request.
-	 *
-	 * @return {Promise} resolves when the request is done
-	 */
+    /**
+     * This will actually create the network connection and initiate the request.
+     *
+     * @return {Promise} resolves when the request is done
+     */
     send() {
         let self = this;
         let xhr = new XMLHttpRequest();
@@ -179,6 +187,8 @@ let NetworkRequest = {
                     } else {
                         failure(xhr);
                     }
+
+                    this.completed = true;
                 }
             };
         });
