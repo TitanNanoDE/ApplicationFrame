@@ -6,6 +6,7 @@ script:
 branches:
     only:
         - master
+        - /^greenkeeper/.*$/
 language: node_js
 node_js:
     - "7"
