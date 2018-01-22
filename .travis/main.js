@@ -64,6 +64,12 @@ describe('Prototypes', () => {
     });
 });
 
+describe('ServiceWorker', () => {
+    require('./ServiceWorker/lib/getRegistration');
+    require('./ServiceWorker/lib/NotificationManagerEventHandler');
+    require('./ServiceWorker/Cache');
+})
+
 describe('Web', () => {
     require('./web/Manifest');
 });

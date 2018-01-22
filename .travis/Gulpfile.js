@@ -31,6 +31,7 @@ gulp.task('default', ['clean'], () => {
         'node/**/*.js',
         'web/**/*.js',
         'ServiceWorker/**/*.js',
+        'traits/**/*.js',
     ], { base: './', })
         .pipe(sourcemaps.init())
         .pipe(babel(babelConfig))

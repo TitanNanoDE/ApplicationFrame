@@ -1,0 +1,3 @@
+(function() {
+    global.cache = Cache;
+})();

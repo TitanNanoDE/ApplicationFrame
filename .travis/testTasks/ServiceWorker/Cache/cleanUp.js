@@ -1,0 +1,3 @@
+(() => {
+    global.cleanUp = Cache.cleanUp();
+})();
