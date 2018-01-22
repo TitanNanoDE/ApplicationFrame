@@ -1,5 +1,5 @@
-import { Make } from '../../util/make.js';
-import ArrayUtil from '../../core/objects/ArrayUtil.js';
+import { Make } from '../util/make.js';
+import ArrayUtil from '../util/array.js';
 
 /**
  * A query object for an indexedDB request.
@@ -132,7 +132,7 @@ const IndexedQueryCompiler = {
             let matches = [];
             let results = [];
 
-            return Promise.all(this._allQueries.map(query => {
+            const queries = this._allQueries.map(query => {
                 return new Promise((done, error) => {
                     let store = db.transaction([this._store], 'readonly').objectStore(this._store);
                     let range = null;
@@ -202,7 +202,9 @@ const IndexedQueryCompiler = {
 
                     request.onerror = error;
                 });
-            })).then(() => results);
+            });
+
+            return Promise.all(queries).then(() => results);
         });
     }
 };

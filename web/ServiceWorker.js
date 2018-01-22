@@ -30,7 +30,7 @@ const ServiceWorker = {
      *
      * defaults to true
      *
-     * @type {Boolean}
+     * @type {Boolean|string}
      */
     scope: true,
 
@@ -39,6 +39,7 @@ const ServiceWorker = {
     },
 
     init() {
+        super.constructor();
         let scope = null;
 
         //determine scope

@@ -2,8 +2,9 @@
  * @module IndexedDB
  */
 
-import { Make } from '../util/make.js';
+import { Make } from './util/make.js';
 import IndexedQueryCompiler from './IndexedDB/IndexedQueryCompiler.js';
+import async from './core/async';
 
 const IndexedStoreDefinition = {
     name: '',
@@ -13,7 +14,7 @@ const IndexedStoreDefinition = {
         this.description = info;
         this.indexes = [];
     }
-}
+};
 
 const IndexedDefinition = {
     _version: 0,
@@ -85,7 +86,7 @@ const IndexedDefinition = {
             });
         });
     }
-}
+};
 
 const IndexedDB = {
     _name: '',
@@ -97,27 +98,33 @@ const IndexedDB = {
      */
     _definitions: null,
 
-    _setup: function(success, failure) {
-        let request = window.indexedDB.open(this._name, this._definitions.length - 1);
+    _setup: function() {
+        return new Promise((success, fail) => {
+            const request = indexedDB.open(this._name, this._definitions.length - 1);
 
-        request.onsuccess = (event) => success(event.target.result);
-        request.onerror = failure;
-        request.onupgradeneeded = ({ oldVersion: lastVersion, target: { result: db, transaction }}) => {
-            for (let i = lastVersion+1; i < this._definitions.length; i++) {
-                let setup = this._definitions[i];
+            request.onsuccess = (event) => success(event.target.result);
+            request.onerror = fail;
+            request.onupgradeneeded = ({ oldVersion: lastVersion, target: { result: db, transaction }}) => {
+                for (let i = lastVersion+1; i < this._definitions.length; i++) {
+                    let setup = this._definitions[i];
 
-                setup._execute(db, transaction);
-            }
-        };
+                    setup._execute(db, transaction);
+                }
+            };
+        });
     },
 
-    _make: function(name) {
+    constructor(name) {
         this._name = name;
         this._definitions = [];
 
-        this._promise = new Promise((success, failure) => {
-            setTimeout(this._setup.bind(this, success, failure), 0);
-        });
+        this._promise = async(this._setup.bind(this));
+
+        return this;
+    },
+
+    _make(...args) {
+        return this.constructor(...args);
     },
 
     define: function(version) {
@@ -137,8 +144,8 @@ const IndexedDB = {
                     let request = db.transaction([storeName], 'readwrite')
                         .objectStore(storeName).put(value);
 
-                        request.onsuccess = event => success(event.target.result);
-                        request.onerror = failure;
+                    request.onsuccess = event => success(event.target.result);
+                    request.onerror = failure;
                 } catch (e) {
                     failure(e);
                 }

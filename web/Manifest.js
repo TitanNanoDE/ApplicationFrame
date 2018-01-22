@@ -3,7 +3,7 @@ import NetworkRequest from '../core/NetworkRequest';
 const { create } = Object;
 
 const rgbToHex = function(string) {
-    const colors = string.match(/rgb\(([0-9, ]+)\)/);
+    const colors = string.match(/rgb(?:a?)\(([0-9, ]+)\)/);
 
     if (colors[1]) {
         return '#' + colors[1].split(',')
@@ -11,7 +11,7 @@ const rgbToHex = function(string) {
     }
 
     return '#000';
-}
+};
 
 const descriptionTag = document.querySelector('meta[name="description"]');
 const themeTag = document.querySelector('meta[name="theme-color"]');
@@ -50,22 +50,19 @@ const Manifest = {
 };
 
 const manifestTag = document.querySelector('link[rel="manifest"]');
-let manifestRequest = null;
+let manifestRequest = Promise.resolve(Manifest);
 
 if (manifestTag && manifestTag.href) {
     manifestRequest = create(NetworkRequest)
         .constructor(manifestTag.href).send()
-            .then(response => {
-                Object.assign(Manifest, response);
+        .then(response => {
+            Object.assign(Manifest, response);
+            return Manifest;
+        }).catch(error => {
+            console.log(`[${error.status}]: ${error.statusText}`);
 
-                return Manifest;
-            }).catch(error => {
-                console.log(`[${error.status}]: ${error.statusText}`);
-
-                return Manifest;
-            });
+            return Manifest;
+        });
 }
-
-manifestRequest  = Promise.resolve(Manifest);
 
 export default Manifest;
