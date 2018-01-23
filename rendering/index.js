@@ -127,7 +127,6 @@ let scheduleNextFrame = function() {
 /**
  * RenderEngine Singleton
  *
- * @namespace
  */
 const RenderEngine = {
 

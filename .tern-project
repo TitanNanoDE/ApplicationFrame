@@ -4,11 +4,25 @@
     "browser",
     "chai"
   ],
-  "loadEagerly": [
-    "core/**/*.js",
-    "libs/**/*js",
-    "modules/**/*.js",
-    "util/**/*.js"
-  ],
-  "plugins": {}
+  "loadEagerly": [],
+  "plugins": {
+    "complete_strings": {
+      "maxLength": 15
+    },
+    "doc_comment": {
+      "fullDocs": true,
+      "strong": true
+    },
+    "node": {
+      "load": "",
+      "modules": ""
+    },
+    "node_resolve": {},
+    "es_modules": {},
+    "modules": {
+      "load": "",
+      "modules": ""
+    },
+    "commonjs": {}
+  }
 }

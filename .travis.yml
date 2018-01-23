@@ -1,11 +1,18 @@
+before_install:
+    - npm i -g npm@latest
+    - npm i -g greenkeeper-lockfile@1
 before_script:
+    - greenkeeper-lockfile-update
     - npm run build
 script:
     - npm run test
     - npm run coveralls
+after_script:
+    - greenkeeper-lockfile-upload
 branches:
     only:
         - master
+        - /^greenkeeper/.*$/
 language: node_js
 node_js:
-    - "7"
+    - 9

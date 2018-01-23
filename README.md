@@ -1,4 +1,6 @@
 # Application Frame
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/TitanNanoDE/ApplicationFrame.svg)](https://greenkeeper.io/)
 [![Build Status](https://travis-ci.org/TitanNanoDE/ApplicationFrame.svg?branch=master)](https://travis-ci.org/TitanNanoDE/ApplicationFrame)
 [![npm version](https://badge.fury.io/js/application-frame.svg)](https://badge.fury.io/js/application-frame)
 [![Coverage Status](https://coveralls.io/repos/github/TitanNanoDE/ApplicationFrame/badge.svg?branch=master)](https://coveralls.io/github/TitanNanoDE/ApplicationFrame?branch=master)

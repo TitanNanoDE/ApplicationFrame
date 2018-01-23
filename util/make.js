@@ -1,15 +1,4 @@
 /**
- * The make module consits of Make, getPrototypeOf and mixin.
- * See the documentation for each method to see what is does.
- * This module is part of the ApplicationFrame.
- * @module Make
- * @author Jovan Gerodetti
- * @copyright Jovan Gerodetti
- * @version 1.0
- */
-
-
-/**
  * Internal function to apply one objects propteries to a target object.
  *
  * @param {Object} target
@@ -29,6 +18,8 @@ var apply = function (target, source) {
  * If two arguments are passed in, the properties of the first object will be
  * applied to the new object.
  *
+ * @deprecated
+ *
  * @param {Object} object
  * @param {Object} prototype
  * @return {function}
@@ -46,7 +37,7 @@ export var Make = function(object, prototype) {
     }
 
     var m = function(...args){
-        var make = object.make || object._make || function(){};
+        var make = object.make || object._make || function(){};
 
         make.apply(object, args);
 
@@ -61,6 +52,8 @@ export var Make = function(object, prototype) {
 /**
  * This method checks if the given prototype is in the prototype chain of
  * the given target object.
+ *
+ * @deprecated
  *
  * @param {Object} object
  * @param {Object} prototype
@@ -80,65 +73,4 @@ export var hasPrototype = function(object, prototype){
     }
 
     return false;
-};
-
-/**
- * Creates a new prototype mixing all the given prototypes. Incase two or more
- * prototypes contain the same propterty, the new prototype will return
- * the propterty of the first prototype in the list which contains it.
- *
- * @param {...Object} prototypes - the porotype object to combine
- * @return {Proxy} - the resulting proxy object
- */
-export var Mixin = function(...prototypes){
-
-    return new Proxy(prototypes, MixinTrap);
-
-};
-
-/**
- * Internal function to find a proptery in a list of prototypes.
- *
- * @param {Object[]} prototypes
- * @param {string} key
- * @return {Object}
- */
-var findProperty = function(prototypes, key) {
-    for (var i = 0; i < prototypes.length; i++) {
-        var item = prototypes[i];
-
-        if (item && item[key]) {
-            return item;
-        }
-    }
-
-    return undefined;
-};
-
-/**
- * Traps to create a mixin.
- */
-var MixinTrap = {
-
-    'get' : function(prototypes, key) {
-        var object = findProperty(prototypes, key);
-
-        if (object && typeof object[key] === 'function') {
-            return object[key].bind(object);
-        }
-
-        return (object ? object[key] : null);
-    },
-
-    'set' : function(prototypes, key, value) {
-        var object = findProperty(prototypes, key);
-
-        if (object) {
-            object[key] = value;
-        } else {
-            prototypes[0][key] = value;
-        }
-
-        return true;
-    }
 };
