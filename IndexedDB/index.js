@@ -2,9 +2,9 @@
  * @module IndexedDB
  */
 
-import { Make } from './util/make.js';
-import IndexedQueryCompiler from './IndexedDB/IndexedQueryCompiler.js';
-import async from './core/async';
+import { Make } from '../util/make.js';
+import IndexedQueryCompiler from './IndexedQueryCompiler.js';
+import async from '../core/async';
 
 const IndexedStoreDefinition = {
     name: '',
