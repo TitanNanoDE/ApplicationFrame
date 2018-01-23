@@ -17,11 +17,11 @@ const vm = istanbulVM({
     }
 });
 
+istanbulVM.applyNodeEnv(vm);
+
 vm.updateContext({
     window: vm.getContext().global,
 });
-
-istanbulVM.applyNodeEnv(vm);
 
 describe('RenderEngine', () => {
 

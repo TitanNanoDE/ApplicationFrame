@@ -15,9 +15,11 @@ describe('Node VM', () => {
     });
 
     it('should run a module', () => {
-        let result = null;
+        const vm = istanbulVM();
 
-        result = vmInstance.runModule('./testModule/test1');
+        VM.applyNodeEnv(vm);
+
+        let { result } = vm.runModule('../testTasks/node/vm/runModule');
 
         expect(result.x).to.be.undefined;
         expect(result.hello).to.be.undefined;
@@ -25,7 +27,7 @@ describe('Node VM', () => {
         expect(result.method).to.be.a('function');
         expect(result.something).to.be.undefined;
 
-        result = vmInstance.runModule('./testModule/test2');
+        ({ result } = vm.runModule('../testTasks/node/vm/runModule2'));
 
         expect(result.data.x).to.be.equal(100);
         expect(result.data.hello).to.be.equal('text');
@@ -40,6 +42,6 @@ describe('Node VM', () => {
 
         const result = vm.runModule('../testTasks/node/vm/invalidRequire');
 
-        expect(result.console.stats.error).to.be.equal(1);
+        expect(result.console.stats.error).to.have.lengthOf.at.least(1);
     });
 });

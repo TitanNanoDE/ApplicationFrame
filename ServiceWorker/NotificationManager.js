@@ -1,7 +1,7 @@
 import NotificationManagerEventHandler from './lib/NotificationManagerEventHandler';
 import getRegistration from './lib/getRegistration';
 
-const prototype = navigator ? Object.prototype : NotificationManagerEventHandler;
+const prototype = navigator && navigator.serviceWorker ? Object.prototype : NotificationManagerEventHandler;
 
 const NotificationManager = {
     get openNotifications() {

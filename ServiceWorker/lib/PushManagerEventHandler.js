@@ -2,7 +2,7 @@ const PushManagerEventHandler = {
 
     constructor() {
         self.onpush = (event) => this.onPush(event);
-        self.onpushsubscriptionChanged = (event) => this.onSubscriptionChanged(event);
+        self.onpushsubscriptionchange = (event) => this.onSubscriptionChanged(event);
     },
 
     onPush() {

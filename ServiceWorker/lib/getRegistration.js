@@ -1,8 +1,10 @@
+const hasNavigator = (typeof navigator === 'object');
+
 const getRegistration = function() {
-    if (navigator) {
-        return navigator.serviceWorker.ready.then(registration => registration.ready);
+    if (hasNavigator && navigator.serviceWorker) {
+        return navigator.serviceWorker.ready;
     } else {
-        return self.ServiceWorker.ready.then(registration => registration.ready);
+        return Promise.resolve(self.registration);
     }
 };
 
