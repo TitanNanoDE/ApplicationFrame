@@ -55,14 +55,15 @@ let manifestRequest = Promise.resolve(Manifest);
 if (manifestTag && manifestTag.href) {
     manifestRequest = create(NetworkRequest)
         .constructor(manifestTag.href).send()
-        .then(response => {
-            Object.assign(Manifest, response);
-            return Manifest;
-        }).catch(error => {
-            console.log(`[${error.status}]: ${error.statusText}`);
+            .then(response => {
+                Object.assign(Manifest, response);
 
-            return Manifest;
-        });
+                return Manifest;
+            }).catch(error => {
+                console.log(`[${error.status}]: ${error.statusText}`);
+
+                return Manifest;
+            });
 }
 
 export default Manifest;

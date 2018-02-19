@@ -35,13 +35,13 @@ const ServiceWorker = {
         self.onfetch = (event) => {
             this.onFetch(event);
             injectionReceiver.injected(PendingTasks)._apply(event);
-        }
+        };
 
         self.oninstall = (event) => {
             this.onInstall(event);
 
             injectionReceiver.injected(PendingTasks)._apply(event);
-        }
+        };
 
         this.onInit();
     },
@@ -52,4 +52,4 @@ const ServiceWorker = {
 export { ServiceWorker, injectionReceiver };
 export { default as NotificationManager } from './NotificationManager';
 export { default as PushManager } from './PushManager';
-export { default as Cache } from './Cache';
+export { default as Cache } from './Cache';
