@@ -12,6 +12,9 @@ let preRenderHooks = [];
 /** @type {Function[]} */
 let postRenderHooks = [];
 
+/** @type {CurrentFrameInterface} */
+let currentFrameInterface = null;
+
 const frameBuffer = [];
 
 frameBuffer.last = function() { return this[this.length-1]; };
@@ -43,12 +46,14 @@ let renderCycle = function(startTime) {
         hook();
     });
 
-    frameBuffer[0].postRenderTasks.filter(task => {
-        task();
-    });
+    frameBuffer[0].postRenderTasks.run(currentFrameInterface);
 
     // init render cycle START
     const frame = frameBuffer[1];
+
+    // release old frame interface
+    release(currentFrameInterface);
+    currentFrameInterface = null;
 
     // migrate remaining tasks to this Frame
     frameBuffer[0].preRenderTasks.getAll().forEach((task) => {
@@ -68,19 +73,12 @@ let renderCycle = function(startTime) {
 
     if (frameBuffer.length < 2) {
         frameBuffer.push(allocate('Frame', Frame));
-//        frameBuffer.push(Object.create(Frame).constructor());
     }
 
-    const currentFrameInterface = allocate('CurrentFrameInterface', CurrentFrameInterface);
+    currentFrameInterface = allocate('CurrentFrameInterface', CurrentFrameInterface);
 
     currentFrameInterface._startTime = startTime;
     currentFrameInterface._maxFrameDuration = renderConfig.lightray ? (1000 / 60) : (1000 / 30);
-
-     /*Object.create(CurrentFrameInterface)
-        .constructor({
-            startTime: startTime,
-            maxFrameDuration: renderConfig.lightray ? (1000 / 60) : (1000 / 30),
-        });*/
 
     // init render cycle END
 
@@ -101,7 +99,15 @@ let renderCycle = function(startTime) {
     RenderEngine.performance.renderedFrames += 1;
 
     // done wait for next frame
-    scheduleNextFrame();
+    const scheduled = scheduleNextFrame();
+
+    if (!scheduled) {
+        // no frame has been scheduled. WE should be save to release everything.
+        release(currentFrameInterface);
+        currentFrameInterface = null;
+
+        release(frame);
+    }
 };
 
 /**
@@ -113,20 +119,21 @@ let renderCycle = function(startTime) {
 let scheduleNextFrame = function() {
     if (!active && frameBuffer.length > 0) {
 
-        if (frameBuffer.length === 2 && frameBuffer[0].emtpy && frameBuffer[1].empty) {
-            return;
+        if (frameBuffer.length === 2 && frameBuffer[0].empty && frameBuffer[1].empty) {
+            return false;
         }
 
         window.requestAnimationFrame(renderCycle);
 
         active = true;
     }
+
+    return true;
 };
 
 
 /**
  * RenderEngine Singleton
- *
  */
 const RenderEngine = {
 
@@ -239,7 +246,6 @@ const RenderEngine = {
 
         if (!frameBuffer[frameIndex]) {
             frameBuffer.push(allocate('Frame', Frame));
-//            frameBuffer.push(Object.create(Frame).constructor());
         }
 
         return { _currentFrame: frameIndex, __proto__: RenderEngine };
@@ -249,8 +255,6 @@ const RenderEngine = {
 // init zero frame
 frameBuffer.push(allocate('Frame', Frame));
 frameBuffer.push(allocate('Frame', Frame));
-//frameBuffer.push(Object.create(Frame).constructor());
-//frameBuffer.push(Object.create(Frame).constructor());
 
 /**
  * @member {module:RenderEngine~RenderEngine} RenderEngine
