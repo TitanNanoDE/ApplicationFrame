@@ -3,6 +3,14 @@ const heapObjectsReleased = {};
 const heapArrays = new Map();
 const heapArraysReleased = [];
 
+/**
+ * Allocates objects and arrays in memory. The allocated structures are excluded from garbage collection.
+ *
+ * @param  {string|number} typeOrLength either the length of an array, or a string identifying an object type.
+ * @param  {Object} [prototype={}] the structures prototype
+ *
+ * @return {*}
+ */
 export const allocate = function(typeOrLength, prototype={}) {
     if (typeof typeOrLength === 'string') {
         let object = null;
@@ -35,6 +43,16 @@ export const allocate = function(typeOrLength, prototype={}) {
     }
 };
 
+/**
+ * Marks he given structure as unused and therefore available for usage.
+ * If a new array or object is to be allocated the released items will be reused,
+ * before an actual new object is created.
+ *
+ *
+ * @param  {*} object data to be released
+ *
+ * @return {undefined}
+ */
 export const release = function(object) {
     if (Array.isArray(object)) {
         heapArrays.delete(object);
@@ -51,6 +69,11 @@ export const release = function(object) {
     }
 };
 
+/**
+ * Makes all released object available for garbage collection.
+ *
+ * @return {undefined}
+ */
 export const flushHeap = function() {
     heapArraysReleased.length = 0;
 

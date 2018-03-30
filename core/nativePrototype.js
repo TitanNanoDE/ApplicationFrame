@@ -1,3 +1,10 @@
+/**
+ * transforms an native constructor into a normal ECMAScript prototype object
+ *
+ * @param  {Function} nativeConstructor
+ *
+ * @return {Object}
+ */
 export const nativePrototype = function(nativeConstructor) {
     const NativeInherited = {
         constructor: function(...args) {
@@ -16,6 +23,11 @@ export const prepareConstructor = function(prototype) {
     return prototype;
 };
 
+/**
+ * A drop-in replacement for the HTMLElement construct function
+ *
+ * @type {HTMLElement}
+ */
 const HTMLElementProto = nativePrototype(HTMLElement);
 
 export { HTMLElementProto as HTMLElement };

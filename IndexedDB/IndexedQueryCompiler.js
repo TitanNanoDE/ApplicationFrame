@@ -3,8 +3,6 @@ import ArrayUtil from '../util/array.js';
 
 /**
  * A query object for an indexedDB request.
- *
- * @lends module:IndexedDB.IndexedQuery#
  */
 const IndexedQuery = {
     /** @type {string} */
@@ -19,25 +17,56 @@ const IndexedQuery = {
 
 /**
  * the query compiler for indexedDB requests.
- *
- * @lends module:IndexedDB.IndexedQueryCompiler#
  */
 const IndexedQueryCompiler = {
-    /** @type {IndexedQuery} */
+    /**
+     * @private
+     * @type {IndexedQuery}
+     */
     _currentQuery: null,
 
-    /** @type {IndexedQuery[]} */
+    /**
+     * @private
+     * @type {IndexedQuery[]}
+     */
     _allQueries: null,
+
+    /**
+     * @private
+     * @type {string}
+     */
     _store: '',
+
+    /**
+     * @private
+     * @type {Promise.<IDBDatabase>}
+     */
     _db: null,
+
     sortOrder: 'next',
 
+    /**
+     * creates a new indexed query
+     *
+     * @param  {string} storeName the store to query
+     * @param  {IDBDatabase} db   the db to query
+     *
+     * @return {undefined}
+     */
     _make: function(storeName, db) {
         this._allQueries = [];
         this._store = storeName;
         this._db = db;
     },
 
+    /**
+     * @private
+     *
+     * @param  {*} value   [description]
+     * @param  {boolean} exclude [description]
+     *
+     * @return {[type]}         [description]
+     */
     _transformExclude: function(value, exclude) {
         if (Array.isArray(value)) {
             value = value.map(item => {
@@ -50,6 +79,13 @@ const IndexedQueryCompiler = {
         return value;
     },
 
+    /**
+     * adds a where clause to the query.
+     *
+     * @param  {string} indexName the index to operate on
+     *
+     * @return {IndexedQueryCompiler}
+     */
     where: function(indexName) {
         this._currentQuery = Make(IndexedQuery)();
         this._currentQuery.name = indexName;
@@ -57,12 +93,27 @@ const IndexedQueryCompiler = {
         return this;
     },
 
+    /**
+     * filters items from the result if the index doesn't match the given value.
+     *
+     * @param  {*} value value to compare
+     *
+     * @return {IndexedQueryCompiler}
+     */
     equals: function(value) {
         this.from(value).to(value);
 
         return this;
     },
 
+    /**
+     * starts a new value range
+     *
+     * @param  {*} value                 range start value
+     * @param  {Boolean} [exclude=false] determines if the start value will be included in the range
+     *
+     * @return {IndexedQueryCompiler}
+     */
     from: function(value, exclude=false) {
         value = this._transformExclude(value, exclude);
 
@@ -75,6 +126,14 @@ const IndexedQueryCompiler = {
         return this;
     },
 
+    /**
+     * ends a value range
+     *
+     * @param  {*} value                 end value of the range
+     * @param  {Boolean} [exclude=false] determines if the end value will be included in the range
+     *
+     * @return {IndexedQueryCompiler}
+     */
     to: function(value, exclude=false) {
         value = this._transformExclude(value, exclude);
 
@@ -87,18 +146,39 @@ const IndexedQueryCompiler = {
         return this;
     },
 
+    /**
+     * filters items from the result where the index is lower than the given value
+     *
+     * @param  {*} value
+     *
+     * @return {IndexedQueryCompiler}
+     */
     lowerThan: function(value) {
         this.to(value, true);
 
         return this;
     },
 
+    /**
+     * filters items from the result where the index is higher than the given value
+     *
+     * @param  {*} value
+     *
+     * @return {IndexedQueryCompiler}
+     */
     higherThan: function(value) {
         this.from(value, true);
 
         return this;
     },
 
+    /**
+     * starts an or clause to query an additional index
+     *
+     * @param  {string} indexName [description]
+     *
+     * @return {IndexedQueryCompiler}
+     */
     or: function(indexName) {
         this._allQueries.push(this._currentQuery);
         this.where(indexName);
@@ -106,6 +186,13 @@ const IndexedQueryCompiler = {
         return this;
     },
 
+    /**
+     * applies a sort order to the query results
+     *
+     * @param  {'ASC'|'DESC'} direction sort direction
+     *
+     * @return {IndexedDefinition}
+     */
     sort: function(direction) {
         if (direction === 'ASC') {
             this.sortOrder = 'next';
@@ -116,6 +203,13 @@ const IndexedQueryCompiler = {
         return this;
     },
 
+    /**
+     * assembles the results based on the composed query
+     *
+     * @param  {...number} limit one or two arguments which represent the start and end of the result range
+     *
+     * @return {Promise.<Array>}
+     */
     get: function(...limit) {
         if (limit.length === 1) {
             limit.unshift(0);
@@ -127,6 +221,14 @@ const IndexedQueryCompiler = {
         return this._execute(...limit);
     },
 
+    /**
+     * @private
+     *
+     * @param  {number} start start index
+     * @param  {number} end   end index
+     *
+     * @return {Promise.<Array>}
+     */
     _execute: function(start, end) {
         return this._db.then(db => {
             let matches = [];

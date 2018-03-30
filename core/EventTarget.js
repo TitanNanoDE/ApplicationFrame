@@ -1,15 +1,15 @@
 import async from './async';
 
-/** @lends EventTarget# */
 const EventTarget = {
 
-    /** @type {Object} */
+    /**
+     * @private
+     * @type {Object}
+     */
     _listeners : null,
 
     /**
-     * @constructs
-     *
-     * @return {this} [description]
+     * @return {EventTarget} [description]
      */
     constructor() {
         this._listeners = {};

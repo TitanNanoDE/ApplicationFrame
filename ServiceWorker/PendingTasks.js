@@ -12,6 +12,13 @@ const PendingTasks = {
         pending.push(task);
     },
 
+    /**
+     * @private
+     *
+     * @param  {Event} event the event to wait for
+     * 
+     * @return {undefined}
+     */
     _apply(event) {
         event.waitUntil(pending);
     }

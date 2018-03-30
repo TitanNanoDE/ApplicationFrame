@@ -1,7 +1,3 @@
-/**
- * @module RenderEngine
- */
-
 import { allocate, release } from '../memory';
 import Frame from './Frame';
 import CurrentFrameInterface from './CurrentFrameInterface';
@@ -15,6 +11,7 @@ let postRenderHooks = [];
 /** @type {CurrentFrameInterface} */
 let currentFrameInterface = null;
 
+/** @type {Frame[]} */
 const frameBuffer = [];
 
 frameBuffer.last = function() { return this[this.length-1]; };
@@ -35,7 +32,7 @@ const renderConfig = {
  *
  * @param {number} startTime - the time the render cycle started
  *
- * @return {void}
+ * @return {undefined}
  */
 let renderCycle = function(startTime) {
     active = false;
@@ -114,7 +111,7 @@ let renderCycle = function(startTime) {
  * Schedules a new render cycle in the browsers rendering engine.
  * The cycle is performed as soon as the browser is ready to render a new frame.
  *
- * @return {void}
+ * @return {undefined}
  */
 let scheduleNextFrame = function() {
     if (!active && frameBuffer.length > 0) {
@@ -137,8 +134,10 @@ let scheduleNextFrame = function() {
  */
 const RenderEngine = {
 
+    /** @private */
     _currentFrame: 1,
 
+    /** @type {boolean} */
     get lightray() {
         return renderConfig.lightray;
     },
@@ -155,6 +154,7 @@ const RenderEngine = {
 
     /**
      * @param {Function} f a hook function to execute before each render cycle
+     *
      * @return {Function} returns the function which has been passed in
      */
     addPreRenderHook: function(f) {
@@ -166,6 +166,7 @@ const RenderEngine = {
 
     /**
      * @param {Function} f - a hook function to execute after each render cycle
+     *
      * @return {Function} returns the function which has been passed in.
      */
     addPostRenderHook: function(f) {
@@ -179,6 +180,7 @@ const RenderEngine = {
      * Removes a previously added pre render hook
      *
      * @param  {Function} f - the function which was previously added
+     *
      * @return {*} - see Array.prototype.splice
      */
     removePreRenderHook: function(f) {
@@ -189,6 +191,7 @@ const RenderEngine = {
      * Removes a previously added post render hook
      *
      * @param  {Function} f - the function which was previously added
+     *
      * @return {*} {@link Array.prototype.splice}
      */
     removePostRenderHook: function(f) {
@@ -198,6 +201,7 @@ const RenderEngine = {
     /**
      * @param {Function} f - the task to preform in the next render cycle.
      * @param {string} [id] optional task id
+     *
      * @return {Function} the function which has been passed in.
      */
     schedulePreRenderTask: function(f, id) {
@@ -210,6 +214,7 @@ const RenderEngine = {
     /**
      * @param {Function} f - the task to preform in the next render cycle.
      * @param {string} [id] optional task id
+     *
      * @return {Function} the function which has been passed in.
      */
     scheduleRenderTask: function(f, id) {
@@ -221,6 +226,7 @@ const RenderEngine = {
 
     /**
      * @param {Function} f - the task to preform after the next render cycle.
+     *
      * @return {Function} the function which has been passed in.
      */
     schedulePostRenderTask: function(f) {
@@ -241,6 +247,11 @@ const RenderEngine = {
         }
     },
 
+    /**
+     * skips the current frame and provices scheduling methods for the next frame.
+     *
+     * @return {RenderEngine}
+     */
     skipFrame() {
         const frameIndex = this._currentFrame + 1;
 
@@ -256,8 +267,4 @@ const RenderEngine = {
 frameBuffer.push(allocate('Frame', Frame));
 frameBuffer.push(allocate('Frame', Frame));
 
-/**
- * @member {module:RenderEngine~RenderEngine} RenderEngine
- * @static
- */
 export { RenderEngine };

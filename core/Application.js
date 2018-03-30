@@ -1,54 +1,65 @@
 import EventTarget from './EventTarget';
 
-/** @lends Application.prototype */
-let Application = {
+/**
+ * This prototype provides a base construct for the core of an ECMAScript application
+ */
+const Application = {
 
     /**
-    * Name of this application so other components can identify the application.
-    *
-    * @type {string}
+    * Name of the application, other components can identify it.
     */
     name : '',
 
     /**
-    * Some components may need to know the version of this applicaion.
-    *
-    * @type {string}
+    * The current version of the application.
     */
     version : '0.0.0',
 
     /**
-    * @type {string}
-    */
+     *  Author meta data.
+     */
     author : '',
 
+    /**
+     * Constructs the Application prototype.
+     *
+     * @return {Application}
+     */
     constructor() {
         super.constructor();
 
         return this;
     },
 
+    /**
+     * @deprecated Do not use any more.
+     * @see module:core/Application~Application.constructor
+     *
+     * @param  {any[]} args {@link Application.constructor}
+     *
+     * @return {Application} the current instance
+     */
     _make(...args) {
         return this.constructor(...args);
     },
 
     /**
-    * Initializes this application, default interface for components and modules.
+    * Initializes the application when bootstrapping.
     *
-    * @return {void}
+    * @return {undefined}
     */
-    init : function(){
+    init() {
         console.log(`Initialzing Application "${this.name}"!`);
     },
 
     /**
-    * This function will try to terminate the application by emitting the termination event.
+    * Emits a termination notice on the object. This is intended to notify sub components about the termination of the application.
     *
-    * @param {string} reason - the reason for the termination.
+    * @param {string} reason The reason for the termination.
     *
-    * @return {void}
+    * @return {undefined}
     */
-    terminate : function(reason){
+    terminate(reason) {
         this.emit('terminate', reason);
     },
 

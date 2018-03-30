@@ -8,7 +8,7 @@ import EventTarget from './EventTarget';
  *
  * @return {Object} the initial object
  */
-let stripHashKey = function(object){
+const stripHashKey = function(object){
     if (Array.isArray(object)) {
         object = object.map(stripHashKey);
 
@@ -28,8 +28,7 @@ let stripHashKey = function(object){
 };
 
 /**
- * @class
- * @augments EventTarget
+ * A network request
  */
 const NetworkRequest = {
     /**
@@ -60,8 +59,8 @@ const NetworkRequest = {
     url : '',
 
     /**
-     * @type {function[]}
      * @private
+     * @type {function[]}
      */
     _listeners : null,
 
@@ -74,8 +73,6 @@ const NetworkRequest = {
 
     /**
      * The constructor for the NetworkRequest. It simply sets up the properties.
-     *
-     * @constructs
      *
      * @param {string} url the url this request should be made to
      * @param {Object} config addintional configuartion for the request
@@ -96,8 +93,8 @@ const NetworkRequest = {
      * [_make description]
      *
      * @deprecated use the constructor
-     * @param  {[type]} args [description]
-     * @return {[type]}      [description]
+     * @param  {array} args [description]
+     * @return {void}      [description]
      */
     _make(...args) {
         return this.constructor(...args);
@@ -198,7 +195,7 @@ const NetworkRequest = {
         });
 
         xhr.addEventListener('progress', (e) => this.emit('progress.receive', e));
-        xhr.upload.addEventListener('progress', (e) => this.emit('progress.send', e))
+        xhr.upload.addEventListener('progress', (e) => this.emit('progress.send', e));
 
         if (this.type === 'json') {
             let body = this._body;

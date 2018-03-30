@@ -1,7 +1,3 @@
-/**
- * @module IndexedDB
- */
-
 import { Make } from '../util/make.js';
 import IndexedQueryCompiler from './IndexedQueryCompiler.js';
 import async from '../core/async';
@@ -17,19 +13,46 @@ const IndexedStoreDefinition = {
 };
 
 const IndexedDefinition = {
+
+    /**
+     * @private
+     * @type {number}
+     */
     _version: 0,
 
-    /** @type {IndexedStoreDefinition} */
+    /**
+     * @private
+     * @type {IndexedStoreDefinition}
+     */
     _currentStore: null,
 
-    /** @type {IndexedStoreDefinition[]} */
+    /**
+     * @private
+     * @type {IndexedStoreDefinition[]}
+     */
     _allStores: null,
 
+
+    /**
+     * Instantiates a new DB version.
+     *
+     * @param  {number} version
+     *
+     * @return {undefined}
+     */
     _make: function(version) {
         this._version = version;
         this._allStores = [];
     },
 
+    /**
+     * Creates a new store definition.
+     * Inside the store definition new indexes can be defined.
+     *
+     * @param  {string|{ name: string, keyPath: string, autoincrement: boolean }} info
+     *
+     * @return {IndexedDefinition}
+     */
     store: function(info) {
         if (this._currentStore) {
             this._allStores.push(this._currentStore);
@@ -44,6 +67,16 @@ const IndexedDefinition = {
         return this;
     },
 
+    /**
+     * Creates a new index in the last defined store.
+     * This has been chosen to be able to chain together all definition calls.
+     *
+     * @param  {string} name  name of the new index
+     * @param  {string[]} members [description]
+     * @param  {Object} options [description]
+     *
+     * @return {IndexedDefinition}
+     */
     index: function(name, members, options) {
         this._currentStore.indexes.push({
             name: name,
@@ -54,6 +87,16 @@ const IndexedDefinition = {
         return this;
     },
 
+    /**
+     * executes the definition and creates the required stores and indexes
+     *
+     * @private
+     *
+     * @param  {IDBDatabase} db          the db object to operate on
+     * @param  {IDBTransaction} transaction the db transaction
+     *
+     * @return {undefined}
+     */
     _execute: function(db, transaction) {
         if (this._currentStore) {
             this._allStores.push(this._currentStore);
@@ -89,15 +132,27 @@ const IndexedDefinition = {
 };
 
 const IndexedDB = {
+    /**
+     * the name of the current db
+     *
+     * @private
+     * @type {string}
+     */
     _name: '',
 
     /**
-     * [_definitions description]
-     *
+     * @private
      * @type {Function[]}
      */
     _definitions: null,
 
+    /**
+     * runs all db setup tasks
+     *
+     * @private
+     *
+     * @return {Promise.<IDBDatabase>} [description]
+     */
     _setup: function() {
         return new Promise((success, fail) => {
             const request = indexedDB.open(this._name, this._definitions.length - 1);
@@ -114,6 +169,13 @@ const IndexedDB = {
         });
     },
 
+    /**
+     * Instantiates a new indexed DB.
+     * All version definitions have to be made done synchronously.
+     * The actual database creation is immediately scheduled for the next event cycle.
+     *
+     * @param {string} name of the db to open
+     */
     constructor(name) {
         this._name = name;
         this._definitions = [];
@@ -123,20 +185,47 @@ const IndexedDB = {
         return this;
     },
 
+    /**
+     * @deprecated
+     */
     _make(...args) {
         return this.constructor(...args);
     },
 
+    /**
+     * Creates a new version definition for the DB.
+     * All stores and indexes for the current version have to be defined in this definition.
+     *
+     * @param  {number} version the version to be defined, don't use floats
+     * @return {IndexedDefinition} the new definition
+     */
     define: function(version) {
         this._definitions[version] = Make(IndexedDefinition)(version);
 
         return this._definitions[version];
     },
 
+    /**
+     * Creates a new query to the database. The store which should be queried
+     * from has to be specified.
+     *
+     * @param  {string} storeName to read from
+     *
+     * @return {IndexedQueryCompiler} a new query
+     */
     read: function(storeName) {
         return Make(IndexedQueryCompiler)(storeName, this._promise);
     },
 
+    /**
+     * Stores an object in the selected store.
+     * The promise resolves to the transaction result.
+     *
+     * @param  {string} storeName name of the targeted store
+     * @param  {Object} value     value to store
+     *
+     * @return {Promise}
+     */
     write: function(storeName, value) {
         return this._promise.then(db => {
             return new Promise((success, failure) => {

@@ -32,7 +32,7 @@ const whenFilled = function(target) {
     return f;
 };
 
-const whenNext = function(target) {
+const whenNext = function(target) {
     let f = function(callback) {
         if (callback && typeof callback === 'function') {
             this._filledCallbacks.push({ once: true, callback: callback });
@@ -65,13 +65,28 @@ const once = function(target) {
 };
 
 const DataStorage = {
+    /**
+     * @private
+     * @type {*}
+     */
     _value: null,
+
+    /**
+     * @private
+     * @type {Function[]}
+     */
     _filledCallbacks: [],
 
+    /**
+     * @type {*}
+     */
     get value() {
         return this._value;
     },
 
+    /**
+     * @return {DataStorage}
+     */
     constructor() {
         super.constructor();
 
@@ -83,6 +98,13 @@ const DataStorage = {
         return this;
     },
 
+    /**
+     * [fill description]
+     *
+     * @param  {*} value [description]
+     *
+     * @return {undefined}
+     */
     fill(value) {
         this._value = value;
 
@@ -92,10 +114,33 @@ const DataStorage = {
         });
     },
 
+    /**
+     * Registers a callback which is executed everytime a value is filled into the DataStorage.
+     * If the DataStorage is already filled at the point of callback registration, the callback is invoced.
+     *
+     * @param {Function} callback
+     *
+     * @return {undefined}
+     */
     when: null,
 
+    /**
+     * Registers a one time callback which is executed as soon as the DataStorage has been filled.
+     *
+     * @param {Function} callback
+     *
+     * @return {undefined}
+     */
     once: null,
 
+    /**
+     * Registers a one time callback for the next time the DataStorage is filled.
+     * This is usefull when waiting for an update.
+     *
+     * @param {Function} callback
+     *
+     * @return {undefined}
+     */
     whenNext: null,
 
     __proto__: EventTarget,

@@ -1,4 +1,3 @@
-/** @lends Catalog# */
 let Catalog = {
 
     /**
@@ -9,8 +8,6 @@ let Catalog = {
 
     /**
      * Stores key value pairs and emits events when ever a pair is assigned
-     *
-     * @constructs
      *
      * @return {void}
      */

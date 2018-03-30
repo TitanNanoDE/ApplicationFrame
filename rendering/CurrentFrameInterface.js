@@ -1,7 +1,14 @@
 const CurrentFrameInterface = {
+    /** @private */
     _startTime: 0,
+
+    /** @private */
     _maxFrameDuration: 0,
 
+    /**
+     * @param {number} startTime    the time the current frame has started rendering
+     * @param {number} maxFrameDuration the maximum duration
+     */
     constructor({ startTime, maxFrameDuration } = {}) {
         this._startTime = startTime;
         this._maxFrameDuration = maxFrameDuration;
@@ -9,6 +16,11 @@ const CurrentFrameInterface = {
         return this;
     },
 
+    /**
+     * the remaining available render time of the frame
+     *
+     * @return {number}
+     */
     ttl() {
         const duration = performance.now() - this._startTime;
         const ttl = this._maxFrameDuration - duration;
