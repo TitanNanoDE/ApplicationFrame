@@ -15,7 +15,7 @@ const consumeApplication = function(application, worker) {
 
     application.on((event, data) => {
         worker.emit(event, data);
-    })
+    });
 };
 
 let currentApplication = null;
@@ -40,12 +40,13 @@ const ServiceWorker = {
 
     init() {
         super.constructor();
+
         let scope = null;
 
         //determine scope
         if (typeof this.scope === 'string') {
             scope = Promise.resolve(this.scope);
-        } else if (!!this.scope){
+        } else if (this.scope) {
             scope = Manifest.whenReady.then(() => Manifest.scope);
         } else {
             scope = Promise.resolve(null);
@@ -56,7 +57,7 @@ const ServiceWorker = {
         }
 
         scope.then(scope => {
-            return navigator.serviceWorker.register(this.script, { scope });
+            return navigator.serviceWorker.register(this.script, { scope });
         });
     },
 

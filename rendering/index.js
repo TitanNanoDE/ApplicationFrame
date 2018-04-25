@@ -3,10 +3,10 @@ import Frame from './Frame';
 import CurrentFrameInterface from './CurrentFrameInterface';
 
 /** @type {Function[]} */
-let preRenderHooks = [];
+const preRenderHooks = [];
 
 /** @type {Function[]} */
-let postRenderHooks = [];
+const postRenderHooks = [];
 
 /** @type {CurrentFrameInterface} */
 let currentFrameInterface = null;
@@ -34,7 +34,7 @@ const renderConfig = {
  *
  * @return {undefined}
  */
-let renderCycle = function(startTime) {
+const renderCycle = function(startTime) {
     active = false;
 
     // run all post render hooks after a frame has been painted. So this happens
@@ -66,6 +66,7 @@ let renderCycle = function(startTime) {
     });
 
     const oldFrame = frameBuffer.shift();
+
     release(oldFrame);
 
     if (frameBuffer.length < 2) {
@@ -87,6 +88,7 @@ let renderCycle = function(startTime) {
 
     //run all render tasks.
     frame.renderTasks.run(currentFrameInterface);
+
     //create performance data
     const cycleDuration = getNow() - startTime;
     const frameRate = 1000 / cycleDuration;
@@ -113,7 +115,7 @@ let renderCycle = function(startTime) {
  *
  * @return {undefined}
  */
-let scheduleNextFrame = function() {
+const scheduleNextFrame = function() {
     if (!active && frameBuffer.length > 0) {
 
         if (frameBuffer.length === 2 && frameBuffer[0].empty && frameBuffer[1].empty) {
@@ -157,7 +159,7 @@ const RenderEngine = {
      *
      * @return {Function} returns the function which has been passed in
      */
-    addPreRenderHook: function(f) {
+    addPreRenderHook(f) {
         preRenderHooks.push(f);
         scheduleNextFrame();
 
@@ -169,7 +171,7 @@ const RenderEngine = {
      *
      * @return {Function} returns the function which has been passed in.
      */
-    addPostRenderHook: function(f) {
+    addPostRenderHook(f) {
         postRenderHooks.push(f);
         scheduleNextFrame();
 
@@ -183,7 +185,7 @@ const RenderEngine = {
      *
      * @return {*} - see Array.prototype.splice
      */
-    removePreRenderHook: function(f) {
+    removePreRenderHook(f) {
         return preRenderHooks.splice(preRenderHooks.indexOf(f), 1);
     },
 
@@ -194,7 +196,7 @@ const RenderEngine = {
      *
      * @return {*} {@link Array.prototype.splice}
      */
-    removePostRenderHook: function(f) {
+    removePostRenderHook(f) {
         return postRenderHooks.splice(postRenderHooks.indexOf(f), 1);
     },
 
@@ -204,7 +206,7 @@ const RenderEngine = {
      *
      * @return {Function} the function which has been passed in.
      */
-    schedulePreRenderTask: function(f, id) {
+    schedulePreRenderTask(f, id) {
         frameBuffer[this._currentFrame].preRenderTasks.push(f, id);
         scheduleNextFrame();
 
@@ -217,7 +219,7 @@ const RenderEngine = {
      *
      * @return {Function} the function which has been passed in.
      */
-    scheduleRenderTask: function(f, id) {
+    scheduleRenderTask(f, id) {
         frameBuffer[this._currentFrame].renderTasks.push(f, id);
         scheduleNextFrame();
 
@@ -229,7 +231,7 @@ const RenderEngine = {
      *
      * @return {Function} the function which has been passed in.
      */
-    schedulePostRenderTask: function(f) {
+    schedulePostRenderTask(f) {
         frameBuffer[this._currentFrame].postRenderTasks.push(f);
         scheduleNextFrame();
 
@@ -241,7 +243,7 @@ const RenderEngine = {
      *
      * @return {void}
      */
-    renderFrame: function() {
+    renderFrame() {
         if(!active) {
             scheduleNextFrame();
         }

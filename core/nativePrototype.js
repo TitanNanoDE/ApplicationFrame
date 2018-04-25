@@ -7,7 +7,7 @@
  */
 export const nativePrototype = function(nativeConstructor) {
     const NativeInherited = {
-        constructor: function(...args) {
+        constructor: function NativeConstructor(...args) {
             return Reflect.construct(nativeConstructor, args, this.constructor);
         },
 

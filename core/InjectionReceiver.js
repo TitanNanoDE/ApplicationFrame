@@ -8,7 +8,7 @@ const InjectionReceiver = {
      * @private
      * @type {Array}
      */
-    _injectedObjects : null,
+    _injectedObjects: null,
 
     /**
      * @return {InjectionReceiver}

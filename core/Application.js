@@ -8,17 +8,17 @@ const Application = {
     /**
     * Name of the application, other components can identify it.
     */
-    name : '',
+    name: '',
 
     /**
     * The current version of the application.
     */
-    version : '0.0.0',
+    version: '0.0.0',
 
     /**
      *  Author meta data.
      */
-    author : '',
+    author: '',
 
     /**
      * Constructs the Application prototype.

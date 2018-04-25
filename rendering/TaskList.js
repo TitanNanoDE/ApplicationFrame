@@ -1,7 +1,7 @@
 import CurrentFrameInterface from './CurrentFrameInterface';
 import { allocate, release } from '../memory';
 
-let TaskList = {
+const TaskList = {
 
     /** @type {{ id: *, work: Function }[]} */
     tasks: null,
@@ -41,7 +41,7 @@ let TaskList = {
      */
     push(task, id = null) {
         if (!id || this.registeredIds.indexOf(id) < 0) {
-            this.tasks.push({ id: id, work: task });
+            this.tasks.push({ id, work: task });
 
             if (id) {
                 this.registeredIds.push(id);
@@ -59,7 +59,7 @@ let TaskList = {
      */
     unshift(task, id = null) {
         if (!id || this.registeredIds.indexOf(id) < 0) {
-            this.tasks.unshift({ id: id, work: task });
+            this.tasks.unshift({ id, work: task });
 
             if (id) {
                 this.registeredIds.push(id);

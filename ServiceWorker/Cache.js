@@ -47,7 +47,7 @@ const Cache = {
                     })
                     .then(([manifest, cache]) => cache.addAll(manifest.staticFiles))
                     .then(() => ServiceWorkerEventTarget.emit('update-available'))
-                        .catch((error) => error && console.error(error));
+                    .catch((error) => error && console.error(error));
             });
     },
 
@@ -56,7 +56,7 @@ const Cache = {
         let indexRequest = null;
 
         if (requestUrl.search(/\/$/) > -1) {
-            indexRequest = new Request(requestUrl + 'index.html', {
+            indexRequest = new Request(`${requestUrl  }index.html`, {
                 method: request.method,
                 body: request.body,
                 mode: (request.mode === 'navigate' ? 'cors' : request.mode),

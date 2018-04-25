@@ -8,7 +8,7 @@ import EventTarget from './EventTarget';
  *
  * @return {Object} the initial object
  */
-const stripHashKey = function(object){
+const stripHashKey = function(object) {
     if (Array.isArray(object)) {
         object = object.map(stripHashKey);
 
@@ -35,34 +35,34 @@ const NetworkRequest = {
      * @private
      * @type {Object}
      */
-    _body : {},
+    _body: {},
 
     /**
      * @private
      * @type {Object}
      */
-    _headers : null,
+    _headers: null,
 
     /**
      * @type {string}
      */
-    type : '',
+    type: '',
 
     /**
      * @type {string}
      */
-    method : '',
+    method: '',
 
     /**
      * @type {string}
      */
-    url : '',
+    url: '',
 
     /**
      * @private
      * @type {function[]}
      */
-    _listeners : null,
+    _listeners: null,
 
     /**
      * [completed description]
@@ -79,7 +79,7 @@ const NetworkRequest = {
      *
      * @return {NetworkRequest} the request it self
      */
-    constructor (url, { method = 'GET', type = 'none' } = {}) {
+    constructor(url, { method = 'GET', type = 'none' } = {}) {
         this.type = type;
         this.method = method;
         this._headers = {};
@@ -107,7 +107,7 @@ const NetworkRequest = {
      *
      * @return {NetworkRequest} the request it self
      */
-    body : function(data){
+    body(data) {
         this._body = data;
 
         return this;
@@ -120,7 +120,7 @@ const NetworkRequest = {
      *
      * @return {NetworkRequest} the request it self
      */
-    headers : function(headers) {
+    headers(headers) {
         this._headers = headers;
 
         return this;
@@ -134,7 +134,7 @@ const NetworkRequest = {
      *
      * @return {NetworkRequest} the request it self
      */
-    setHeader : function(key, value) {
+    setHeader(key, value) {
         this._headers[key] = value;
 
         return this;
@@ -147,7 +147,7 @@ const NetworkRequest = {
      *
      * @return {void}
      */
-    onReady : function(fn){
+    onReady(fn) {
         this._listeners.push(fn);
     },
 
@@ -157,18 +157,17 @@ const NetworkRequest = {
      * @return {Promise} resolves when the request is done
      */
     send() {
-        let self = this;
-        let xhr = new XMLHttpRequest();
+        const xhr = new XMLHttpRequest();
 
         if (this.method === 'GET' && this._body) {
-            this.url += '?' + Object.keys(this._body).map((key) => {
-                return `${key}=${self._body[key]}`;
-            }).join('&');
+            this.url += `?${  Object.keys(this._body).map((key) => {
+                return `${key}=${this._body[key]}`;
+            }).join('&')}`;
         }
 
         xhr.open(this.method, this.url, true);
 
-        let promise = new Promise((success, failure) => {
+        const promise = new Promise((success, failure) => {
             xhr.onreadystatechange = () => {
                 if (xhr.readyState === 4) {
                     if (xhr.status >= 200 && xhr.status < 300) {
@@ -191,7 +190,7 @@ const NetworkRequest = {
         });
 
         Object.keys(this._headers).forEach((key) => {
-            xhr.setRequestHeader(key, self._headers[key]);
+            xhr.setRequestHeader(key, this._headers[key]);
         });
 
         xhr.addEventListener('progress', (e) => this.emit('progress.receive', e));
@@ -202,7 +201,7 @@ const NetworkRequest = {
 
             xhr.setRequestHeader('Content-Type', 'application/json');
 
-            if (body){
+            if (body) {
                 body = stripHashKey(body);
                 body = JSON.stringify(body);
             }

@@ -36,6 +36,7 @@ const VM = {
             file = fs.readFileSync(path, 'utf-8');
         } catch (e) {
             console.error('unable to locate module', path, e);
+
             return;
         }
 
@@ -65,6 +66,7 @@ const vmCompile = (vm) => function(content, filename) {
     const compiledWrapper = nativeVM.runInContext(wrapper, vm._context, filename);
     const dirname = Path.dirname(filename);
     const newRequire = this.require.bind(this);
+
     newRequire.resolve = require.resolve;
 
     const result = compiledWrapper
@@ -79,6 +81,7 @@ const vmRequire = (vmModule, vmCache, cache, nativeCompile, vmCompile) => functi
     let loadedModule = null;
 
     let cwd = callsite()[1].getFileName();
+
     cwd = Path.dirname(cwd);
 
     if (!(parsedPath.root === '' && parsedPath.dir === '')) {

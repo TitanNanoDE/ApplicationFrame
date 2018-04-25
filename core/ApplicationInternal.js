@@ -1,25 +1,25 @@
 
 /** @lends ApplicationInternal# */
-let ApplicationInternal = {
+const ApplicationInternal = {
     /**
      * @type {Thread}
      */
-    thread : null,
+    thread: null,
 
     /**
      * @type {Worker[]}
      */
-    workers : null,
+    workers: null,
 
     /**
      * @type {Function[]}
      */
-    listeners : null,
+    listeners: null,
 
     /**
      * @type {Catalog}
      */
-    modules : null,
+    modules: null,
 
     /**
      * this prototype defines a new application scope
@@ -28,7 +28,7 @@ let ApplicationInternal = {
      *
      * @return {void}
      */
-    _make : function(){
+    _make() {
         this.workers= [];
         this.listeners= [];
 

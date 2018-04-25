@@ -5,8 +5,8 @@
  * @param {Object} source
  * @inner
  */
-var apply = function (target, source) {
-    Object.keys(source).forEach(function(key){
+const apply = function(target, source) {
+    Object.keys(source).forEach((key) => {
         Object.defineProperty(target, key, Object.getOwnPropertyDescriptor(source, key));
     });
 
@@ -24,8 +24,8 @@ var apply = function (target, source) {
  * @param {Object} prototype
  * @return {function}
  */
-export var Make = function(object, prototype) {
-    if(arguments.length < 2){
+export const Make = function(object, prototype) {
+    if(arguments.length < 2) {
         prototype = object;
         object = null;
     }
@@ -36,15 +36,15 @@ export var Make = function(object, prototype) {
         object = apply(Object.create(prototype), object);
     }
 
-    var m = function(...args){
-        var make = object.make || object._make || function(){};
+    const m = function(...args) {
+        const make = object.make || object._make || function() {};
 
         make.apply(object, args);
 
         return object;
     };
 
-    m.get = function(){ return object; };
+    m.get = function() { return object; };
 
     return m;
 };
@@ -59,10 +59,10 @@ export var Make = function(object, prototype) {
  * @param {Object} prototype
  * @return {boolean}
  */
-export var hasPrototype = function(object, prototype){
-    var p = Object.getPrototypeOf(object);
+export const hasPrototype = function(object, prototype) {
+    let p = Object.getPrototypeOf(object);
 
-    while(p !== null && p !== undefined){
+    while(p !== null && p !== undefined) {
         if(typeof prototype == 'function')
             prototype = prototype.prototype;
 

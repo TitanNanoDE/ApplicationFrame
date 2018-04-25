@@ -6,7 +6,7 @@ const EventTarget = {
      * @private
      * @type {Object}
      */
-    _listeners : null,
+    _listeners: null,
 
     /**
      * @return {EventTarget} [description]
@@ -34,7 +34,7 @@ const EventTarget = {
      *
      * @return {void}
      */
-    on : function(type, listener){
+    on(type, listener) {
         if (!this._listeners[type]) {
             this._listeners[type] = [];
         }
@@ -50,7 +50,7 @@ const EventTarget = {
      *
      * @return {void}
      */
-    emit : function(type, data){
+    emit(type, data) {
         if (this._listeners[type]) {
             async(() => {
                 this._listeners[type]
@@ -67,7 +67,7 @@ const EventTarget = {
     *
     * @return {void}
     */
-    removeListener: function(type, listener) {
+    removeListener(type, listener) {
         if (this._listeners[type]) {
             const index = this._listeners[type].indexOf(listener);
 

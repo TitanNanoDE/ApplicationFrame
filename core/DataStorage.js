@@ -35,7 +35,7 @@ const whenFilled = function(target) {
 const whenNext = function(target) {
     let f = function(callback) {
         if (callback && typeof callback === 'function') {
-            this._filledCallbacks.push({ once: true, callback: callback });
+            this._filledCallbacks.push({ once: true, callback });
         }
     };
 
@@ -50,7 +50,7 @@ const once = function(target) {
     let f = function(callback) {
         if (callback && typeof callback === 'function') {
             if (!this._value) {
-                this._filledCallbacks.push({ once: true, callback: callback });
+                this._filledCallbacks.push({ once: true, callback });
             } else {
                 callback(this._value);
             }
@@ -110,6 +110,7 @@ const DataStorage = {
 
         this._filledCallbacks = this._filledCallbacks.filter(item => {
             item.callback(this._value);
+
             return !item.once;
         });
     },

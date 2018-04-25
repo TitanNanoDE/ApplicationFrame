@@ -9,7 +9,7 @@ const onMessageHandler = function(event) {
     } else {
         console.log(`[ServiceWorker${navigator ? 'Client' : ''}] Ignoring event`, event);
     }
-}
+};
 
 const ServiceWorkerEventTarget = {
 

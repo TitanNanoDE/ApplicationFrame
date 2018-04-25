@@ -6,7 +6,7 @@ const IndexedStoreDefinition = {
     name: '',
     indexes: null,
 
-    _make: function(info) {
+    _make(info) {
         this.description = info;
         this.indexes = [];
     }
@@ -40,7 +40,7 @@ const IndexedDefinition = {
      *
      * @return {undefined}
      */
-    _make: function(version) {
+    _make(version) {
         this._version = version;
         this._allStores = [];
     },
@@ -53,7 +53,7 @@ const IndexedDefinition = {
      *
      * @return {IndexedDefinition}
      */
-    store: function(info) {
+    store(info) {
         if (this._currentStore) {
             this._allStores.push(this._currentStore);
         }
@@ -77,11 +77,11 @@ const IndexedDefinition = {
      *
      * @return {IndexedDefinition}
      */
-    index: function(name, members, options) {
+    index(name, members, options) {
         this._currentStore.indexes.push({
-            name: name,
-            members: members,
-            options: options,
+            name,
+            members,
+            options,
         });
 
         return this;
@@ -97,7 +97,7 @@ const IndexedDefinition = {
      *
      * @return {undefined}
      */
-    _execute: function(db, transaction) {
+    _execute(db, transaction) {
         if (this._currentStore) {
             this._allStores.push(this._currentStore);
         }
@@ -153,15 +153,16 @@ const IndexedDB = {
      *
      * @return {Promise.<IDBDatabase>} [description]
      */
-    _setup: function() {
+    _setup() {
         return new Promise((success, fail) => {
             const request = indexedDB.open(this._name, this._definitions.length - 1);
 
             request.onsuccess = (event) => success(event.target.result);
             request.onerror = fail;
+
             request.onupgradeneeded = ({ oldVersion: lastVersion, target: { result: db, transaction }}) => {
                 for (let i = lastVersion+1; i < this._definitions.length; i++) {
-                    let setup = this._definitions[i];
+                    const setup = this._definitions[i];
 
                     setup._execute(db, transaction);
                 }
@@ -199,7 +200,7 @@ const IndexedDB = {
      * @param  {number} version the version to be defined, don't use floats
      * @return {IndexedDefinition} the new definition
      */
-    define: function(version) {
+    define(version) {
         this._definitions[version] = Make(IndexedDefinition)(version);
 
         return this._definitions[version];
@@ -213,7 +214,7 @@ const IndexedDB = {
      *
      * @return {IndexedQueryCompiler} a new query
      */
-    read: function(storeName) {
+    read(storeName) {
         return Make(IndexedQueryCompiler)(storeName, this._promise);
     },
 
@@ -226,11 +227,11 @@ const IndexedDB = {
      *
      * @return {Promise}
      */
-    write: function(storeName, value) {
+    write(storeName, value) {
         return this._promise.then(db => {
             return new Promise((success, failure) => {
                 try {
-                    let request = db.transaction([storeName], 'readwrite')
+                    const request = db.transaction([storeName], 'readwrite')
                         .objectStore(storeName).put(value);
 
                     request.onsuccess = event => success(event.target.result);

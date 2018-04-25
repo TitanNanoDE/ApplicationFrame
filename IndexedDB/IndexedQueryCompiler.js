@@ -53,7 +53,7 @@ const IndexedQueryCompiler = {
      *
      * @return {undefined}
      */
-    _make: function(storeName, db) {
+    _make(storeName, db) {
         this._allQueries = [];
         this._store = storeName;
         this._db = db;
@@ -67,13 +67,13 @@ const IndexedQueryCompiler = {
      *
      * @return {[type]}         [description]
      */
-    _transformExclude: function(value, exclude) {
+    _transformExclude(value, exclude) {
         if (Array.isArray(value)) {
             value = value.map(item => {
-                return { value: item, exclude: exclude };
+                return { value: item, exclude };
             });
         } else {
-            value = { value: value, exclude: exclude };
+            value = { value, exclude };
         }
 
         return value;
@@ -86,7 +86,7 @@ const IndexedQueryCompiler = {
      *
      * @return {IndexedQueryCompiler}
      */
-    where: function(indexName) {
+    where(indexName) {
         this._currentQuery = Make(IndexedQuery)();
         this._currentQuery.name = indexName;
 
@@ -100,7 +100,7 @@ const IndexedQueryCompiler = {
      *
      * @return {IndexedQueryCompiler}
      */
-    equals: function(value) {
+    equals(value) {
         this.from(value).to(value);
 
         return this;
@@ -114,7 +114,7 @@ const IndexedQueryCompiler = {
      *
      * @return {IndexedQueryCompiler}
      */
-    from: function(value, exclude=false) {
+    from(value, exclude=false) {
         value = this._transformExclude(value, exclude);
 
         if (Array.isArray(this._currentQuery.rangeStart)) {
@@ -134,7 +134,7 @@ const IndexedQueryCompiler = {
      *
      * @return {IndexedQueryCompiler}
      */
-    to: function(value, exclude=false) {
+    to(value, exclude=false) {
         value = this._transformExclude(value, exclude);
 
         if (Array.isArray(this._currentQuery.rangeEnd)) {
@@ -153,7 +153,7 @@ const IndexedQueryCompiler = {
      *
      * @return {IndexedQueryCompiler}
      */
-    lowerThan: function(value) {
+    lowerThan(value) {
         this.to(value, true);
 
         return this;
@@ -166,7 +166,7 @@ const IndexedQueryCompiler = {
      *
      * @return {IndexedQueryCompiler}
      */
-    higherThan: function(value) {
+    higherThan(value) {
         this.from(value, true);
 
         return this;
@@ -179,7 +179,7 @@ const IndexedQueryCompiler = {
      *
      * @return {IndexedQueryCompiler}
      */
-    or: function(indexName) {
+    or(indexName) {
         this._allQueries.push(this._currentQuery);
         this.where(indexName);
 
@@ -193,7 +193,7 @@ const IndexedQueryCompiler = {
      *
      * @return {IndexedDefinition}
      */
-    sort: function(direction) {
+    sort(direction) {
         if (direction === 'ASC') {
             this.sortOrder = 'next';
         } else if (direction === 'DESC') {
@@ -210,7 +210,7 @@ const IndexedQueryCompiler = {
      *
      * @return {Promise.<Array>}
      */
-    get: function(...limit) {
+    get(...limit) {
         if (limit.length === 1) {
             limit.unshift(0);
         }
@@ -229,16 +229,16 @@ const IndexedQueryCompiler = {
      *
      * @return {Promise.<Array>}
      */
-    _execute: function(start, end) {
+    _execute(start, end) {
         return this._db.then(db => {
-            let matches = [];
-            let results = [];
+            const matches = [];
+            const results = [];
 
             const queries = this._allQueries.map(query => {
                 return new Promise((done, error) => {
-                    let store = db.transaction([this._store], 'readonly').objectStore(this._store);
+                    const store = db.transaction([this._store], 'readonly').objectStore(this._store);
                     let range = null;
-                    let rangeArray = Array.isArray(query.rangeStart) || Array.isArray(query.rangeEnd);
+                    const rangeArray = Array.isArray(query.rangeStart) || Array.isArray(query.rangeEnd);
 
                     if (!rangeArray) {
                         if (query.rangeStart && query.rangeEnd) {
@@ -251,7 +251,7 @@ const IndexedQueryCompiler = {
                         }
                     }
 
-                    let request = store.index(query.name).openCursor(range, this.sortOrder);
+                    const request = store.index(query.name).openCursor(range, this.sortOrder);
 
                     request.onsuccess = ({ target: { result: cursor } }) => {
                         if (!cursor) {
@@ -260,12 +260,13 @@ const IndexedQueryCompiler = {
 
                         if (matches.indexOf(JSON.stringify(cursor.primaryKey)) < 0) {
                             let doesMatch = true;
-                            let keyCount = query.rangeStart && query.rangeStart.length ||
+                            const keyCount = query.rangeStart && query.rangeStart.length ||
                                            query.rangeEnd && query.rangeEnd.length;
 
                             if (start > 0) {
                                 start -= 1;
                                 end -= 1;
+
                                 return cursor.continue();
                             } else if (start === 0 && end > 0) {
                                 end -= 1;

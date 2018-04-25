@@ -6,8 +6,8 @@ const rgbToHex = function(string) {
     const colors = string.match(/rgb(?:a?)\(([0-9, ]+)\)/);
 
     if (colors[1]) {
-        return '#' + colors[1].split(',')
-            .map(color => parseInt(color.trim()).toString(16)).join('');
+        return `#${  colors[1].split(',')
+            .map(color => parseInt(color.trim()).toString(16)).join('')}`;
     }
 
     return '#000';
@@ -55,15 +55,15 @@ let manifestRequest = Promise.resolve(Manifest);
 if (manifestTag && manifestTag.href) {
     manifestRequest = create(NetworkRequest)
         .constructor(manifestTag.href).send()
-            .then(response => {
-                Object.assign(Manifest, response);
+        .then(response => {
+            Object.assign(Manifest, response);
 
-                return Manifest;
-            }).catch(error => {
-                console.log(`[${error.status}]: ${error.statusText}`);
+            return Manifest;
+        }).catch(error => {
+            console.log(`[${error.status}]: ${error.statusText}`);
 
-                return Manifest;
-            });
+            return Manifest;
+        });
 }
 
 export default Manifest;

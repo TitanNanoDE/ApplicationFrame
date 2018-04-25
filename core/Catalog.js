@@ -1,17 +1,17 @@
-let Catalog = {
+const Catalog = {
 
     /**
      * @private
      * @type {Function[]}
      */
-    _listeners : null,
+    _listeners: null,
 
     /**
      * Stores key value pairs and emits events when ever a pair is assigned
      *
      * @return {void}
      */
-    _make : function(){
+    _make() {
         this._listeners = [];
 
         this._make = null;
@@ -25,15 +25,15 @@ let Catalog = {
      *
      * @return {Promise} resloves when the event fires
      */
-    on : function(event, listener){
-        var self= this;
+    on(event, listener) {
+        const self= this;
 
-        return new Promise(function(success){
+        return new Promise(((success) => {
             if(listener.length > 0)
-                self._listeners.push({ event : event, listener : listener, success : success });
+                self._listeners.push({ event, listener, success });
             else
                 success();
-        });
+        }));
     },
 
     /**
@@ -44,19 +44,22 @@ let Catalog = {
      *
      * @return {void}
      */
-    add : function(key, value){
+    add(key, value) {
         this[key]= value;
-        var object= this;
-        this._listeners.forEach(function(item){
 
-            if(item.event == 'available'){
-                var ready= 0;
-                item.listener.forEach(function(item){
+        const object= this;
+
+        this._listeners.forEach((item) => {
+
+            if(item.event == 'available') {
+                let ready= 0;
+
+                item.listener.forEach((item) => {
                     if(Object.keys(object).indexOf(item) > -1)
                         ready++;
                 });
 
-                if(ready == item.listener.length){
+                if(ready == item.listener.length) {
                     item.success();
                 }
             }
