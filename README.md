@@ -6,7 +6,10 @@
 [![Coverage Status](https://coveralls.io/repos/github/TitanNanoDE/ApplicationFrame/badge.svg?branch=master)](https://coveralls.io/github/TitanNanoDE/ApplicationFrame?branch=master)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/57df220d093b4b0d8efd78fd55c48af5)](https://www.codacy.com/app/titannanomail/ApplicationFrame?utm_source=github.com&utm_medium=referral&utm_content=TitanNanoDE/ApplicationFrame&utm_campaign=badger)
 
-Application Frame is an open and light weight Programming Framework for the Web. It's simple architecture lets the Framework seamlessly argument the core features of different ECMAScript runtimes. Application Frame an it's modules allows developers to develop at the heart of the Web while enjoying enhanced comfort.
+Application Frame is an open and light weight Programming Library for the Web. It's simple architecture lets the Library  seamlessly argument the core features of different ECMAScript runtimes. Application Frame an it's modules allows developers to develop at the heart of the Web while enjoying enhanced comfort.
+
+## 🎊 MozSprit 🎉
+Application Frame is taking part in the MozSprint 2018! Therefore, we would like to remind all new contributors to always follow the [Mozilla Community Participation Guidelines](https://www.mozilla.org/en-US/about/governance/policies/participation/). 
 
 ## The Core
 The core of Application Frame provides ECMAScript prototypes for Applications, DataStorages, EventTargets and NetworkRequests.
