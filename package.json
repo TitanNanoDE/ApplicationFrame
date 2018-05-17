@@ -3,7 +3,8 @@
   "version": "0.7.0-dev.5",
   "description": "Application Frame is an open and light weight Programming Framework for the Web.",
   "dependencies": {
-    "callsite": "^1.0.0"
+    "callsite": "^1.0.0",
+    "natives": "^1.1.3"
   },
   "devDependencies": {
     "babel-core": "^6.26.0",
