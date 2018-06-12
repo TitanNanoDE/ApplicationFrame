@@ -23,9 +23,9 @@
     "sha1": "^1.1.1"
   },
   "scripts": {
-    "build": "gulp --gulpfile .travis/Gulpfile.js --cwd ./",
-    "test": "node_modules/.bin/mocha .travis/main.js",
-    "coverage": "istanbul cover -x \"**\" _mocha -- .travis/main.js --report json",
+    "build": "gulp --gulpfile tests/Gulpfile.js --cwd ./",
+    "test": "node_modules/.bin/mocha tests/main.js",
+    "coverage": "istanbul cover -x \"**\" _mocha -- tests/main.js --report json",
     "remap-core": "remap-istanbul -i coverage/coverage.json -o coverage/mapped.json -b ./",
     "remap-cov": "npm run coverage && npm run remap-core && istanbul report --include \"coverage/mapped.json\" lcov",
     "coveralls": "npm run remap-cov && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
