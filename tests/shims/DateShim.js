@@ -1,7 +1,7 @@
 const DateShim = () => {
     const FakeDate = function(...args) {
         this._internal = new Date(...args);
-    }
+    };
 
     FakeDate.now = function() {
         if (FakeDate._fakeNow) {

@@ -6,7 +6,7 @@ const Import = require('./tools/import');
 'use strict';
 
 describe('EventTarget', () => {
-    let EventTargetModule = Import('../../testable/core/EventTarget');
+    const EventTargetModule = Import('../../testable/core/EventTarget');
     let instance = null;
 
     it('should construct a new instance', () => {
@@ -35,7 +35,7 @@ describe('EventTarget', () => {
     });
 
     it('should provide the emited data to the listener', (done) => {
-        let testData = 'test data';
+        const testData = 'test data';
 
         instance.on('test#3', (data) => {
             done(assert.equal(testData, data));
@@ -64,5 +64,5 @@ describe('EventTarget', () => {
         instance.removeListener('test', () => {});
 
         expect(instance._listeners.event).to.have.lengthOf(1);
-    })
+    });
 });

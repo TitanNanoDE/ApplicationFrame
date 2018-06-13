@@ -3,13 +3,13 @@ const fetchShim = (dictonary) => {
 
     const callFetchHooks = function(requestUrl) {
         fetchHooks.forEach(cb => cb(requestUrl));
-    }
+    };
 
     const fetch = function(requestUrl) {
         callFetchHooks(requestUrl);
 
         if (!dictonary[requestUrl]) {
-            return Promise.reject({ error: '' });
+            return Promise.reject({ error: '' });
         }
 
         return Promise.resolve({
@@ -24,6 +24,6 @@ const fetchShim = (dictonary) => {
     };
 
     return fetch;
-}
+};
 
 module.exports = fetchShim;

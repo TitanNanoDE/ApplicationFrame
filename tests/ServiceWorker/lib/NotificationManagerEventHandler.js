@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-const { expect } = require('chai');
+const { expect } = require('chai');
 const istanbulVM = require('../../../node/istanbulVM');
 
 describe('NotificationManagerEventHandler', () => {
@@ -11,10 +11,11 @@ describe('NotificationManagerEventHandler', () => {
 
         vm.updateContext({
             self: vm.getContext(),
-        })
+        });
 
         it('should setup all event handlers', () => {
             vm.runModule('../../../testable/ServiceWorker/lib/NotificationManagerEventHandler.js');
+
             const result = vm.runModule('../../testTasks/ServiceWorker/NotificationManagerEventHandler/construct.js');
 
             expect(result.handler).to.have.all.keys('constructor', 'onNotificationClicked', 'onNotificationClosed');
@@ -30,5 +31,5 @@ describe('NotificationManagerEventHandler', () => {
             expect(result.clicked).to.be.true;
             expect(result.closed).to.be.true;
         });
-    })
-})
+    });
+});

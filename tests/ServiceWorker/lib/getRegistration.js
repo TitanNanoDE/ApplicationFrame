@@ -21,10 +21,11 @@ describe('getRegistration', () => {
         istanbulVM.applyNodeEnv(vm);
 
         vm.runModule('../../../testable/ServiceWorker/lib/getRegistration.js');
+
         const result = vm.runModule('../../testTasks/ServiceWorker/getRegistration.js');
 
         expect(result.registration)
-            .to.be.a('promise', 'doesn\'t return a promise')
+            .to.be.a('promise', 'doesn\'t return a promise');
 
         return result.registration.then(data => {
             expect(data).to.have.all.keys(['scope', 'pushManager', 'active']);
@@ -42,12 +43,13 @@ describe('getRegistration', () => {
         });
 
         vm.runModule('../../../testable/ServiceWorker/lib/getRegistration.js');
+
         const result = vm.runModule('../../testTasks/ServiceWorker/getRegistration.js');
 
         expect(result.registration).to.be.a('promise', 'doesn\'t return a promise');
 
         return result.registration.then(data => {
             expect(data).to.have.all.keys('scope', 'pushManager', 'active');
-        })
-    })
+        });
+    });
 });

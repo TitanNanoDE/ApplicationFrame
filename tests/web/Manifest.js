@@ -17,6 +17,7 @@ describe('Manifest', () => {
     it('should return the default manifest', () => {
         vm.runModule('../shims/WebManifestShim.js');
         vm.runModule('../../testable/web/Manifest.js');
+
         const result = vm.runModule('../testTasks/web/ManifestDefault.js');
 
         return result.defaultManifest.then(defaultManifest => {

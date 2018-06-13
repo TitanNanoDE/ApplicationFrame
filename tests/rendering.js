@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 const istanbulVM = require('../testable/node/istanbulVM');
-const { expect } = require('chai');
+const { expect } = require('chai');
 
 const vm = istanbulVM({
     taskExecuted: false,

@@ -1,3 +1,3 @@
 (() => {
-    global.registerResult = Cache.register('manifest.json');
+    global.registerResult = Cache.register('manifest.json');
 })();

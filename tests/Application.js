@@ -36,5 +36,5 @@ describe('Application', () => {
         });
 
         vm.runModule('./testTasks/Application/termination');
-    })
+    });
 });

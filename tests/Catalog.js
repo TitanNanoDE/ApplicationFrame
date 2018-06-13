@@ -18,7 +18,7 @@ describe('Catalog', () => {
     });
 
     it('should be possible to register an \'available\' event listener', () => {
-        let promise = instance.on('available', ['test', 'prop1', 'prop2', 'prop3']);
+        const promise = instance.on('available', ['test', 'prop1', 'prop2', 'prop3']);
 
         expect(promise).to.be.an.instanceOf(Promise);
     });

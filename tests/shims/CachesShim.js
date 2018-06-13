@@ -5,11 +5,11 @@ const addAllHooks = [];
 
 const callOpenHooks = function(cacheName) {
     openHooks.forEach(cb => cb(cacheName));
-}
+};
 
 const callAddAllHooks = function(list) {
     addAllHooks.forEach(cb => cb(list));
-}
+};
 
 const CachesShim = (cacheStore = {}) => ({
 
@@ -27,7 +27,7 @@ const CachesShim = (cacheStore = {}) => ({
 
         return Promise.resolve({
             addAll(list) {
-                list.forEach(url => cacheStore[cacheName].responses.push({ url }));
+                list.forEach(url => cacheStore[cacheName].responses.push({ url }));
 
                 CachesShim.status.addAllCalled = sha1(`${cacheName}:${list.join(',')}`);
                 callAddAllHooks(list);
@@ -42,7 +42,7 @@ const CachesShim = (cacheStore = {}) => ({
     delete(cacheKey) {
         if (cacheKey in this.cacheStore) {
             delete this.cacheStore[cacheKey];
-            
+
             return true;
         }
 

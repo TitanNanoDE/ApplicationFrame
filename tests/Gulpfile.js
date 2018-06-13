@@ -1,10 +1,10 @@
 'use strict';
 
-let gulp = require('gulp');
-let babel = require('gulp-babel');
+const gulp = require('gulp');
+const babel = require('gulp-babel');
 const clean = require('gulp-clean');
 const sourcemaps = require('gulp-sourcemaps');
-let merge = require ('merge-stream');
+const merge = require ('merge-stream');
 
 const dist = 'testable/';
 
@@ -19,7 +19,7 @@ gulp.task('clean', () => {
 
 gulp.task('default', ['clean'], () => {
 
-    let core = gulp.src([
+    const core = gulp.src([
         'core/**/*.js',
         'util/**',
         'IndexedDB.js',

@@ -20,4 +20,4 @@ RenderEngine.addPreRenderHook(() => {
 
 RenderEngine.addPostRenderHook(() => {
     global.postRenderHookCalled = true;
-})
+});

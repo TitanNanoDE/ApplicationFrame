@@ -1,3 +1,4 @@
+/* eslint no-sparse-arrays: 0 */
 
 const a = [1, , 2, , 3, 'end'];
 const b = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];

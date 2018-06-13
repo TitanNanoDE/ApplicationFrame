@@ -66,7 +66,7 @@ const getDbInterface = (host) => ({
 
     transaction(storeNames, mode) {
         if (mode === 'read') {
-            throw "transaction mode 'read' is not shimmed!";
+            throw 'transaction mode \'read\' is not shimmed!';
         }
 
         return getTransaction(host);
@@ -83,14 +83,14 @@ const getStoreInterface = (host) => ({
         };
 
         async(() => {
-            result.onsuccess({ target: { result } });
+            result.onsuccess({ target: { result } });
         });
 
         return result;
     },
 
     index(name) {
-        return getIndexInterface({ store: host, selectedIndex: name });
+        return getIndexInterface({ store: host, selectedIndex: name });
     }
 });
 
@@ -104,17 +104,17 @@ const getObjectStoreInterface = (host) => ({
 
 const getKeypathValue = function(host, object) {
     return object[host.store.indexes[host.selectedIndex].keyPath];
-}
+};
 
 const getIndexInterface = (host) => ({
-    openCursor(range, sortOrder) {
+    openCursor(range /*, sortOrder */) {
 
-        continueCursor = function() {
+        const continueCursor = function() {
             const item = list.pop();
             const currentResult = item ? { primaryKey: getKeypathValue(host, item), value: item, continue: continueCursor } : null;
 
             async(() => result.onsuccess({ target: { result: currentResult } }));
-        }
+        };
 
         const list = host.store.items.filter(item => {
             const keyPathValue = getKeypathValue(host, item);
@@ -153,20 +153,20 @@ const getIndexInterface = (host) => ({
 
         return result;
     }
-})
+});
 
 module.exports = IndexedDbShim;
 
 module.exports.IDBKeyRange = {
     bound(lower, upper, lowerOpen = false, upperOpen = false) {
-        return { lower, upper, lowerOpen, upperOpen };
+        return { lower, upper, lowerOpen, upperOpen };
     },
 
     upperBound(upper, upperOpen = false) {
-        return { upper, upperOpen };
+        return { upper, upperOpen };
     },
 
     lowerBound(lower, lowerOpen = false) {
-        return { lower, lowerOpen };
+        return { lower, lowerOpen };
     }
-}
+};

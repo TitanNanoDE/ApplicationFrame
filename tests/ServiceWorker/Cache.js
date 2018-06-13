@@ -1,7 +1,7 @@
 /* eslint-env mocha */
 
 const istanbulVM = require('../../node/istanbulVM');
-const { expect } = require('chai');
+const { expect } = require('chai');
 const fetchShim = require('../shims/FetchShim');
 const cachesShim = require('../shims/CachesShim');
 const IndexedDbShim = require('../shims/IndexedDbShim');
@@ -20,6 +20,7 @@ describe('Cache', () => {
 
     it('should return the cache interface', () => {
         vm.runModule('../../testable/ServiceWorker/Cache.js');
+
         const result = vm.runModule('../testTasks/ServiceWorker/Cache/interface.js');
 
         expect(result.cache).to.have.all.keys('register', 'cleanUp', 'init', 'matchStatic');

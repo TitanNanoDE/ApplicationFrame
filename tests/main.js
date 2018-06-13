@@ -10,23 +10,23 @@ console.log('### Application Frame Tests ###');
 require('./node/vm');
 
 describe('Make Util', () => {
-    let makeModule = Import('../../testable/util/make');
+    const makeModule = Import('../../testable/util/make');
 
     describe('Make()', () => {
         it('make()() should create a new instance', () => {
-            let { Make } = makeModule.value;
-            let TestPrototype = {};
-            let instance = Make(TestPrototype)();
+            const { Make } = makeModule.value;
+            const TestPrototype = {};
+            const instance = Make(TestPrototype)();
 
             expect(Object.getPrototypeOf(instance)).to.equal(TestPrototype);
             expect(instance).to.not.equal(TestPrototype);
         });
 
         it('make() should return a constructor', () => {
-            let { Make } = makeModule.value;
+            const { Make } = makeModule.value;
 
-            let TestPrototype = {};
-            let constructor = Make(TestPrototype);
+            const TestPrototype = {};
+            const constructor = Make(TestPrototype);
 
             expect(constructor).to.be.a('function');
         });
@@ -35,19 +35,19 @@ describe('Make Util', () => {
     describe('hasPrototype()', () => {
 
         it('should return true if object has prototype', () => {
-            let { hasPrototype } = makeModule.value;
+            const { hasPrototype } = makeModule.value;
 
-            let testPrototype = {};
-            let instance = Object.create(testPrototype);
+            const testPrototype = {};
+            const instance = Object.create(testPrototype);
 
             expect(hasPrototype(instance, testPrototype)).to.be.true;
         });
 
         it('should return false if object doesn\'t have prototype', () => {
-            let { hasPrototype } = makeModule.value;
+            const { hasPrototype } = makeModule.value;
 
-            let testPrototype = {};
-            let instance = {};
+            const testPrototype = {};
+            const instance = {};
 
             expect(hasPrototype(instance, testPrototype)).to.be.false;
         });
@@ -68,7 +68,7 @@ describe('ServiceWorker', () => {
     require('./ServiceWorker/lib/getRegistration');
     require('./ServiceWorker/lib/NotificationManagerEventHandler');
     require('./ServiceWorker/Cache');
-})
+});
 
 describe('Web', () => {
     require('./web/Manifest');

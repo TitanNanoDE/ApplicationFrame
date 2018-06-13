@@ -4,7 +4,7 @@ const expect = require('chai').expect;
 
 const Import = function(path) {
 
-    let module = { value: null, };
+    const module = { value: null, };
 
     it('should import the module', () => {
         module.value = require(path);
@@ -14,6 +14,6 @@ const Import = function(path) {
     });
 
     return module;
-}
+};
 
 module.exports = Import;
