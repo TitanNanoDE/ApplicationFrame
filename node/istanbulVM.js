@@ -25,11 +25,19 @@ module.exports = function(data = {}) {
 
     if (coverage) {
         vm.addLoadHook((code, filename) => {
-            if (filename.indexOf('.travis') + filename.indexOf('node_modules') < 0) {
-                code = instrumenter.instrumentSync(code, filename);
+            if (filename.indexOf('tests') > -1) {
+                return code;
             }
 
-            return code;
+            if (filename.indexOf('.travis') > -1) {
+                return code;
+            }
+
+            if (filename.indexOf('node_modules') > -1) {
+                return code;
+            }
+
+            return instrumenter.instrumentSync(code, filename);
         });
     }
 
