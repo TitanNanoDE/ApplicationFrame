@@ -27,6 +27,8 @@ const stripHashKey = function(object) {
     return object;
 };
 
+const xhrMap = new WeakMap();
+
 /**
  * A network request
  */
@@ -70,6 +72,9 @@ const NetworkRequest = {
      * @type {Boolean}
      */
     completed: false,
+
+    /** @type {Promise} */
+    promise: null,
 
     /**
      * The constructor for the NetworkRequest. It simply sets up the properties.
@@ -159,6 +164,8 @@ const NetworkRequest = {
     send() {
         const xhr = new XMLHttpRequest();
 
+        xhrMap.set(this, xhr);
+
         if (this.method === 'GET' && this._body) {
             this.url += `?${  Object.keys(this._body).map((key) => {
                 return `${key}=${this._body[key]}`;
@@ -211,7 +218,20 @@ const NetworkRequest = {
             xhr.send(this._body);
         }
 
+        this.promise = promise;
+
         return promise;
+    },
+
+    cancel() {
+        /** @type {XMLHttpRequest} */
+        const xhr = xhrMap.get(this);
+
+        if (!xhr) {
+            return;
+        }
+
+        return xhr.abort();
     },
 
     __proto__: EventTarget,

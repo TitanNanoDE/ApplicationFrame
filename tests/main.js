@@ -59,9 +59,7 @@ describe('Prototypes', () => {
     require('./EventTarget.js');
     require('./Catalog');
 
-    describe('NetworkReqest', () => {
-        Import('../../testable/core/NetworkRequest');
-    });
+    require('./NetworkRequest');
 });
 
 describe('ServiceWorker', () => {
