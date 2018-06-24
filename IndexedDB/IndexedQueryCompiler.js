@@ -49,7 +49,7 @@ const IndexedQueryCompiler = {
      * creates a new indexed query
      *
      * @param  {string} storeName the store to query
-     * @param  {IDBDatabase} db   the db to query
+     * @param  {Promise.<IDBDatabase>} db   the db to query
      *
      * @return {undefined}
      */
@@ -65,7 +65,7 @@ const IndexedQueryCompiler = {
      * @param  {*} value   [description]
      * @param  {boolean} exclude [description]
      *
-     * @return {[type]}         [description]
+     * @return {{ value: *, exclude: boolean }}
      */
     _transformExclude(value, exclude) {
         if (Array.isArray(value)) {
@@ -191,7 +191,7 @@ const IndexedQueryCompiler = {
      *
      * @param  {'ASC'|'DESC'} direction sort direction
      *
-     * @return {IndexedDefinition}
+     * @return {IndexedQueryCompiler}
      */
     sort(direction) {
         if (direction === 'ASC') {

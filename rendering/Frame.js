@@ -1,6 +1,9 @@
 import TaskList from './TaskList';
 import { allocate } from '../memory';
 
+/**
+ * Internal representation of a frame.
+ */
 const Frame = {
 
     /** @type {TaskList} */

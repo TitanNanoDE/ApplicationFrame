@@ -22,7 +22,7 @@ const Application = {
     /**
      * Initializes the application when bootstrapping.
      *
-     * @return {undefined}
+     * @type {Function}
      */
     init: 'function',
 
@@ -30,6 +30,8 @@ const Application = {
      * Emits a termination notice on the object.
      * This is intended to notify sub components about the termination of
      * the application.
+     *
+     * @type {Function}
      *
      * @param {string} reason
      *

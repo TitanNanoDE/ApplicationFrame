@@ -9,7 +9,7 @@ const EventTarget = {
     _listeners: null,
 
     /**
-     * @return {EventTarget} [description]
+     * @return {EventTarget}
      */
     constructor() {
         this._listeners = {};
@@ -27,12 +27,12 @@ const EventTarget = {
     },
 
     /**
-     * registers a new listener for the given event.
+     * registers a new listener for the given event
      *
-     * @param {string} type the type of event
-     * @param {function} listener callback to execute when the event fires
+     * @param {string} type the type / name of event
+     * @param {Function} listener callback to execute when the event fires
      *
-     * @return {void}
+     * @return {undefined}
      */
     on(type, listener) {
         if (!this._listeners[type]) {
@@ -48,7 +48,7 @@ const EventTarget = {
      * @param {string} type the type of event
      * @param {*} data data to send to the callbacks
      *
-     * @return {void}
+     * @return {undefined}
      */
     emit(type, data) {
         if (this._listeners[type]) {
@@ -65,7 +65,7 @@ const EventTarget = {
     * @param  {string} type     the listener type
     * @param  {Function} listener the listener function to remove
     *
-    * @return {void}
+    * @return {undefined}
     */
     removeListener(type, listener) {
         if (this._listeners[type]) {

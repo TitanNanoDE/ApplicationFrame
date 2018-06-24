@@ -9,7 +9,7 @@ const TaskList = {
     /** @type {Array} */
     registeredIds: null,
 
-    /** @type {{ id: string, work: Function }} */
+    /** @type {{ id: *, work: Function }} */
     get last() {
         return this.tasks[this.tasks.length - 1];
     },

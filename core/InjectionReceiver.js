@@ -6,7 +6,7 @@ const InjectionReceiver = {
 
     /**
      * @private
-     * @type {Array}
+     * @type {WeakMap<*, *>}
      */
     _injectedObjects: null,
 

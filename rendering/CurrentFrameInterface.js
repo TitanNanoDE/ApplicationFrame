@@ -1,3 +1,6 @@
+/**
+ * An abstract representation of the currently rendering frame
+ */
 const CurrentFrameInterface = {
     /** @private */
     _startTime: 0,
@@ -8,6 +11,8 @@ const CurrentFrameInterface = {
     /**
      * @param {number} startTime    the time the current frame has started rendering
      * @param {number} maxFrameDuration the maximum duration
+     *
+     * @return {CurrentFrameInterface}
      */
     constructor({ startTime, maxFrameDuration } = {}) {
         this._startTime = startTime;

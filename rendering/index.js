@@ -202,7 +202,7 @@ const RenderEngine = {
 
     /**
      * @param {Function} f - the task to preform in the next render cycle.
-     * @param {string} [id] optional task id
+     * @param {*} [id] optional task id
      *
      * @return {Function} the function which has been passed in.
      */
@@ -215,7 +215,7 @@ const RenderEngine = {
 
     /**
      * @param {Function} f - the task to preform in the next render cycle.
-     * @param {string} [id] optional task id
+     * @param {*} [id] optional task id
      *
      * @return {Function} the function which has been passed in.
      */
@@ -241,7 +241,7 @@ const RenderEngine = {
     /**
      * Forces the engine to render a new frame even if there are no tasks
      *
-     * @return {void}
+     * @return {undefined}
      */
     renderFrame() {
         if(!active) {

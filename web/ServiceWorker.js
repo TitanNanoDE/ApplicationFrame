@@ -20,6 +20,9 @@ const consumeApplication = function(application, worker) {
 
 let currentApplication = null;
 
+/**
+ * The current service worker of the site
+ */
 const ServiceWorker = {
     script: '',
 
@@ -38,6 +41,10 @@ const ServiceWorker = {
         return 'serviceWorker' in navigator;
     },
 
+    /**
+     * initialize the service worker. If no ServiceWorker is registered yet,
+     * it will be during the initialization.
+     */
     init() {
         super.constructor();
 
@@ -64,14 +71,35 @@ const ServiceWorker = {
     PushManager,
     NotificationManager,
 
+    /**
+     * check if there is a pending service worker update that can be installed
+     *
+     * @return {Promise}
+     */
     checkUpdate() {
         return getRegistration().then(worker => worker.update());
     },
 
+    /**
+     * unregisters the service worker from the browser.
+     *
+     * @return {Promise}
+     */
     remove() {
         return getRegistration().then(worker => worker.unregister());
     },
 
+
+    /**
+     * consumes an application object. By consuming the application all events
+     * of both the service worker and the application are shared between the two.
+     * This allows independent applications (i.e. in seperated tabs) to operate
+     * as one.
+     *
+     * @param  {ApplicationTrait} object
+     *
+     * @return {undefined}
+     */
     consume(object) {
         if (validateTrait(object, ApplicationTrait)) {
             consumeApplication(object, this);

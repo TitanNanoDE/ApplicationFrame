@@ -6,8 +6,12 @@ const moduleSystem = require('module');
 
 const VM = {
 
+    /**
+     * @type {Object}
+     */
     _context: null,
 
+    /** @type {Function[]} */
     _hooks: [],
 
     constructor(globals = {}) {
@@ -16,10 +20,23 @@ const VM = {
         return this;
     },
 
+
+    /**
+     * Allows to intercept and manipulate the source code of a module before it's compiled
+     *
+     * @param {Function} fn callback function
+     */
     addLoadHook(fn) {
         this._hooks.push(fn);
     },
 
+    /**
+     * loads and executes a module inside the VM
+     *
+     * @param  {string} path file path of the module
+     *
+     * @return {VmContext}
+     */
     runModule(path) {
         let file = null;
 
@@ -48,6 +65,11 @@ const VM = {
         return this._context;
     },
 
+    /**
+     * access the current VM context
+     *
+     * @return {VmContext}
+     */
     getContext() {
         return this._context;
     },
@@ -108,6 +130,13 @@ const vmRequire = (vmModule, vmCache, cache, nativeCompile, vmCompile) => functi
     return loadedModule;
 };
 
+/**
+ * applies the standart node environment to a VM
+ *
+ * @param  {VM} vm
+ *
+ * @return {[type]}    [description]
+ */
 module.exports.applyNodeEnv = function(vm) {
     const vmModule = new moduleSystem.Module('base.vm', null);
     const cache = moduleSystem._cache;

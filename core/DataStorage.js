@@ -99,9 +99,9 @@ const DataStorage = {
     },
 
     /**
-     * [fill description]
+     * stores a value inside the DataStorage and triggers callbacks.
      *
-     * @param  {*} value [description]
+     * @param  {*} value any value can be stored
      *
      * @return {undefined}
      */

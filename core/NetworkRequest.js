@@ -67,7 +67,7 @@ const NetworkRequest = {
     _listeners: null,
 
     /**
-     * [completed description]
+     * indicator flag whether or not the request is completed
      *
      * @type {Boolean}
      */
@@ -223,6 +223,11 @@ const NetworkRequest = {
         return promise;
     },
 
+    /**
+     * cancels an already sent request.
+     *
+     * @return {undefined}
+     */
     cancel() {
         /** @type {XMLHttpRequest} */
         const xhr = xhrMap.get(this);

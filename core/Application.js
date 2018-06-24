@@ -33,7 +33,7 @@ const Application = {
 
     /**
      * @deprecated Do not use any more.
-     * @see module:core/Application~Application.constructor
+     * @see Application.constructor
      *
      * @param  {any[]} args {@link Application.constructor}
      *
