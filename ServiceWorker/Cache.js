@@ -38,6 +38,10 @@ export const Cache = {
             .or('key').equals('staticFileBuildId')
             .or('key').equals('cacheUrl')
             .get().then(([cacheUpdate, staticFileBuildId, cacheUrl]) => {
+                if (!cacheUpdate || !staticFileBuildId || !cacheUrl) {
+                    return Promise.reject();
+                }
+
                 if ((Date.now() - cacheUpdate.value) < FIVE_MINUTES) {
                     return;
                 }
