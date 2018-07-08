@@ -19,7 +19,7 @@ const ServiceWorkerEventTarget = {
         };
 
         if (self && validateTrait(self, ServiceWorkerGlobalScope)) {
-            self.postMessage(message);
+            self.clients.matchAll().then(clients => clients.forEach(client => client.postMessage(message)));
         } else {
             getRegistration().then(worker => worker.postMessage(message));
         }
