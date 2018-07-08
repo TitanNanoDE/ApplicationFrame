@@ -1,7 +1,7 @@
 import PushManagerEventHandler from './lib/PushManagerEventHandler';
 import getRegistration from './lib/getRegistration';
 
-const prototype = navigator ? Object.prototype : PushManagerEventHandler;
+const prototype = (typeof navigator !== 'undefined') ? Object.prototype : PushManagerEventHandler;
 
 const PushManager = {
 
