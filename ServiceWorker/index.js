@@ -6,7 +6,7 @@ import { Cache, CacheMeta } from './Cache';
 
 export const ServiceWorkerMeta =  {
 
-    object: ServiceWorker,
+    get object() { return ServiceWorker; },
 
     __proto__: InjectionReceiver,
 };
