@@ -1,9 +1,17 @@
 import WorkerStorage from './lib/WorkerStorage';
-import ServiceWorkerEventTarget from './lib/ServiceWorkerEventTarget';
+import { ServiceWorker } from './index';
+import InjectionReceiver from '../core/InjectionReceiver';
 
 const FIVE_MINUTES = 1000 * 60 * 5;
 
-const Cache = {
+export const CacheMeta = {
+    __proto__: InjectionReceiver,
+};
+
+const meta = CacheMeta.constructor();
+
+// [meta*]
+export const Cache = {
     register(manifestUrl) {
         return fetch(manifestUrl)
             .then(response => response.json())
@@ -46,7 +54,7 @@ const Cache = {
                         return Promise.reject();
                     })
                     .then(([manifest, cache]) => cache.addAll(manifest.staticFiles))
-                    .then(() => ServiceWorkerEventTarget.emit('update-available'))
+                    .then(() => meta.injected(ServiceWorker).emit('update-available'))
                     .catch((error) => error && console.error(error));
             });
     },
