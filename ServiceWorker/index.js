@@ -2,15 +2,19 @@ import ServiceWorkerEventTarget from './lib/ServiceWorkerEventTarget';
 import PendingTasks from './PendingTasks';
 import InjectionReceiver from '../core/InjectionReceiver';
 import NotificationManager from './NotificationManager';
-import PushManager from './PushManager';
+import { Cache, CacheMeta } from './Cache';
 
-const { create } = Object;
+export const ServiceWorkerMeta =  {
 
-// create a injection receiver
-const injectionReceiver = create(InjectionReceiver).constructor();
+    object: ServiceWorker,
 
+    __proto__: InjectionReceiver,
+};
 
-const ServiceWorker = {
+const meta = ServiceWorkerMeta.constructor();
+
+/** [meta(ServiceWorkerMeta)] */
+export const ServiceWorker = {
     onInit() { return true; },
     onActivate() { return true; },
     onFetch() { return true; },
@@ -23,33 +27,38 @@ const ServiceWorker = {
     bootstrap() {
         this.constructor();
 
-        injectionReceiver.injected(NotificationManager).init();
-        injectionReceiver.injected(PushManager).init();
+        meta.injected(NotificationManager).init();
+        CacheMeta.inject(ServiceWorker, this);
 
         self.onactivate = (event) => {
-            this.onActivate(event);
+            const pending = meta.injected(PendingTasks);
 
-            injectionReceiver.injected(PendingTasks)._apply(event);
+            pending.push(self.clients.claim());
+            pending.push(this.onActivate(event));
+            pending._apply(event);
         };
 
         self.onfetch = (event) => {
-            this.onFetch(event);
-            injectionReceiver.injected(PendingTasks)._apply(event);
+            const pending = meta.injected(PendingTasks);
+
+            pending.push(this.onFetch(event));
+            pending._apply(event);
         };
 
         self.oninstall = (event) => {
-            this.onInstall(event);
+            const pending = meta.injected(PendingTasks);
 
-            injectionReceiver.injected(PendingTasks)._apply(event);
+            pending.push(this.onInstall(event));
+            pending._apply(event);
         };
 
-        this.onInit();
+        return this.onInit();
     },
 
     __proto__: ServiceWorkerEventTarget,
 };
 
-export { ServiceWorker, injectionReceiver };
+export { Cache };
 export { default as NotificationManager } from './NotificationManager';
 export { default as PushManager } from './PushManager';
-export { default as Cache } from './Cache';
+export { default as PendingTasks } from './PendingTasks';
