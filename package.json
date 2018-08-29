@@ -13,7 +13,7 @@
     "coveralls": "^3.0.1",
     "eslint": "^5.0.0",
     "gulp": "^3.9.1",
-    "gulp-babel": "^7.0.1",
+    "gulp-babel": "^8.0.0",
     "gulp-clean": "^0.4.0",
     "gulp-sourcemaps": "^2.6.4",
     "istanbul": "^0.4.5",
