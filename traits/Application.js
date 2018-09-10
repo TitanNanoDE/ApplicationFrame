@@ -1,30 +1,30 @@
 const Application = {
     /** @type {Function} */
-    emmit: 'function',
+    emmit: Function,
 
     /** @type {Function} */
-    on: 'function',
+    on: Function,
 
     /**
      * Name of the application, other components can identify it.
      *
      * @type {string}
      */
-    name: 'string',
+    name: String,
 
     /**
      * The current version of the application.
      *
      * @type {String}
      */
-    version: 'string',
+    version: String,
 
     /**
      * Initializes the application when bootstrapping.
      *
      * @type {Function}
      */
-    init: 'function',
+    init: Function,
 
     /**
      * Emits a termination notice on the object.
@@ -37,7 +37,7 @@ const Application = {
      *
      * @return {undefined}
      */
-    terminate: 'function',
+    terminate: Function,
 };
 
 export default Application;
