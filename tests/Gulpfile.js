@@ -9,7 +9,7 @@ const merge = require ('merge-stream');
 const dist = 'testable/';
 
 const babelConfig = {
-    'plugins': ['babel-plugin-transform-es2015-modules-commonjs']
+    'plugins': ['@babel/transform-modules-commonjs']
 };
 
 gulp.task('clean', () => {
