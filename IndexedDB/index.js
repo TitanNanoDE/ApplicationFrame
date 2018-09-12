@@ -6,9 +6,11 @@ const IndexedStoreDefinition = {
     name: '',
     indexes: null,
 
-    _make(info) {
-        this.description = info;
-        this.indexes = [];
+    new(info) {
+        const description = info;
+        const indexes = [];
+
+        return { description, indexes, __proto__: this };
     }
 };
 
@@ -38,11 +40,13 @@ const IndexedDefinition = {
      *
      * @param  {number} version
      *
-     * @return {undefined}
+     * @return {IndexedDefinition}
      */
-    _make(version) {
-        this._version = version;
-        this._allStores = [];
+    new(version) {
+        const _version = version;
+        const _allStores = [];
+
+        return { _version, _allStores, __proto__: this };
     },
 
     /**
@@ -177,20 +181,12 @@ const IndexedDB = {
      *
      * @param {string} name of the db to open
      */
-    constructor(name) {
-        this._name = name;
-        this._definitions = [];
+    new(name) {
+        const _name = name;
+        const _definitions = [];
+        const _promise = async(this._setup.bind(this));
 
-        this._promise = async(this._setup.bind(this));
-
-        return this;
-    },
-
-    /**
-     * @deprecated
-     */
-    _make(...args) {
-        return this.constructor(...args);
+        return { _name, _definitions, _promise, __proto__: this };
     },
 
     /**

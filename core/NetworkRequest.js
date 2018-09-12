@@ -84,25 +84,11 @@ const NetworkRequest = {
      *
      * @return {NetworkRequest} the request it self
      */
-    constructor(url, { method = 'GET', type = 'none' } = {}) {
-        this.type = type;
-        this.method = method;
-        this._headers = {};
-        this.url = url;
-        this._listeners = [];
+    new(url, { method = 'GET', type = 'none' } = {}) {
+        const _headers = {};
+        const _listeners = [];
 
-        return this;
-    },
-
-    /**
-     * [_make description]
-     *
-     * @deprecated use the constructor
-     * @param  {array} args [description]
-     * @return {void}      [description]
-     */
-    _make(...args) {
-        return this.constructor(...args);
+        return { method, type, _headers, _listeners, __proto__: this };
     },
 
     /**

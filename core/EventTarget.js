@@ -11,19 +11,10 @@ const EventTarget = {
     /**
      * @return {EventTarget}
      */
-    constructor() {
-        this._listeners = {};
+    new() {
+        const _listeners = {};
 
-        return this;
-    },
-
-    /**
-     * @deprecated Do not use the make constructors
-     *
-     * @return {this}      [description]
-     */
-    _make(...args) {
-        return this.constructor(...args);
+        return { _listeners, __proto__: this };
     },
 
     /**

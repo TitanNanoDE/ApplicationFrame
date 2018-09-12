@@ -87,15 +87,15 @@ const DataStorage = {
     /**
      * @return {DataStorage}
      */
-    constructor() {
-        super.constructor();
+    new() {
+        const instance = super.new();
 
-        this.when = whenFilled(this);
-        this.whenNext = whenNext(this);
-        this.once = once(this);
-        this._filledCallbacks = [];
+        instance.when = whenFilled(instance);
+        instance.whenNext = whenNext(instance);
+        instance.once = once(instance);
+        instance._filledCallbacks = [];
 
-        return this;
+        return instance;
     },
 
     /**
