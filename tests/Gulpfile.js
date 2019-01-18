@@ -1,6 +1,6 @@
 'use strict';
 
-const gulp = require('gulp');
+const { src, dest, series } = require('gulp');
 const babel = require('gulp-babel');
 const clean = require('gulp-clean');
 const sourcemaps = require('gulp-sourcemaps');
@@ -12,19 +12,16 @@ const babelConfig = {
     'plugins': ['@babel/transform-modules-commonjs']
 };
 
-gulp.task('clean', () => {
-    return gulp.src(dist, { read: false })
+const task_clean = function() {
+    return src(dist, { read: false, allowEmpty: true })
         .pipe(clean());
-});
+};
 
-gulp.task('default', ['clean'], () => {
+const task_default = function() {
 
-    const core = gulp.src([
+    const core = src([
         'core/**/*.js',
         'util/**',
-        'IndexedDB.js',
-        'IndexedDB/**/*.js',
-        'rendering.js',
         'rendering/**/*.js',
         'IndexedDB/**/*.js',
         'memory/**/*.js',
@@ -36,7 +33,9 @@ gulp.task('default', ['clean'], () => {
         .pipe(sourcemaps.init())
         .pipe(babel(babelConfig))
         .pipe(sourcemaps.write())
-        .pipe(gulp.dest(dist));
+        .pipe(dest(dist));
 
     return merge(core);
-});
+};
+
+exports.default = series(task_clean, task_default);
