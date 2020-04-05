@@ -70,6 +70,7 @@ describe('ServiceWorker', () => {
 
 describe('Web', () => {
     require('./web/Manifest');
+    require('./web/CustomElement');
 });
 
 require('./util/array');
