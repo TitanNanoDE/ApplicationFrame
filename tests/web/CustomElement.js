@@ -295,7 +295,7 @@ describe('Custom Element', () => {
                 const changes = { attr1: '2' };
 
                 vm.updateContext({ testResult: null, testContext: { changes, customElement } });
-                vm.runModule('../testTasks/web/customElement/attributeChangedCallback.js');
+                vm.runModule('../testTasks/web/CustomElement/attributeChangedCallback.js');
 
                 expect(attr1Value).to.be.eq('2');
             });
@@ -312,7 +312,7 @@ describe('Custom Element', () => {
                 const changes = { attr1: 'test' };
 
                 vm.updateContext({ testResult: null, testContext: { changes, customElement } });
-                vm.runModule('../testTasks/web/customElement/attributeChangedCallback.js');
+                vm.runModule('../testTasks/web/CustomElement/attributeChangedCallback.js');
 
                 expect(setterCalled).to.be.false;
             });
@@ -336,7 +336,7 @@ describe('Custom Element', () => {
 
 
                 vm.updateContext({ testResult: null, testContext: { customElement } });
-                vm.runModule('../testTasks/web/customElement/connectedCallback.js');
+                vm.runModule('../testTasks/web/CustomElement/connectedCallback.js');
 
                 expect(invocation).to.be.deep.eq(['attr1', 0, 5]);
             });
@@ -358,7 +358,7 @@ describe('Custom Element', () => {
 
 
                 vm.updateContext({ testResult: null, testContext: { customElement } });
-                vm.runModule('../testTasks/web/customElement/connectedCallback.js');
+                vm.runModule('../testTasks/web/CustomElement/connectedCallback.js');
 
                 expect(invocation).to.be.deep.eq(null);
             });
