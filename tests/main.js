@@ -58,6 +58,7 @@ describe('Prototypes', () => {
     require('./Application.js');
     require('./EventTarget.js');
     require('./Catalog');
+    require('./Observable');
 
     require('./NetworkRequest');
 });
