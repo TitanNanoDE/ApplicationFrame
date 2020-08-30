@@ -1,15 +1,15 @@
 /* eslint-env mocha */
 
-const istanbulVM = require('../../testable/node/istanbulVM');
+const mochaVM = require('../../node/mochaVM');
 const { expect } = require('chai');
 
 
 describe('Custom Element', () => {
 
-    const vm = istanbulVM();
+    const vm = mochaVM();
     const HTMLElement = require('../shims/HTMLElementShim');
 
-    istanbulVM.applyNodeEnv(vm);
+    mochaVM.applyNodeEnv(vm);
     vm.updateContext({ HTMLElement });
     vm.runModule('../../testable/web/CustomElement');
 

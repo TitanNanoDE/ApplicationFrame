@@ -10,7 +10,6 @@ before_script:
 install: case $TRAVIS_BRANCH in greenkeeper*) npm i;; *) npm ci;; esac;
 script:
     - nvm exec 12 npm run eslint
-    - node -v
     - npm run test
     - npm run coveralls
 after_script:

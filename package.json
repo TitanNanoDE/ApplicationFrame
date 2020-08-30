@@ -15,19 +15,15 @@
     "gulp-babel": "^8.0.0",
     "gulp-clean": "^0.4.0",
     "gulp-sourcemaps": "^2.6.5",
-    "istanbul": "^0.4.5",
     "merge-stream": "^2.0.0",
     "mocha": "^7.2.0",
-    "remap-istanbul": "^0.13.0",
+    "nyc": "^15.1.0",
     "sha1": "^1.1.1"
   },
   "scripts": {
     "build": "gulp --gulpfile tests/Gulpfile.js --cwd ./",
-    "test": "node_modules/.bin/mocha tests/main.js",
-    "coverage": "istanbul cover -x \"**\" _mocha -- tests/main.js --report json",
-    "remap-core": "remap-istanbul -i coverage/coverage.json -o coverage/mapped.json -b ./",
-    "remap-cov": "npm run coverage && npm run remap-core && istanbul report --include \"coverage/mapped.json\" lcov",
-    "coveralls": "npm run remap-cov && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "test": "nyc --hook-run-in-context --reporter text --reporter lcov mocha -- tests/main.js",
+    "coveralls": "cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
     "eslint": "eslint ./"
   },
   "repository": {

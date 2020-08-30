@@ -1,11 +1,11 @@
 /* eslint-env mocha */
 const expect = require('chai').expect;
-const istanbulVM = require('../../testable/node/istanbulVM');
+const mochaVM = require('../../node/mochaVM');
 
 describe('ArrayUtil', () => {
-    const vm = istanbulVM({});
+    const vm = mochaVM({});
 
-    istanbulVM.applyNodeEnv(vm);
+    mochaVM.applyNodeEnv(vm);
 
     it('should only override empty array slots', () => {
         vm.runModule('../../testable/util/array');

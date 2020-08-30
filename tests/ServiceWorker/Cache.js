@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-const istanbulVM = require('../../node/istanbulVM');
+const mochaVM = require('../../node/mochaVM');
 const { expect } = require('chai');
 const fetchShim = require('../shims/FetchShim');
 const cachesShim = require('../shims/CachesShim');
@@ -9,9 +9,9 @@ const sha1 = require('sha1');
 const DateShim = require('../shims/DateShim');
 
 describe('Cache', () => {
-    const vm = istanbulVM();
+    const vm = mochaVM();
 
-    istanbulVM.applyNodeEnv(vm);
+    mochaVM.applyNodeEnv(vm);
 
     vm.updateContext({
         indexedDB: IndexedDbShim(),
