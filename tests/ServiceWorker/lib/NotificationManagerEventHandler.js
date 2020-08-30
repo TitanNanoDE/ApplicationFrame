@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
 const { expect } = require('chai');
-const istanbulVM = require('../../../node/istanbulVM');
+const mochaVM = require('../../../node/mochaVM');
 
 describe('NotificationManagerEventHandler', () => {
     describe('constructor', () => {
-        const vm = istanbulVM();
+        const vm = mochaVM();
 
-        istanbulVM.applyNodeEnv(vm);
+        mochaVM.applyNodeEnv(vm);
 
         vm.updateContext({
             self: vm.getContext(),

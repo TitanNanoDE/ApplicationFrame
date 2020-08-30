@@ -1,8 +1,8 @@
 /* eslint-env mocha */
 
 const { expect } = require('chai');
-const VM = require('../../testable/node/vm');
-const istanbulVM = require('../../testable/node/istanbulVM');
+const VM = require('../../node/vm');
+const mochaVM = require('../../node/mochaVM');
 
 describe('Node VM', () => {
     let vmInstance = null;
@@ -15,7 +15,7 @@ describe('Node VM', () => {
     });
 
     it('should run a module', () => {
-        const vm = istanbulVM();
+        const vm = mochaVM();
 
         VM.applyNodeEnv(vm);
 
@@ -34,11 +34,11 @@ describe('Node VM', () => {
     });
 
     it('should throw an error if a module can\'t be found', () => {
-        const vm = istanbulVM();
+        const vm = mochaVM();
 
-        istanbulVM.applyNodeEnv(vm);
+        mochaVM.applyNodeEnv(vm);
 
-        vm.runModule('../../testable/node/vm');
+        vm.runModule('../../node/vm');
 
         const result = vm.runModule('../testTasks/node/vm/invalidRequire');
 

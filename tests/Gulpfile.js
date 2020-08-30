@@ -32,7 +32,7 @@ const task_default = function() {
     ], { base: './', })
         .pipe(sourcemaps.init())
         .pipe(babel(babelConfig))
-        .pipe(sourcemaps.write())
+        .pipe(sourcemaps.write('.'))
         .pipe(dest(dist));
 
     return merge(core);

@@ -1,9 +1,9 @@
 /* eslint-env mocha */
 
-const istanbulVM = require('../testable/node/istanbulVM');
+const mochaVM = require('../node/mochaVM');
 const { expect } = require('chai');
 
-const vm = istanbulVM({
+const vm = mochaVM({
     taskExecuted: false,
     taskExecutedNamed: false,
     animationFrameRequests: [],
@@ -17,7 +17,7 @@ const vm = istanbulVM({
     }
 });
 
-istanbulVM.applyNodeEnv(vm);
+mochaVM.applyNodeEnv(vm);
 
 vm.updateContext({
     window: vm.getContext().global,

@@ -1,13 +1,13 @@
 /* eslint-env mocha */
 
-const istanbulVM = require('../testable/node/istanbulVM');
+const mochaVM = require('../node/mochaVM');
 const expect = require('chai').expect;
 
 
 describe('Application', () => {
-    const vm = istanbulVM();
+    const vm = mochaVM();
 
-    istanbulVM.applyNodeEnv(vm);
+    mochaVM.applyNodeEnv(vm);
 
     vm.runModule('../testable/core/Application');
 

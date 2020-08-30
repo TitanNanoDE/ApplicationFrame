@@ -1,18 +1,18 @@
 /* eslint-env mocha */
 
-const istanbulVM = require('../../testable/node/istanbulVM');
+const mochaVM = require('../../node/mochaVM');
 const { expect } = require('chai');
 
 
 describe('Manifest', () => {
 
-    const vm = istanbulVM();
+    const vm = mochaVM();
 
     vm.updateContext({
         window: vm.getContext(),
     });
 
-    istanbulVM.applyNodeEnv(vm);
+    mochaVM.applyNodeEnv(vm);
 
     it('should return the default manifest', () => {
         vm.runModule('../shims/WebManifestShim.js');

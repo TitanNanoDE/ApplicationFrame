@@ -1,6 +1,6 @@
 /* eslint-env mocha */
 
-const istanbulVM = require('../../../node/istanbulVM');
+const mochaVM = require('../../../node/mochaVM');
 const { expect } = require('chai');
 
 describe('getRegistration', () => {
@@ -8,7 +8,7 @@ describe('getRegistration', () => {
     const baseIt = 'should return a promise which resolves to an ServiceWorkerRegistration in';
 
     it(`${baseIt} navigator mode`, () => {
-        const vm = istanbulVM();
+        const vm = mochaVM();
 
         vm.updateContext({
             navigator: {
@@ -18,7 +18,7 @@ describe('getRegistration', () => {
             },
         });
 
-        istanbulVM.applyNodeEnv(vm);
+        mochaVM.applyNodeEnv(vm);
 
         vm.runModule('../../../testable/ServiceWorker/lib/getRegistration.js');
 
@@ -33,9 +33,9 @@ describe('getRegistration', () => {
     });
 
     it(`${baseIt} serviceworker mode`, () => {
-        const vm = istanbulVM();
+        const vm = mochaVM();
 
-        istanbulVM.applyNodeEnv(vm);
+        mochaVM.applyNodeEnv(vm);
         vm.updateContext({
             self: vm.getContext(),
 

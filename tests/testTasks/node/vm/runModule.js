@@ -1,4 +1,4 @@
-const VM = require('../../../../testable/node/vm');
+const VM = require('../../../../node/vm');
 const vmInstance = Object.create(VM).constructor({
     console: { error: console.write }
 });

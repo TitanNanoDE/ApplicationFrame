@@ -8,3 +8,4 @@ coverage/
 testable/
 .sync/
 .importjs.js
+.nyc_output

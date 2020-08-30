@@ -85,7 +85,7 @@ const vmCompile = (vm) => function(content, filename) {
     vm._hooks.forEach(fn => { content = fn(content, filename); });
 
     const wrapper = moduleSystem.Module.wrap(content);
-    const compiledWrapper = nativeVM.runInContext(wrapper, vm._context, filename);
+    const compiledWrapper = (new nativeVM.Script(wrapper, filename)).runInContext(vm._context, { filename });
     const dirname = Path.dirname(filename);
     const newRequire = this.require.bind(this);
 
