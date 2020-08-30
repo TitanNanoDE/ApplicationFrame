@@ -23,7 +23,7 @@
   "scripts": {
     "build": "gulp --gulpfile tests/Gulpfile.js --cwd ./",
     "test": "nyc --hook-run-in-context --reporter text --reporter lcov mocha -- tests/main.js",
-    "coveralls": "cat ./coverage/lcov.info | coveralls && rm -rf ./coverage",
+    "coveralls": "nyc report --reporter=text-lcov | coveralls",
     "eslint": "eslint ./"
   },
   "repository": {
