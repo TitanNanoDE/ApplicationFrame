@@ -145,7 +145,7 @@ const RenderEngine = {
     },
 
     set lightray(value) {
-        return renderConfig.lightray = value;
+        renderConfig.lightray = value;
     },
 
     performance: {

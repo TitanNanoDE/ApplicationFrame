@@ -1,4 +1,7 @@
 before_install:
+    - node_version=$(nvm current)
+    - nvm install 12
+    - nvm use $node_version
     - npm i -g npm@latest
     - npm i -g greenkeeper-lockfile@1
 before_script:
@@ -6,7 +9,8 @@ before_script:
     - npm run build
 install: case $TRAVIS_BRANCH in greenkeeper*) npm i;; *) npm ci;; esac;
 script:
-    - npm run eslint
+    - nvm exec 12 npm run eslint
+    - node -v
     - npm run test
     - npm run coveralls
 after_script:
@@ -19,3 +23,4 @@ language: node_js
 node_js:
     - 9
     - 10
+    - 12
