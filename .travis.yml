@@ -2,7 +2,7 @@ before_install:
     - node_version=$(nvm current)
     - nvm install 12
     - nvm use $node_version
-    - npm i -g npm@latest
+    - npm i -g npm@6
 before_script:
     - npm run build
 install:
