@@ -3,22 +3,18 @@ before_install:
     - nvm install 12
     - nvm use $node_version
     - npm i -g npm@latest
-    - npm i -g greenkeeper-lockfile@1
 before_script:
-    - greenkeeper-lockfile-update
     - npm run build
-install: case $TRAVIS_BRANCH in greenkeeper*) npm i;; *) npm ci;; esac;
+install:
+    - npm ci
 script:
     - nvm exec 12 npm run eslint
     - npm run test
 after_success:
     - npm run coveralls
-after_script:
-    - greenkeeper-lockfile-upload
 branches:
     only:
         - master
-        - /^greenkeeper/.*$/
 language: node_js
 node_js:
     - 9
