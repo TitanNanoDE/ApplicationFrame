@@ -65,6 +65,14 @@ const VM = {
         return this._context;
     },
 
+    apply(callback) {
+        const executor = `(function() { var executor = ${callback.toString()}; executor(); })()`;
+
+        nativeVM.runInContext(executor, this._context, { filename: `${__dirname}/anonymous.vm.js` });
+
+        return this._context;
+    },
+
     /**
      * access the current VM context
      *

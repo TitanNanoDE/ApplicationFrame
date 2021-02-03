@@ -77,3 +77,5 @@ describe('Web', () => {
 require('./util/array');
 
 require('./rendering');
+
+require('./features');
