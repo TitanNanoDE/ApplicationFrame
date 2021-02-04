@@ -10,4 +10,7 @@ testable/
 docs/
 .travis.yml
 .tern-project
-.gitattibutes
+.gitattributes
+.nyc_output/
+tests/
+.importjs.js
