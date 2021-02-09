@@ -1,5 +1,5 @@
-import { Make } from '../util/make.js';
-import IndexedQueryCompiler from './IndexedQueryCompiler.js';
+import { Make } from '../util/make';
+import IndexedQueryCompiler from './IndexedQueryCompiler';
 import async from '../core/async';
 
 const IndexedStoreDefinition = {
