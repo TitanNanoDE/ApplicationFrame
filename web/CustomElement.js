@@ -195,3 +195,5 @@ export const CustomElement = {
 
     __proto__: HTMLElement,
 };
+
+export default CustomElement;

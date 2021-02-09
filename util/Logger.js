@@ -1,4 +1,4 @@
-import { hasPrototype } from './make.js';
+import { hasPrototype } from './make';
 
 export default {
     error(...args) {

@@ -1,5 +1,5 @@
-import { Make } from '../util/make.js';
-import * as ArrayUtil from '../util/array.js';
+import { Make } from '../util/make';
+import * as ArrayUtil from '../util/array';
 
 /**
  * A query object for an indexedDB request.
