@@ -33,7 +33,7 @@ const ServiceWorker = {
      *
      * defaults to true
      *
-     * @type {Boolean|string}
+     * @type {(boolean|string)}
      */
     scope: true,
 

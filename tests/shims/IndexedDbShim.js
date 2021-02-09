@@ -3,7 +3,7 @@ const async = require('../../testable/core/async').default;
 const IndexedDbShim = () => ({
     /**
      * [dbs description]
-     * @type { [key: string]: object }
+     * @type {object.<string, object>}
      */
     dbs: [],
 

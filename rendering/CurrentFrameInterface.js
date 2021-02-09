@@ -9,8 +9,9 @@ const CurrentFrameInterface = {
     _maxFrameDuration: 0,
 
     /**
-     * @param {number} startTime    the time the current frame has started rendering
-     * @param {number} maxFrameDuration the maximum duration
+     * @param {object} config
+     * @param {number} config.startTime    the time the current frame has started rendering
+     * @param {number} config.maxFrameDuration the maximum duration
      *
      * @return {CurrentFrameInterface}
      */

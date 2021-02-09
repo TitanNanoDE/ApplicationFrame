@@ -6,7 +6,7 @@ const pObservers = Symbol('Observable.observers');
 export const Observable = {
 
     /**
-     * @type {Object[]}
+     * @type {object[]}
      */
     [pObservers]: null,
 

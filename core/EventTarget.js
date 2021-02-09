@@ -4,7 +4,7 @@ const EventTarget = {
 
     /**
      * @private
-     * @type {Object}
+     * @type {object}
      */
     _listeners: null,
 
@@ -19,6 +19,8 @@ const EventTarget = {
 
     /**
      * @deprecated Do not use the make constructors
+     *
+     * @param {...*} args
      *
      * @return {this}      [description]
      */
@@ -60,13 +62,13 @@ const EventTarget = {
     },
 
     /**
-    * removes a previously attached listener function.
-    *
-    * @param  {string} type     the listener type
-    * @param  {Function} listener the listener function to remove
-    *
-    * @return {undefined}
-    */
+     * removes a previously attached listener function.
+     *
+     * @param  {string} type     the listener type
+     * @param  {Function} listener the listener function to remove
+     *
+     * @return {undefined}
+     */
     removeListener(type, listener) {
         if (this._listeners[type]) {
             const index = this._listeners[type].indexOf(listener);

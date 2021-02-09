@@ -52,10 +52,10 @@ const TaskList = {
     /**
      * adds a new task to the beginning of the list
      *
-     * @param  {Function}} task      [description]
-     * @param  {*} [id=null] [description]
+     * @param  {Function} task
+     * @param  {*} [id=null]
      *
-     * @return {undefined}           [description]
+     * @return {undefined}
      */
     unshift(task, id = null) {
         if (!id || this.registeredIds.indexOf(id) < 0) {

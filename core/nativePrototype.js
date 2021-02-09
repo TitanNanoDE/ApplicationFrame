@@ -3,7 +3,7 @@
  *
  * @param  {Function} nativeConstructor
  *
- * @return {Object}
+ * @return {object}
  */
 export const nativePrototype = function(nativeConstructor) {
     const NativeInherited = {

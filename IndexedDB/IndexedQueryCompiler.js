@@ -110,7 +110,7 @@ const IndexedQueryCompiler = {
      * starts a new value range
      *
      * @param  {*} value                 range start value
-     * @param  {Boolean} [exclude=false] determines if the start value will be included in the range
+     * @param  {boolean} [exclude=false] determines if the start value will be included in the range
      *
      * @return {IndexedQueryCompiler}
      */
@@ -130,7 +130,7 @@ const IndexedQueryCompiler = {
      * ends a value range
      *
      * @param  {*} value                 end value of the range
-     * @param  {Boolean} [exclude=false] determines if the end value will be included in the range
+     * @param  {boolean} [exclude=false] determines if the end value will be included in the range
      *
      * @return {IndexedQueryCompiler}
      */
