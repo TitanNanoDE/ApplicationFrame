@@ -25,22 +25,8 @@ const Application = {
      *
      * @return {Application}
      */
-    constructor() {
-        super.constructor();
-
-        return this;
-    },
-
-    /**
-     * @deprecated Do not use any more.
-     * @see Application.constructor
-     *
-     * @param  {any[]} args {@link Application.constructor}
-     *
-     * @return {Application} the current instance
-     */
-    _make(...args) {
-        return this.constructor(...args);
+    new() {
+        return { __proto__: this };
     },
 
     /**

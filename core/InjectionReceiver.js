@@ -13,10 +13,10 @@ const InjectionReceiver = {
     /**
      * @return {InjectionReceiver}
      */
-    constructor() {
-        this._injectedObjects = new WeakMap();
+    new() {
+        const _injectedObjects = new WeakMap();
 
-        return this;
+        return { _injectedObjects, __proto__: this };
     },
 
     /**

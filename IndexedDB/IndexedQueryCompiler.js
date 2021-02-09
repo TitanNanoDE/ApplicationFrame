@@ -53,10 +53,12 @@ const IndexedQueryCompiler = {
      *
      * @return {undefined}
      */
-    _make(storeName, db) {
-        this._allQueries = [];
-        this._store = storeName;
-        this._db = db;
+    new(storeName, db) {
+        const _allQueries = [];
+        const _store = storeName;
+        const _db = db;
+
+        return { _allQueries, _store, _db, __proto__: this };
     },
 
     /**
