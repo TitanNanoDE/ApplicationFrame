@@ -2,7 +2,7 @@
  * Automatically subscribes to all events of the target if host defines a handler for them.
  *
  * @param  {EventTarget} eventTarget
- * @param  {Object} host
+ * @param  {object} host
  *
  * @return {{ unsubscribe: Function }}
  */

@@ -6,13 +6,13 @@ import EventTarget from './EventTarget';
 const Application = {
 
     /**
-    * Name of the application, other components can identify it.
-    */
+     * Name of the application, other components can identify it.
+     */
     name: '',
 
     /**
-    * The current version of the application.
-    */
+     * The current version of the application.
+     */
     version: '0.0.0',
 
     /**
@@ -44,21 +44,21 @@ const Application = {
     },
 
     /**
-    * Initializes the application when bootstrapping.
-    *
-    * @return {undefined}
-    */
+     * Initializes the application when bootstrapping.
+     *
+     * @return {undefined}
+     */
     init() {
         console.log(`Initialzing Application "${this.name}"!`);
     },
 
     /**
-    * Emits a termination notice on the object. This is intended to notify sub components about the termination of the application.
-    *
-    * @param {string} reason The reason for the termination.
-    *
-    * @return {undefined}
-    */
+     * Emits a termination notice on the object. This is intended to notify sub components about the termination of the application.
+     *
+     * @param {string} reason The reason for the termination.
+     *
+     * @return {undefined}
+     */
     terminate(reason) {
         this.emit('terminate', reason);
     },

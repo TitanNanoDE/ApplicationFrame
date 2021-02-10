@@ -10,7 +10,8 @@
         "sourceType": "module"
     },
     "plugins": [
-        "import"
+        "import",
+        "jsdoc"
     ],
     "rules": {
         "indent": [
@@ -94,6 +95,25 @@
         "import/no-duplicates": 2,
         "import/first": 2,
         "import/no-amd": 2,
-        "import/extensions": [2, "never"]
+        "import/extensions": [2, "never"],
+
+        "jsdoc/check-alignment": 2,
+        "jsdoc/check-param-names": 2,
+        "jsdoc/check-types": 2,
+        "jsdoc/require-param": 2,
+        "jsdoc/require-param-name": 2,
+        "jsdoc/require-param-type": 2,
+        "jsdoc/require-returns": 2,
+        "jsdoc/require-returns-check": 2,
+        "jsdoc/require-returns-type": 2,
+        "jsdoc/valid-types": 2,
+        "jsdoc/no-undefined-types": 2
+    },
+    "settings": {
+        "jsdoc": {
+            "tagNamePreference": {
+                "returns": "return"
+            }
+        }
     }
 }

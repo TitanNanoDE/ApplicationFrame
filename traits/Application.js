@@ -15,7 +15,7 @@ const Application = {
     /**
      * The current version of the application.
      *
-     * @type {String}
+     * @type {string}
      */
     version: 'string',
 

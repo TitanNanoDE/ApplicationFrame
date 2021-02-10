@@ -7,7 +7,7 @@ const heapArraysReleased = [];
  * Allocates objects and arrays in memory. The allocated structures are excluded from garbage collection.
  *
  * @param  {string|number} typeOrLength either the length of an array, or a string identifying an object type.
- * @param  {Object} [prototype={}] the structures prototype
+ * @param  {object} [prototype={}] the structures prototype
  *
  * @return {*}
  */

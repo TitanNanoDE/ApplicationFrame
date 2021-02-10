@@ -1,9 +1,12 @@
 /**
  * Internal function to apply one objects propteries to a target object.
  *
- * @param {Object} target
- * @param {Object} source
  * @inner
+ *
+ * @param {object} target
+ * @param {object} source
+ *
+ * @return {object}
  */
 const apply = function(target, source) {
     Object.keys(source).forEach((key) => {
@@ -20,9 +23,9 @@ const apply = function(target, source) {
  *
  * @deprecated
  *
- * @param {Object} object
- * @param {Object} prototype
- * @return {function}
+ * @param {object} object
+ * @param {object} prototype
+ * @return {Function}
  */
 export const Make = function(object, prototype) {
     if(arguments.length < 2) {
@@ -55,8 +58,8 @@ export const Make = function(object, prototype) {
  *
  * @deprecated
  *
- * @param {Object} object
- * @param {Object} prototype
+ * @param {object} object
+ * @param {object} prototype
  * @return {boolean}
  */
 export const hasPrototype = function(object, prototype) {

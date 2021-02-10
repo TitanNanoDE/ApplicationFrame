@@ -7,7 +7,7 @@ const moduleSystem = require('module');
 const VM = {
 
     /**
-     * @type {Object}
+     * @type {object}
      */
     _context: null,
 
@@ -35,7 +35,7 @@ const VM = {
      *
      * @param  {string} path file path of the module
      *
-     * @return {VmContext}
+     * @return {object}
      */
     runModule(path) {
         let file = null;
@@ -76,7 +76,7 @@ const VM = {
     /**
      * access the current VM context
      *
-     * @return {VmContext}
+     * @return {object}
      */
     getContext() {
         return this._context;
@@ -143,7 +143,7 @@ const vmRequire = (vmModule, vmCache, cache, nativeCompile, vmCompile) => functi
  *
  * @param  {VM} vm
  *
- * @return {[type]}    [description]
+ * @return {undefined}
  */
 module.exports.applyNodeEnv = function(vm) {
     const vmModule = new moduleSystem.Module('base.vm', null);

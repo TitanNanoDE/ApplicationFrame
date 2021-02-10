@@ -4,9 +4,9 @@ import EventTarget from './EventTarget';
 /**
  * removes angulars hashKey property from an object
  *
- * @param {Object} object the object to operate on
+ * @param {object} object the object to operate on
  *
- * @return {Object} the initial object
+ * @return {object} the initial object
  */
 const stripHashKey = function(object) {
     if (Array.isArray(object)) {
@@ -35,13 +35,13 @@ const xhrMap = new WeakMap();
 const NetworkRequest = {
     /**
      * @private
-     * @type {Object}
+     * @type {object}
      */
     _body: {},
 
     /**
      * @private
-     * @type {Object}
+     * @type {object}
      */
     _headers: null,
 
@@ -62,14 +62,14 @@ const NetworkRequest = {
 
     /**
      * @private
-     * @type {function[]}
+     * @type {Function[]}
      */
     _listeners: null,
 
     /**
      * indicator flag whether or not the request is completed
      *
-     * @type {Boolean}
+     * @type {boolean}
      */
     completed: false,
 
@@ -80,7 +80,9 @@ const NetworkRequest = {
      * The constructor for the NetworkRequest. It simply sets up the properties.
      *
      * @param {string} url the url this request should be made to
-     * @param {Object} config addintional configuartion for the request
+     * @param {object} config addintional configuartion for the request
+     * @param {string} config.method
+     * @param {string} config.type
      *
      * @return {NetworkRequest} the request it self
      */
@@ -98,7 +100,7 @@ const NetworkRequest = {
      * [_make description]
      *
      * @deprecated use the constructor
-     * @param  {array} args [description]
+     * @param  {Array} args [description]
      * @return {void}      [description]
      */
     _make(...args) {
@@ -108,7 +110,7 @@ const NetworkRequest = {
     /**
      * this method will set the given object as the request body.
      *
-     * @param {Object} data body data for this request
+     * @param {object} data body data for this request
      *
      * @return {NetworkRequest} the request it self
      */
@@ -121,7 +123,7 @@ const NetworkRequest = {
     /**
      * This method will set the request headers, in case custom headers are required.
      *
-     * @param {Object} headers a object with all header properties for this request
+     * @param {object} headers a object with all header properties for this request
      *
      * @return {NetworkRequest} the request it self
      */
@@ -148,7 +150,7 @@ const NetworkRequest = {
     /**
      * sets a callback for when the request is ready
      *
-     * @param {function} fn a callback function as soon as the data is ready
+     * @param {Function} fn a callback function as soon as the data is ready
      *
      * @return {void}
      */

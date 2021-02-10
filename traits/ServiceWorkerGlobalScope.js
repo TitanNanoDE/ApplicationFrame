@@ -1,15 +1,15 @@
 const ServiceWorkerGlobalScope = {
 
-    /** @type {Object} */
+    /** @type {object} */
     caches: 'object',
 
-    /** @type {Object} */
+    /** @type {object} */
     registration: 'object',
 
     /** @type {Function} */
     fetch: 'function',
 
-    /** @type {Object} */
+    /** @type {object} */
     clients: 'object',
 };
 

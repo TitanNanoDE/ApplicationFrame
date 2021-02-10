@@ -72,8 +72,8 @@ const IndexedDefinition = {
      * This has been chosen to be able to chain together all definition calls.
      *
      * @param  {string} name  name of the new index
-     * @param  {string[]} members [description]
-     * @param  {Object} options [description]
+     * @param  {string[]} members
+     * @param  {object} options
      *
      * @return {IndexedDefinition}
      */
@@ -176,6 +176,8 @@ const IndexedDB = {
      * The actual database creation is immediately scheduled for the next event cycle.
      *
      * @param {string} name of the db to open
+     *
+     * @return {IndexedDB}
      */
     constructor(name) {
         this._name = name;
@@ -188,6 +190,10 @@ const IndexedDB = {
 
     /**
      * @deprecated
+     *
+     * @param {...any} args
+     *
+     * @return {IndexedDB}
      */
     _make(...args) {
         return this.constructor(...args);
@@ -198,6 +204,7 @@ const IndexedDB = {
      * All stores and indexes for the current version have to be defined in this definition.
      *
      * @param  {number} version the version to be defined, don't use floats
+     *
      * @return {IndexedDefinition} the new definition
      */
     define(version) {
@@ -223,7 +230,7 @@ const IndexedDB = {
      * The promise resolves to the transaction result.
      *
      * @param  {string} storeName name of the targeted store
-     * @param  {Object} value     value to store
+     * @param  {object} value     value to store
      *
      * @return {Promise}
      */

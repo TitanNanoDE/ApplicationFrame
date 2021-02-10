@@ -1,8 +1,8 @@
 /**
  * Validates if an object satifies a certain trait.
  *
- * @param  {Object} target the object to Validate
- * @param  {Object} trait  the trait which has to be satified
+ * @param  {object} target the object to Validate
+ * @param  {object} trait  the trait which has to be satified
  *
  * @return {boolean}
  */
