@@ -3,12 +3,8 @@ import { ServiceWorkerGlobalScope } from '../../traits';
 import validateTrait from '../../core/validateTrait';
 import getRegistration from './getRegistration';
 
-const onMessageHandler = function(event) {
-    if (event.data.type === 'ServiceWorkerEventTarget') {
-        this.emit(event.data.event, event.data.data);
-    } else {
-        console.log(`[ServiceWorker${navigator ? 'Client' : ''}] Ignoring event`, event);
-    }
+const Callbacks = {
+    onMessageHandler: Symbol('ServiceWorkerEventTarget.Callbacks.onMessageHandler'),
 };
 
 const ServiceWorkerEventTarget = {
@@ -18,10 +14,10 @@ const ServiceWorkerEventTarget = {
             type: 'ServiceWorkerEventTarget', event, data,
         };
 
-        if (self && validateTrait(self, ServiceWorkerGlobalScope)) {
+        if (validateTrait(self, ServiceWorkerGlobalScope)) {
             self.clients.matchAll().then(clients => clients.forEach(client => client.postMessage(message)));
         } else {
-            getRegistration().then(worker => worker.postMessage(message));
+            getRegistration().then(registration => registration.active.postMessage(message));
         }
 
         super.emit(event, data);
@@ -30,14 +26,21 @@ const ServiceWorkerEventTarget = {
     constructor(...args) {
         super.constructor(...args);
 
-        const messageTarget = navigator ? getRegistration() : Promise.resolve(self);
+        const messageTarget = navigator.serviceWorker || self;
 
-
-        messageTarget.then(target => {
-            target.onmessage = onMessageHandler.bind(this);
-        });
+        messageTarget.onmessage = this[Callbacks.onMessageHandler].bind(this);
 
         return this;
+    },
+
+    [Callbacks.onMessageHandler](event) {
+        if (event.data.type !== 'ServiceWorkerEventTarget') {
+            console.debug(`[ServiceWorker${('serviceWorker' in navigator) ? 'Client' : ''}] Ignoring event`, event);
+
+            return;
+        }
+
+        super.emit(event.data.event, event.data.data);
     },
 
     __proto__: EventTarget,
