@@ -65,8 +65,8 @@ const VM = {
         return this._context;
     },
 
-    apply(callback) {
-        const executor = `(function() { var executor = ${callback.toString()}; executor(); })()`;
+    apply(callback, injectArguments = []) {
+        const executor = `(function() { var executor = ${callback.toString()}; executor(${injectArguments.join(', ')}); })()`;
 
         nativeVM.runInContext(executor, this._context, { filename: `${__dirname}/anonymous.vm.js` });
 

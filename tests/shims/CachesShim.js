@@ -31,6 +31,8 @@ const CachesShim = (cacheStore = {}) => ({
 
                 CachesShim.status.addAllCalled = sha1(`${cacheName}:${list.join(',')}`);
                 callAddAllHooks(list);
+
+                return Promise.resolve();
             }
         });
     },
