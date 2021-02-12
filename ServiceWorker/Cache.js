@@ -84,7 +84,7 @@ export const Cache = {
         }
 
         return WorkerStorage.read('config').where('key').equals('cacheName').get()
-            .then(cacheName => {
+            .then(([cacheName]) => {
                 const queries = [];
 
                 queries.push(caches.match(request, {
