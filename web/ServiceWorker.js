@@ -44,6 +44,8 @@ const ServiceWorker = {
     /**
      * initialize the service worker. If no ServiceWorker is registered yet,
      * it will be during the initialization.
+     *
+     * @return {Promise<ServiceWorkerRegistration>}
      */
     init() {
         super.constructor();
@@ -63,7 +65,7 @@ const ServiceWorker = {
             return;
         }
 
-        scope.then(scope => {
+        return scope.then(scope => {
             return navigator.serviceWorker.register(this.script, { scope });
         });
     },
