@@ -75,7 +75,10 @@ const getDbInterface = (host) => ({
 
 const getStoreInterface = (host) => ({
     put(value) {
-        host.items.push(value);
+        const keyPath = host.description.keyPath;
+        const index = host.items.findIndex(item => item[keyPath] === value[keyPath]);
+
+        (index < 0) ? host.items.push(value) : host.items.splice(index, 1, value);
 
         const result = {
             onsuccess: null,

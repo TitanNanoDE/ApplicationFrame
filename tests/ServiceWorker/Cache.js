@@ -7,6 +7,7 @@ const cachesShim = require('../shims/CachesShim');
 const IndexedDbShim = require('../shims/IndexedDbShim');
 const sha1 = require('sha1');
 const DateShim = require('../shims/DateShim');
+const ServiceWorkerGlobalScopeShim = require('../shims/ServiceWorkerGlobalScopeShim');
 
 describe('Cache', () => {
     const vm = mochaVM();
@@ -14,13 +15,16 @@ describe('Cache', () => {
     mochaVM.applyNodeEnv(vm);
 
     vm.updateContext({
+        self: vm.getContext(),
         indexedDB: IndexedDbShim(),
         IDBKeyRange: IndexedDbShim.IDBKeyRange,
     });
 
-    it('should return the cache interface', () => {
-        vm.runModule('../../testable/ServiceWorker/Cache.js');
+    vm.updateContext(ServiceWorkerGlobalScopeShim());
+    vm.runModule('../../testable/ServiceWorker/Cache.js');
+    vm.apply((_index) => _index.ServiceWorker.bootstrap(), ['_index']);
 
+    it('should return the cache interface', () => {
         const result = vm.runModule('../testTasks/ServiceWorker/Cache/interface.js');
 
         expect(result.cache).to.have.all.keys('register', 'cleanUp', 'init', 'matchStatic');
@@ -87,16 +91,23 @@ describe('Cache', () => {
 
             let cacheOpen = false;
             let manifestFetched = null;
-            const { value: lastBuildDate } = vm.getContext().indexedDB.dbs['sw_storage']['config'].items
-                .find(item => item.key == 'staticFileBuildId');
+
+            const swConfig = vm.getContext().indexedDB.dbs['sw_storage']['config'].items;
+            const { value: lastBuildDate } = swConfig.find(item => item.key == 'staticFileBuildId');
+            const { value: lastUpdate } = swConfig.find(item => item.key == 'cacheUpdate');
+
             const result = vm.runModule('../testTasks/ServiceWorker/Cache/update');
 
             result.caches._openHook(() => cacheOpen = true);
             result.fetch._fetchHook((url) => manifestFetched = url);
 
+            // TODO: need to define some interface for ServiceWorkerEventTarget to emit udpate event!!
             return result.init.then(() => {
-                expect(result.indexedDB.dbs['sw_storage']['config'].items).to.deep
-                    .include({ key: 'staticFileBuildId', value: lastBuildDate });
+                expect(result.indexedDB.dbs['sw_storage']['config'].items)
+                    .to.deep.include({ key: 'staticFileBuildId', value: lastBuildDate }, 'staticFileBuildId should not change');
+
+                expect(result.indexedDB.dbs['sw_storage']['config'].items)
+                    .to.not.deep.include({ key: 'cacheUpdate', value: lastUpdate }, 'has to udpate cacheUpdate timestamp');
 
                 expect(manifestFetched).to.be.equal('manifest.json');
                 expect(cacheOpen).to.be.false;
@@ -107,11 +118,17 @@ describe('Cache', () => {
             const addedFiles = [];
             let openedCache = null;
 
+            vm.getContext().Date._offset += 750000;
+
             vm.updateContext({
                 fetch: fetchShim({
                     'manifest.json': '{ "name": "test-cache-v2", "buildId": 12314325, "staticFiles": ["test.js", "file.html", "./contents/data.json"] }'
                 }),
             });
+
+            const swConfig = vm.getContext().indexedDB.dbs['sw_storage']['config'].items;
+            const { value: lastBuildDate } = swConfig.find(item => item.key == 'staticFileBuildId');
+            const { value: lastUpdate } = swConfig.find(item => item.key == 'cacheUpdate');
 
             const result = vm.runModule('../testTasks/ServiceWorker/Cache/update');
 
@@ -122,10 +139,19 @@ describe('Cache', () => {
             result.caches._openHook(cacheName => openedCache = cacheName);
 
             return result.init.then(() => {
+                const swConfig = result.indexedDB.dbs['sw_storage']['config'].items;
+
                 expect(addedFiles).to.be.deep.equal(['test.js', 'file.html', './contents/data.json']);
                 expect(openedCache).to.be.equal('test-cache-v2');
+
+                expect(swConfig).to.not.deep.include({ key: 'staticFileBuildId', value: lastBuildDate }, 'staticFileBuildId should not change');
+                expect(swConfig).to.not.deep.include({ key: 'cacheUpdate', value: lastUpdate }, 'has to udpate cacheUpdate timestamp');
+                expect(swConfig).to.deep.include({ key: 'cacheName', value: 'test-cache-v2' }, 'has to udpate cacheName if it changed');
             });
         });
+
+        it('should log errors to the console, abort and carry on');
+        it('not initialize if no cache has been registered and reject');
     });
 
     describe('cleanUp', () => {
@@ -139,6 +165,13 @@ describe('Cache', () => {
                 expect(Object.keys(result.caches.cacheStore)).to.have.lengthOf(1);
             });
         });
+    });
+
+    describe('matchStatic', () => {
+        it('should serve existing requests from the cache');
+        it('should resolve to undefined if no entry is found');
+        it('should try to resolve to index.html as a fallback');
+        it('should use the configured cache');
     });
 
 });

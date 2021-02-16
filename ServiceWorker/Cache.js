@@ -49,17 +49,26 @@ export const Cache = {
                 return fetch(cacheUrl.value)
                     .then(response => response.json())
                     .then(manifest => {
-                        if (manifest.buildId > staticFileBuildId.value) {
-                            console.log('[SW] updating static files...');
-
-                            return Promise.all([manifest, caches.open(manifest.name)]);
+                        if (manifest.buildId === staticFileBuildId.value) {
+                            return WorkerStorage
+                                .write('config', { key: 'cacheUpdate', value: Date.now() })
+                                .then(() => Promise.reject());
                         }
 
-                        return Promise.reject();
+                        console.log('[SW] updating static files...');
+
+                        return Promise.all([manifest, caches.open(manifest.name)]);
                     })
-                    .then(([manifest, cache]) => cache.addAll(manifest.staticFiles))
-                    .then(() => meta.injected(ServiceWorker).emit('update-available'))
-                    .catch((error) => error && console.error(error));
+                    .then(([manifest, cache]) => Promise.all([manifest, cache.addAll(manifest.staticFiles)]))
+                    .then(([manifest]) => {
+                        meta.injected(ServiceWorker).emit('update-available');
+
+                        return Promise.all([
+                            WorkerStorage.write('config', { key: 'cacheUpdate', value: Date.now() }),
+                            WorkerStorage.write('config', { key: 'staticFileBuildId', value: manifest.buildId }),
+                            WorkerStorage.write('config', { key: 'cacheName', value: manifest.name })
+                        ]);
+                    }).catch((error) => error && console.error(error));
             });
     },
 
