@@ -3,7 +3,6 @@ import IndexedQueryCompiler from './IndexedQueryCompiler';
 import async from '../core/async';
 
 const IndexedStoreDefinition = {
-    name: '',
     indexes: null,
 
     _make(info) {
@@ -106,7 +105,7 @@ const IndexedDefinition = {
             let store = null;
 
             try {
-                store = transaction.objectStore(storeDefinition.name);
+                store = transaction.objectStore(storeDefinition.description.name);
             } catch (e) {
                 if (e.name === 'NotFoundError') {
                     store = db.createObjectStore(storeDefinition.description.name, storeDefinition.description);
