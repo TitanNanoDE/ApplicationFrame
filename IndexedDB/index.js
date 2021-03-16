@@ -248,7 +248,12 @@ const IndexedDB = {
                 }
             });
         });
-    }
+    },
+
+    close() {
+        this._promise.then(db => db.close());
+        this._promise = Promise.reject(new Error(`DB ${name} has been closed and is no longer available`));
+    },
 };
 
 export default IndexedDB;
