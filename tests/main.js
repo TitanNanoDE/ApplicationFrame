@@ -80,3 +80,7 @@ require('./util/array');
 require('./rendering');
 
 require('./features');
+
+describe('IndexedDB Driver', () => {
+    require('./IndexedDB/index.js');
+});
