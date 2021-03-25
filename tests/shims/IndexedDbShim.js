@@ -54,6 +54,8 @@ const getTransaction = (host) => ({
 });
 
 const getDbInterface = (host) => ({
+    isOpen: true,
+
     createObjectStore(name, description) {
         if (!host[name]) {
             host[name] = { indexes: {}, items: [], description };
@@ -69,7 +71,19 @@ const getDbInterface = (host) => ({
             throw 'transaction mode \'read\' is not shimmed!';
         }
 
+        if (!this.isOpen) {
+            const error = new Error('database has been closed');
+
+            error.name = 'InvalidStateError';
+
+            throw error;
+        }
+
         return getTransaction(host);
+    },
+
+    close() {
+        this.isOpen = false;
     }
 });
 
