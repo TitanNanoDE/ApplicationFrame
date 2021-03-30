@@ -256,6 +256,7 @@ const IndexedDB = {
 
     upgrade(version) {
         this.close();
+        this._promise.catch(() => {});
         this._promise = async(this._setup.bind(this));
 
         return this.define(version);
