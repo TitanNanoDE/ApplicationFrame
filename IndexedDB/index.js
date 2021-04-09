@@ -253,6 +253,14 @@ const IndexedDB = {
         this._promise.then(db => db.close());
         this._promise = Promise.reject(new Error(`DB ${this._name} has been closed and is no longer available`));
     },
+
+    upgrade(version) {
+        this.close();
+        this._promise.catch(() => {});
+        this._promise = async(this._setup.bind(this));
+
+        return this.define(version);
+    }
 };
 
 export default IndexedDB;
