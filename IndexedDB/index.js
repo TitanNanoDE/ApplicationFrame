@@ -249,6 +249,61 @@ const IndexedDB = {
         });
     },
 
+    /**
+     * Removes objects which match the specified key range from the selected store.
+     * Keyranges are matched against the stores primary key and can contain:
+     *  - a single primitive value
+     *  - an array of two values which prepresent the start and end of the range
+     *  - a IDBKeyRange object
+     *
+     * @param  {string} storeName
+     * @param  {string | Array | IDBKeyRange} keyRange
+     *
+     * @return {Promise}
+     */
+    delete(storeName, keyRange) {
+        if (!keyRange.lower && !keyRange.upper) {
+            keyRange = Array.isArray(keyRange) ? IDBKeyRange.bound(...keyRange) : IDBKeyRange.only(keyRange);
+        }
+
+        return this._promise.then(db => {
+            return new Promise((success, failure) => {
+                try {
+                    const request = db.transaction([storeName], 'readwrite')
+                        .objectStore(storeName).delete(keyRange);
+
+                    request.onsuccess = event => success(event.target.result);
+                    request.onerror = failure;
+                } catch (e) {
+                    failure(e);
+                }
+            });
+        });
+    },
+
+    /**
+     * Removes all entries from the selected store.
+     *
+     * @param  {string} storeName
+     *
+     * @return {Promise}
+     */
+    clear(storeName) {
+        return this._promise.then(db => {
+            return new Promise((success, failure) => {
+                try {
+                    const request = db.transaction([storeName], 'readwrite')
+                        .objectStore(storeName).clear();
+
+                    request.onsuccess = event => success(event.target.result);
+                    request.onerror = failure;
+                } catch (e) {
+                    failure(e);
+                }
+            });
+        });
+    },
+
     close() {
         this._promise.then(db => db.close());
         this._promise = Promise.reject(new Error(`DB ${this._name} has been closed and is no longer available`));

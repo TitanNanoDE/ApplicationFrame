@@ -11,6 +11,7 @@ describe('IndexedDB', () => {
 
     vm.updateContext({
         indexedDB: IndexedDBShim(),
+        IDBKeyRange: IndexedDBShim.IDBKeyRange,
     });
 
     vm.runModule('../../testable/IndexedDB/index.js');
@@ -88,5 +89,143 @@ describe('IndexedDB', () => {
                 expect(indexedDB.dbs['test-db-2']['SecondStore']).to.have.property('indexes');
                 expect(indexedDB.dbs['test-db-2']['SecondStore']).to.have.property('items');
             }, () => expect.fail('promise should not reject!'));
+    });
+
+    describe('delete', () => {
+        it('should delete the object matching a key', () => {
+            const { testResult, indexedDB } = vm.apply((IndexedDB) => {
+                const db = Object.create(IndexedDB).constructor('delete-test-db-1');
+
+                db.define(1)
+                    .store({ name: 'test-1', keyPath: 'id' });
+
+                global.testResult = Promise.all([
+                    db.write('test-1', { id: 123, test: 'a' }),
+                    db.write('test-1', { id: 124, a: 1, b: 2 }),
+                    db.write('test-1', { id: 133, x: 0, y: 9 }),
+                ]);
+            }, ['IndexedDB']);
+
+            return testResult.then(() => {
+                expect(indexedDB.dbs['delete-test-db-1']['test-1'].items).to.have.lengthOf(3);
+            }).then(() => {
+                const { testResult } = vm.apply((IndexedDB) => {
+                    const db = Object.create(IndexedDB).constructor('delete-test-db-1');
+
+                    db.define(1);
+
+                    global.testResult = db.delete('test-1', 124);
+                }, ['IndexedDB']);
+
+                return testResult;
+            }).then(() => {
+                expect(indexedDB.dbs['delete-test-db-1']['test-1'].items).to.have.lengthOf(2);
+                expect(indexedDB.dbs['delete-test-db-1']['test-1'].items).to.be.deep.equal([
+                    { id: 123, test: 'a' },
+                    { id: 133, x: 0, y: 9 },
+                ]);
+            });
+        });
+
+        it('should delete all objects matching a key range', () => {
+            const { testResult, indexedDB } = vm.apply((IndexedDB) => {
+                const db = Object.create(IndexedDB).constructor('delete-test-db-2');
+
+                db.define(1)
+                    .store({ name: 'test-1', keyPath: 'id' });
+
+                global.testResult = Promise.all([
+                    db.write('test-1', { id: 123, test: 'a' }),
+                    db.write('test-1', { id: 124, a: 1, b: 2 }),
+                    db.write('test-1', { id: 133, x: 0, y: 9 }),
+                ]);
+            }, ['IndexedDB']);
+
+            return testResult.then(() => {
+                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.have.lengthOf(3);
+            }).then(() => {
+                const { testResult } = vm.apply((IndexedDB) => {
+                    const db = Object.create(IndexedDB).constructor('delete-test-db-2');
+
+                    db.define(1);
+
+                    global.testResult = db.delete('test-1', [100, 124]);
+                }, ['IndexedDB']);
+
+                return testResult;
+            }).then(() => {
+                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.have.lengthOf(1);
+                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.be.deep.equal([
+                    { id: 133, x: 0, y: 9 },
+                ]);
+            });
+        });
+
+        it('should delete all objects matching an actual IDBKeyRange', () => {
+            const { testResult, indexedDB } = vm.apply((IndexedDB) => {
+                const db = Object.create(IndexedDB).constructor('delete-test-db-2');
+
+                db.define(1)
+                    .store({ name: 'test-1', keyPath: 'id' });
+
+                global.testResult = Promise.all([
+                    db.write('test-1', { id: 123, test: 'a' }),
+                    db.write('test-1', { id: 124, a: 1, b: 2 }),
+                    db.write('test-1', { id: 133, x: 0, y: 9 }),
+                ]);
+            }, ['IndexedDB']);
+
+            return testResult.then(() => {
+                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.have.lengthOf(3);
+            }).then(() => {
+                const { testResult } = vm.apply((IndexedDB) => {
+                    const db = Object.create(IndexedDB).constructor('delete-test-db-2');
+
+                    db.define(1);
+
+                    global.testResult = db.delete('test-1', IDBKeyRange.bound(123, 134, true, true));
+                }, ['IndexedDB']);
+
+                return testResult;
+            }).then(() => {
+                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.have.lengthOf(1);
+                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.be.deep.equal([
+                    { id: 123, test: 'a' },
+                ]);
+            });
+        });
+    });
+
+    describe('clear', () => {
+        it('should delete all objects from store', () => {
+            const { testResult, indexedDB } = vm.apply((IndexedDB) => {
+                const db = Object.create(IndexedDB).constructor('clear-test-db-1');
+
+                db.define(1)
+                    .store({ name: 'test-1', keyPath: 'id' });
+
+                global.testResult = Promise.all([
+                    db.write('test-1', { id: 123, test: 'a' }),
+                    db.write('test-1', { id: 124, a: 1, b: 2 }),
+                    db.write('test-1', { id: 133, x: 0, y: 9 }),
+                ]);
+            }, ['IndexedDB']);
+
+            return testResult.then(() => {
+                expect(indexedDB.dbs['clear-test-db-1']['test-1'].items).to.have.lengthOf(3);
+            }).then(() => {
+                const { testResult } = vm.apply((IndexedDB) => {
+                    const db = Object.create(IndexedDB).constructor('clear-test-db-1');
+
+                    db.define(1);
+
+                    global.testResult = db.clear('test-1');
+                }, ['IndexedDB']);
+
+                return testResult;
+            }).then(() => {
+                expect(indexedDB.dbs['clear-test-db-1']['test-1'].items).to.have.lengthOf(0);
+            });
+        });
     });
 });
