@@ -1,5 +1,6 @@
 import { Make } from '../util/make';
 import IndexedQueryCompiler from './IndexedQueryCompiler';
+import IndexedDeleteRangeCompiler from './IndexedDeleteRangeCompiler';
 import async from '../core/async';
 
 const IndexedStoreDefinition = {
@@ -251,34 +252,15 @@ const IndexedDB = {
 
     /**
      * Removes objects which match the specified key range from the selected store.
-     * Keyranges are matched against the stores primary key and can contain:
-     *  - a single primitive value
-     *  - an array of two values which prepresent the start and end of the range
-     *  - a IDBKeyRange object
+     * The key range is always matched against the stores primary key.
      *
      * @param  {string} storeName
-     * @param  {string | Array | IDBKeyRange} keyRange
      *
-     * @return {Promise}
+     * @return {IndexedDeleteRangeCompiler}
      */
-    delete(storeName, keyRange) {
-        if (!keyRange.lower && !keyRange.upper) {
-            keyRange = Array.isArray(keyRange) ? IDBKeyRange.bound(...keyRange) : IDBKeyRange.only(keyRange);
-        }
-
-        return this._promise.then(db => {
-            return new Promise((success, failure) => {
-                try {
-                    const request = db.transaction([storeName], 'readwrite')
-                        .objectStore(storeName).delete(keyRange);
-
-                    request.onsuccess = event => success(event.target.result);
-                    request.onerror = failure;
-                } catch (e) {
-                    failure(e);
-                }
-            });
-        });
+    delete(storeName) {
+        return Object.create(IndexedDeleteRangeCompiler)
+            .constructor(storeName, this._promise);
     },
 
     /**

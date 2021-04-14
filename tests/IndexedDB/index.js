@@ -12,6 +12,7 @@ describe('IndexedDB', () => {
     vm.updateContext({
         indexedDB: IndexedDBShim(),
         IDBKeyRange: IndexedDBShim.IDBKeyRange,
+        process, // nyc needs this to run bable for instrumentation
     });
 
     vm.runModule('../../testable/IndexedDB/index.js');
@@ -114,7 +115,7 @@ describe('IndexedDB', () => {
 
                     db.define(1);
 
-                    global.testResult = db.delete('test-1', 124);
+                    global.testResult = db.delete('test-1').equals(124).commit();
                 }, ['IndexedDB']);
 
                 return testResult;
@@ -149,7 +150,7 @@ describe('IndexedDB', () => {
 
                     db.define(1);
 
-                    global.testResult = db.delete('test-1', [100, 124]);
+                    global.testResult = db.delete('test-1').from(100).to(124).commit();
                 }, ['IndexedDB']);
 
                 return testResult;
@@ -163,7 +164,7 @@ describe('IndexedDB', () => {
 
         it('should delete all objects matching an actual IDBKeyRange', () => {
             const { testResult, indexedDB } = vm.apply((IndexedDB) => {
-                const db = Object.create(IndexedDB).constructor('delete-test-db-2');
+                const db = Object.create(IndexedDB).constructor('delete-test-db-3');
 
                 db.define(1)
                     .store({ name: 'test-1', keyPath: 'id' });
@@ -176,23 +177,41 @@ describe('IndexedDB', () => {
             }, ['IndexedDB']);
 
             return testResult.then(() => {
-                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.have.lengthOf(3);
+                expect(indexedDB.dbs['delete-test-db-3']['test-1'].items).to.have.lengthOf(3);
             }).then(() => {
                 const { testResult } = vm.apply((IndexedDB) => {
-                    const db = Object.create(IndexedDB).constructor('delete-test-db-2');
+                    const db = Object.create(IndexedDB).constructor('delete-test-db-3');
 
                     db.define(1);
 
-                    global.testResult = db.delete('test-1', IDBKeyRange.bound(123, 134, true, true));
+                    global.testResult = db.delete('test-1').higherThan(123).lowerThan(134).commit();
                 }, ['IndexedDB']);
 
                 return testResult;
             }).then(() => {
-                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.have.lengthOf(1);
-                expect(indexedDB.dbs['delete-test-db-2']['test-1'].items).to.be.deep.equal([
+                expect(indexedDB.dbs['delete-test-db-3']['test-1'].items).to.have.lengthOf(1);
+                expect(indexedDB.dbs['delete-test-db-3']['test-1'].items).to.be.deep.equal([
                     { id: 123, test: 'a' },
                 ]);
             });
+        });
+
+        it('should throw if no range is specified', () => {
+            vm.updateContext({ testResult: null });
+
+            const { testResult } = vm.apply((IndexedDB) => {
+                const db = Object.create(IndexedDB).constructor('delete-test-db-3');
+
+                db.define(1);
+
+                try {
+                    db.delete('test-1').commit();
+                } catch (e) {
+                    global.testResult = e;
+                }
+            }, ['IndexedDB']);
+
+            expect(testResult).to.be.an('error', '.commit() should throw');
         });
     });
 
