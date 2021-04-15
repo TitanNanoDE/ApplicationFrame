@@ -18,6 +18,7 @@ describe('Cache', () => {
         self: vm.getContext(),
         indexedDB: IndexedDbShim(),
         IDBKeyRange: IndexedDbShim.IDBKeyRange,
+        process, // nyc needs this to run bable for instrumentation
     });
 
     vm.updateContext(ServiceWorkerGlobalScopeShim());

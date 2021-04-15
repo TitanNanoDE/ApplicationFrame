@@ -106,6 +106,49 @@ const getStoreInterface = (host) => ({
         return result;
     },
 
+    clear() {
+        const result = {
+            onsuccess: null,
+            onerror: null,
+        };
+
+        host.items.length = 0;
+
+        async(() => {
+            result.onsuccess({ target: { result: null } });
+        });
+
+        return result;
+    },
+
+    delete(keyRange) {
+        const result = {
+            onsuccess: null,
+            onerror: null,
+        };
+
+        async(() => {
+            if (!('upper' in keyRange) || !('lower' in keyRange) || !('lowerOpen' in keyRange) || !('upperOpen' in keyRange)) {
+                throw new TypeError('The key is not a valid key or a key range');
+            }
+
+            host.items.filter(item => {
+                const key = host.description.keyPath;
+
+                return (keyRange.lowerOpen ? item[key] > keyRange.lower : item[key] >= keyRange.lower) &&
+                    (keyRange.upperOpen ? item[key] < keyRange.upper : item[key] <= keyRange.upper);
+            }).forEach(item => {
+                const index = host.items.indexOf(item);
+
+                host.items.splice(index, 1);
+            });
+
+            result.onsuccess({ target: { result: null } });
+        });
+
+        return result;
+    },
+
     index(name) {
         return getIndexInterface({ store: host, selectedIndex: name });
     }
@@ -185,5 +228,9 @@ module.exports.IDBKeyRange = {
 
     lowerBound(lower, lowerOpen = false) {
         return { lower, lowerOpen };
+    },
+
+    only(value) {
+        return this.bound(value, value);
     }
 };

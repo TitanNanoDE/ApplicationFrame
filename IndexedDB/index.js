@@ -1,5 +1,6 @@
 import { Make } from '../util/make';
 import IndexedQueryCompiler from './IndexedQueryCompiler';
+import IndexedDeleteRangeCompiler from './IndexedDeleteRangeCompiler';
 import async from '../core/async';
 
 const IndexedStoreDefinition = {
@@ -239,6 +240,42 @@ const IndexedDB = {
                 try {
                     const request = db.transaction([storeName], 'readwrite')
                         .objectStore(storeName).put(value);
+
+                    request.onsuccess = event => success(event.target.result);
+                    request.onerror = failure;
+                } catch (e) {
+                    failure(e);
+                }
+            });
+        });
+    },
+
+    /**
+     * Removes objects which match the specified key range from the selected store.
+     * The key range is always matched against the stores primary key.
+     *
+     * @param  {string} storeName
+     *
+     * @return {IndexedDeleteRangeCompiler}
+     */
+    delete(storeName) {
+        return Object.create(IndexedDeleteRangeCompiler)
+            .constructor(storeName, this._promise);
+    },
+
+    /**
+     * Removes all entries from the selected store.
+     *
+     * @param  {string} storeName
+     *
+     * @return {Promise}
+     */
+    clear(storeName) {
+        return this._promise.then(db => {
+            return new Promise((success, failure) => {
+                try {
+                    const request = db.transaction([storeName], 'readwrite')
+                        .objectStore(storeName).clear();
 
                     request.onsuccess = event => success(event.target.result);
                     request.onerror = failure;

@@ -4,7 +4,7 @@ import * as ArrayUtil from '../util/array';
 /**
  * A query object for an indexedDB request.
  */
-const IndexedQuery = {
+export const IndexedQuery = {
     /** @type {string} */
     name: '',
 
