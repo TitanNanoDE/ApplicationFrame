@@ -12,9 +12,55 @@ const Private = {
  */
 export const IndexedDeleteRangeCompiler = {
 
+    /**
+     * @type {Promise.<IDBDatabase>}
+     * @private
+     */
     [Private.db]: null,
-    [Private.allQueries]: null,
+
+    /**
+     * @type {IndexedQuery}
+     * @private
+     */
+    [Private.query]: null,
+
+    /**
+     * @type {string}
+     * @private
+     */
     [Private.store]: null,
+
+
+    /**
+     * Builds a IDBKeyRange from an {IndexedQuery}
+     * @private
+     *
+     * @return {IDBKeyRange}
+     */
+    [Private.buildKeyRange]() {
+        const { rangeStart, rangeEnd } = this[Private.query];
+        const hasStart = rangeStart && rangeStart.value !== null && rangeStart.value !== undefined;
+        const hasEnd = rangeEnd && rangeEnd.value !== null && rangeEnd.value !== undefined;
+        const isSingleValue = hasStart && hasEnd && rangeStart.value === rangeEnd.value;
+
+        if (!hasStart && !hasEnd) {
+            throw new TypeError('key range for delete operation can not be empty. To delete all store items, use .clear()');
+        }
+
+        if (isSingleValue) {
+            return IDBKeyRange.only(rangeStart.value);
+        }
+
+        if (!hasEnd) {
+            return IDBKeyRange.lowerBound(rangeStart.value, rangeStart.exclude);
+        }
+
+        if (!hasStart) {
+            return IDBKeyRange.upperBound(rangeEnd.value, rangeEnd.exclude);
+        }
+
+        return IDBKeyRange.bound(rangeStart.value, rangeEnd.value, rangeStart.exclude, rangeEnd.exclude);
+    },
 
     /**
      * creates a new indexed query
@@ -100,31 +146,11 @@ export const IndexedDeleteRangeCompiler = {
         return this;
     },
 
-    [Private.buildKeyRange]() {
-        const { rangeStart, rangeEnd } = this[Private.query];
-        const hasStart = rangeStart && rangeStart.value !== null && rangeStart.value !== undefined;
-        const hasEnd = rangeEnd && rangeEnd.value !== null && rangeEnd.value !== undefined;
-        const isSingleValue = hasStart && hasEnd && rangeStart.value === rangeEnd.value;
-
-        if (!hasStart && !hasEnd) {
-            throw new TypeError('key range for delete operation can not be empty. To delete all store items, use .clear()');
-        }
-
-        if (isSingleValue) {
-            return IDBKeyRange.only(rangeStart.value);
-        }
-
-        if (!hasEnd) {
-            return IDBKeyRange.lowerBound(rangeStart.value, rangeStart.exclude);
-        }
-
-        if (!hasStart) {
-            return IDBKeyRange.upperBound(rangeEnd.value, rangeEnd.exclude);
-        }
-
-        return IDBKeyRange.bound(rangeStart.value, rangeEnd.value, rangeStart.exclude, rangeEnd.exclude);
-    },
-
+    /**
+     * applies the delete operation based on the specified range
+     *
+     * @return {Promise}
+     */
     commit() {
         const storeName = this[Private.store];
         const keyRange = this[Private.buildKeyRange]();
