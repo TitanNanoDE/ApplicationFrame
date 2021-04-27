@@ -212,10 +212,10 @@ describe('Custom Element', () => {
             expect(testResult).to.be.deep.equal({ testAttribute: '123' });
         });
 
-        it('should remove an attrbute if the applied value is falsy', () => {
+        it('should remove an attrbute if the applied value is empty', () => {
             const attribute = 'testAttribute';
             const element = { attributes: { testAttribute: '123' }, removeAttribute(name) { delete this.attributes[name]; } };
-            const value = '';
+            const value = null;
             const type = 'string';
 
             vm.updateContext({ testResult: null, testContext: { attribute, element, value, type } });
@@ -438,20 +438,48 @@ describe('Custom Element', () => {
                 expect(onPropertyChangedData.newValue).to.be.equal('customValue');
             });
 
-            it('should reflect the attribute state if config is enabled', () => {
-                const prototype = {
-                    attributes: {}, constructor: function CustomElement() {},
-                    setAttribute(name, value) { this.attributes[name] = value.toString(); }
-                };
+            it('should reflect the attribute state for type string if config is enabled', () => {
+                const prototype = {};
                 const meta = { attributes: { firstAttr: {}, secondAttr: { reflectChanges: true }, lastAttr: {} } };
 
                 vm.updateContext({ testResult: null, testContext: { prototype, meta } });
 
                 const { testResult } = vm.runModule('../testTasks/web/CustomElement/CustomElementMeta/prepare.js');
+                const testInstance = new testResult.constructor();
 
-                testResult.secondAttr = 'customValue';
+                testInstance.secondAttr = 'customValue';
 
-                expect(prototype.attributes).to.have.property('secondAttr').which.is.equal('customValue');
+                expect(testInstance._attributes).to.have.key('secondAttr');
+                expect(testInstance._attributes.get('secondAttr')).to.be.equal('customValue');
+            });
+
+            it('should reflect the attribute state for type string if config is enabled and value empty', () => {
+                const prototype = {};
+                const meta = { attributes: { firstAttr: {}, secondAttr: { reflectChanges: true }, lastAttr: {} } };
+
+                vm.updateContext({ testResult: null, testContext: { prototype, meta } });
+
+                const { testResult } = vm.runModule('../testTasks/web/CustomElement/CustomElementMeta/prepare.js');
+                const testInstance = new testResult.constructor();
+
+                testInstance.secondAttr = '';
+
+                expect(testInstance._attributes).to.have.key('secondAttr');
+                expect(testInstance._attributes.get('secondAttr')).to.be.equal('');
+            });
+
+            it('should reflect the attribute state for type boolean if config is enabled', () => {
+                const prototype = {};
+                const meta = { attributes: { firstAttr: {}, secondAttr: { type: 'boolean', reflectChanges: true }, lastAttr: {} } };
+
+                vm.updateContext({ testResult: null, testContext: { prototype, meta } });
+
+                const { testResult } = vm.runModule('../testTasks/web/CustomElement/CustomElementMeta/prepare.js');
+                const testInstance = new testResult.constructor();
+
+                testInstance.secondAttr = false;
+
+                expect(testInstance._attributes).to.not.have.key('secondAttr');
             });
 
             it('should not reflect the attribute state if config is disabled', () => {

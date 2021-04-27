@@ -49,7 +49,7 @@ const typeCast = function(value, type) {
 };
 
 const reflectToAttribute = function(attribute, element, value, type) {
-    if (!value) {
+    if (value === null || value === undefined || value === false) {
         element.removeAttribute(attribute);
 
         return;
@@ -111,6 +111,10 @@ export const CustomElementMeta = {
                     const old = this[privateAttributeStore];
 
                     value = typeCast(value, config.type);
+
+                    if (value === old) {
+                        return;
+                    }
 
                     if (this[attributeSymbols.onPropertyChanged]) {
                         this[attributeSymbols.onPropertyChanged](attribute, old, value);
