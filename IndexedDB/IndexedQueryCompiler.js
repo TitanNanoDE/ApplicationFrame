@@ -263,17 +263,6 @@ const IndexedQueryCompiler = {
                             const keyCount = query.rangeStart && query.rangeStart.length ||
                                            query.rangeEnd && query.rangeEnd.length;
 
-                            if (start > 0) {
-                                start -= 1;
-                                end -= 1;
-
-                                return cursor.continue();
-                            } else if (start === 0 && end > 0) {
-                                end -= 1;
-                            } else if (start === 0 && end === 0) {
-                                return done();
-                            }
-
                             if (rangeArray) {
                                 for (let i = 0; i < keyCount; i++) {
                                     if (query.rangeStart && query.rangeStart[i].value !== null) {
@@ -295,6 +284,17 @@ const IndexedQueryCompiler = {
                             }
 
                             if (doesMatch) {
+                                if (start > 0) {
+                                    start -= 1;
+                                    end -= 1;
+
+                                    return cursor.continue();
+                                } else if (start === 0 && end > 0) {
+                                    end -= 1;
+                                } else if (start === 0 && end === 0) {
+                                    return done();
+                                }
+
                                 results.push(cursor.value);
                                 matches.push(JSON.stringify(cursor.primaryKey));
                             }
