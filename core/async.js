@@ -1,5 +1,5 @@
 /**
- * [default] Executes the callback function as a microtask.
+ * Executes the callback function as a microtask
  *
  * @param  {Function} callback task to execute
  *

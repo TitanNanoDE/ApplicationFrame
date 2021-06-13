@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const mochaVM = require('../../node/mochaVM');
 const IndexedDBShim = require('../shims/IndexedDbShim');
+const MessageChannelShim = require('../shims/MessageChannelShim');
 
 describe('IndexedDB', () => {
     const vm = mochaVM();
@@ -10,6 +11,7 @@ describe('IndexedDB', () => {
     mochaVM.applyNodeEnv(vm);
 
     vm.updateContext({
+        MessageChannel: MessageChannelShim(),
         indexedDB: IndexedDBShim(),
         IDBKeyRange: IndexedDBShim.IDBKeyRange,
         process, // nyc needs this to run bable for instrumentation
@@ -18,26 +20,26 @@ describe('IndexedDB', () => {
     vm.runModule('../../testable/IndexedDB/index.js');
 
     it('should not be accessible after closing the connection', () => {
-        const { testResult } = vm.apply((IndexedDB, async) => {
+        const { testResult } = vm.apply((IndexedDB, scheduleMicroTask) => {
             const db = Object.create(IndexedDB).constructor('test-db');
 
             db.define(1).store('Test');
 
             const openPromise = new Promise((resolve, reject) => {
-                async(() => {
+                scheduleMicroTask(() => {
                     db.write('Test', { a: 1 }).then(resolve, reject);
                 });
             });
 
             const closedPromise = new Promise((resolve, reject) => {
-                async(() => {
+                scheduleMicroTask(() => {
                     db.close();
                     db.write('Test', { t: 4 }).then(resolve, reject);
                 });
             });
 
             global.testResult = { openPromise, closedPromise };
-        }, ['IndexedDB', '_async.default']);
+        }, ['IndexedDB', '_tasks.scheduleMicroTask']);
 
         expect(testResult.openPromise).to.be.a('promise');
         expect(testResult.closedPromise).to.be.a('promise');
@@ -53,13 +55,13 @@ describe('IndexedDB', () => {
     });
 
     it('should upgrade the db at runtime when requested', () => {
-        const { testResult, indexedDB } = vm.apply((IndexedDB, async) => {
+        const { testResult, indexedDB } = vm.apply((IndexedDB, scheduleMicroTask) => {
             const db = Object.create(IndexedDB).constructor('test-db-2');
 
             db.define(1).store('Test');
 
             const openPromise = new Promise((resolve, reject) => {
-                async(() => {
+                scheduleMicroTask(() => {
                     db.write('Test', { a: 1 }).then(resolve, reject);
                 });
             });
@@ -72,7 +74,7 @@ describe('IndexedDB', () => {
 
             const postUpdatePromise = updatePromise.then(() => {
                 return new Promise((resolve, reject) => {
-                    async(() => {
+                    scheduleMicroTask(() => {
                         db.write('SecondStore', { id: 1234 })
                             .then(resolve, reject);
                     });
@@ -80,7 +82,7 @@ describe('IndexedDB', () => {
             });
 
             global.testResult = { postUpdatePromise };
-        }, ['IndexedDB', '_async.default']);
+        }, ['IndexedDB', '_tasks.scheduleMicroTask']);
 
         expect(testResult.postUpdatePromise).to.be.a('promise');
 

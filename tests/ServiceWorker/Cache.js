@@ -8,6 +8,7 @@ const IndexedDbShim = require('../shims/IndexedDbShim');
 const sha1 = require('sha1');
 const DateShim = require('../shims/DateShim');
 const ServiceWorkerGlobalScopeShim = require('../shims/ServiceWorkerGlobalScopeShim');
+const MessageChannelShim = require('../shims/MessageChannelShim');
 
 describe('Cache', () => {
     const vm = mochaVM();
@@ -16,6 +17,7 @@ describe('Cache', () => {
 
     vm.updateContext({
         self: vm.getContext(),
+        MessageChannel: MessageChannelShim(),
         indexedDB: IndexedDbShim(),
         IDBKeyRange: IndexedDbShim.IDBKeyRange,
         process, // nyc needs this to run bable for instrumentation
