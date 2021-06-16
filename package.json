@@ -1,6 +1,6 @@
 {
   "name": "application-frame",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "Application Frame is an open and light weight Programming Library for the Web.",
   "dependencies": {
     "callsite": "^1.0.0"
