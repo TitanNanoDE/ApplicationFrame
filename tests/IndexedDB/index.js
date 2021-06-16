@@ -250,3 +250,39 @@ describe('IndexedDB', () => {
         });
     });
 });
+
+describe('IndexedDefinition', () => {
+    const vm = mochaVM();
+
+    mochaVM.applyNodeEnv(vm);
+
+    vm.updateContext({
+        MessageChannel: MessageChannelShim(),
+        indexedDB: IndexedDBShim(),
+        IDBKeyRange: IndexedDBShim.IDBKeyRange,
+        process, // nyc needs this to run bable for instrumentation
+    });
+
+    vm.runModule('../../testable/IndexedDB/index.js');
+
+    describe('store', () => {
+        it('should be possible to define more than one store', () => {
+            const { testResult } = vm.apply((IndexedDB) => {
+                const db = Object.create(IndexedDB).constructor('indexeddefinition-store-1');
+
+                const definition = db.define(1)
+                    .store({ name: 'test-a', keyPath: 'id' })
+                    .store({ name: 'test-b', keyPath: 'name' })
+                    .store({ name: 'test-c', keyPath: 'owner' });
+
+                global.testResult = definition;
+            }, ['IndexedDB']);
+
+            expect(testResult._allStores).to.have.lengthOf(2);
+            expect(testResult._allStores).to.be.an('array').that.satisfies(value => {
+                return value[0].description.name === 'test-a' && value[0].description.keyPath === 'id' &&
+                    value[1].description.name === 'test-b' && value[1].description.keyPath === 'name';
+            });
+        });
+    });
+});
