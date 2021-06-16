@@ -1,7 +1,7 @@
 import { Make } from '../util/make';
 import IndexedQueryCompiler from './IndexedQueryCompiler';
 import IndexedDeleteRangeCompiler from './IndexedDeleteRangeCompiler';
-import async from '../core/async';
+import { scheduleTask } from '../core/tasks';
 
 const IndexedStoreDefinition = {
     indexes: null,
@@ -183,7 +183,7 @@ const IndexedDB = {
         this._name = name;
         this._definitions = [];
 
-        this._promise = async(this._setup.bind(this));
+        this._promise = scheduleTask(this._setup.bind(this));
 
         return this;
     },
@@ -294,7 +294,7 @@ const IndexedDB = {
     upgrade(version) {
         this.close();
         this._promise.catch(() => {});
-        this._promise = async(this._setup.bind(this));
+        this._promise = scheduleTask(this._setup.bind(this));
 
         return this.define(version);
     }

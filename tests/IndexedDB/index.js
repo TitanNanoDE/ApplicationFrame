@@ -3,6 +3,7 @@
 const { expect } = require('chai');
 const mochaVM = require('../../node/mochaVM');
 const IndexedDBShim = require('../shims/IndexedDbShim');
+const MessageChannelShim = require('../shims/MessageChannelShim');
 
 describe('IndexedDB', () => {
     const vm = mochaVM();
@@ -10,6 +11,7 @@ describe('IndexedDB', () => {
     mochaVM.applyNodeEnv(vm);
 
     vm.updateContext({
+        MessageChannel: MessageChannelShim(),
         indexedDB: IndexedDBShim(),
         IDBKeyRange: IndexedDBShim.IDBKeyRange,
         process, // nyc needs this to run bable for instrumentation
@@ -18,26 +20,26 @@ describe('IndexedDB', () => {
     vm.runModule('../../testable/IndexedDB/index.js');
 
     it('should not be accessible after closing the connection', () => {
-        const { testResult } = vm.apply((IndexedDB, async) => {
+        const { testResult } = vm.apply((IndexedDB, scheduleMicroTask) => {
             const db = Object.create(IndexedDB).constructor('test-db');
 
             db.define(1).store('Test');
 
             const openPromise = new Promise((resolve, reject) => {
-                async(() => {
+                scheduleMicroTask(() => {
                     db.write('Test', { a: 1 }).then(resolve, reject);
                 });
             });
 
             const closedPromise = new Promise((resolve, reject) => {
-                async(() => {
+                scheduleMicroTask(() => {
                     db.close();
                     db.write('Test', { t: 4 }).then(resolve, reject);
                 });
             });
 
             global.testResult = { openPromise, closedPromise };
-        }, ['IndexedDB', '_async.default']);
+        }, ['IndexedDB', '_tasks.scheduleMicroTask']);
 
         expect(testResult.openPromise).to.be.a('promise');
         expect(testResult.closedPromise).to.be.a('promise');
@@ -53,13 +55,13 @@ describe('IndexedDB', () => {
     });
 
     it('should upgrade the db at runtime when requested', () => {
-        const { testResult, indexedDB } = vm.apply((IndexedDB, async) => {
+        const { testResult, indexedDB } = vm.apply((IndexedDB, scheduleMicroTask) => {
             const db = Object.create(IndexedDB).constructor('test-db-2');
 
             db.define(1).store('Test');
 
             const openPromise = new Promise((resolve, reject) => {
-                async(() => {
+                scheduleMicroTask(() => {
                     db.write('Test', { a: 1 }).then(resolve, reject);
                 });
             });
@@ -72,7 +74,7 @@ describe('IndexedDB', () => {
 
             const postUpdatePromise = updatePromise.then(() => {
                 return new Promise((resolve, reject) => {
-                    async(() => {
+                    scheduleMicroTask(() => {
                         db.write('SecondStore', { id: 1234 })
                             .then(resolve, reject);
                     });
@@ -80,7 +82,7 @@ describe('IndexedDB', () => {
             });
 
             global.testResult = { postUpdatePromise };
-        }, ['IndexedDB', '_async.default']);
+        }, ['IndexedDB', '_tasks.scheduleMicroTask']);
 
         expect(testResult.postUpdatePromise).to.be.a('promise');
 
@@ -244,6 +246,42 @@ describe('IndexedDB', () => {
                 return testResult;
             }).then(() => {
                 expect(indexedDB.dbs['clear-test-db-1']['test-1'].items).to.have.lengthOf(0);
+            });
+        });
+    });
+});
+
+describe('IndexedDefinition', () => {
+    const vm = mochaVM();
+
+    mochaVM.applyNodeEnv(vm);
+
+    vm.updateContext({
+        MessageChannel: MessageChannelShim(),
+        indexedDB: IndexedDBShim(),
+        IDBKeyRange: IndexedDBShim.IDBKeyRange,
+        process, // nyc needs this to run bable for instrumentation
+    });
+
+    vm.runModule('../../testable/IndexedDB/index.js');
+
+    describe('store', () => {
+        it('should be possible to define more than one store', () => {
+            const { testResult } = vm.apply((IndexedDB) => {
+                const db = Object.create(IndexedDB).constructor('indexeddefinition-store-1');
+
+                const definition = db.define(1)
+                    .store({ name: 'test-a', keyPath: 'id' })
+                    .store({ name: 'test-b', keyPath: 'name' })
+                    .store({ name: 'test-c', keyPath: 'owner' });
+
+                global.testResult = definition;
+            }, ['IndexedDB']);
+
+            expect(testResult._allStores).to.have.lengthOf(2);
+            expect(testResult._allStores).to.be.an('array').that.satisfies(value => {
+                return value[0].description.name === 'test-a' && value[0].description.keyPath === 'id' &&
+                    value[1].description.name === 'test-b' && value[1].description.keyPath === 'name';
             });
         });
     });
