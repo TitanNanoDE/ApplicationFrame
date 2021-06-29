@@ -41,6 +41,10 @@ const CachesShim = (cacheStore = {}) => ({
         return Object.keys(this.cacheStore);
     },
 
+    has(cacheName) {
+        return Promise.resolve(cacheName in this.cacheStore);
+    },
+
     delete(cacheKey) {
         if (cacheKey in this.cacheStore) {
             delete this.cacheStore[cacheKey];
