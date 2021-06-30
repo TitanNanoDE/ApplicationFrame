@@ -1,4 +1,4 @@
-const fetchShim = (dictonary) => {
+const fetchShim = (dictonary = {}) => {
     const fetchHooks = [];
 
     const callFetchHooks = function(requestUrl) {
@@ -9,7 +9,7 @@ const fetchShim = (dictonary) => {
         callFetchHooks(requestUrl);
 
         if (!dictonary[requestUrl]) {
-            return Promise.reject({ error: '' });
+            return Promise.reject(URIError(`unable to resolve request URL ${requestUrl}`));
         }
 
         return Promise.resolve({

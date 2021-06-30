@@ -37,9 +37,16 @@ export const Cache = {
             .where('key').equals('cacheUpdate')
             .or('key').equals('staticFileBuildId')
             .or('key').equals('cacheUrl')
-            .get().then(([cacheUpdate, staticFileBuildId, cacheUrl]) => {
+            .or('key').equals('cacheName')
+            .get().then(([cacheUpdate, staticFileBuildId, cacheUrl, cacheName]) => {
+                return Promise.all([caches.has(cacheName.value), cacheUpdate, staticFileBuildId, cacheUrl]);
+            }).then(([hasCache, cacheUpdate, staticFileBuildId, cacheUrl]) => {
                 if (!cacheUpdate || !staticFileBuildId || !cacheUrl) {
                     return Promise.reject();
+                }
+
+                if (!hasCache) {
+                    return this.register(cacheUrl.value);
                 }
 
                 if ((Date.now() - cacheUpdate.value) < FIVE_MINUTES) {
