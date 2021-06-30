@@ -61,6 +61,11 @@ const CachesShim = (cacheStore = {}) => ({
 
     _addAllHook(callback) {
         addAllHooks.push(callback);
+    },
+
+    _clearHooks() {
+        openHooks.length = 0;
+        addAllHooks.length = 0;
     }
 });
 

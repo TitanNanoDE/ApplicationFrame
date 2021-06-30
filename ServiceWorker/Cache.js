@@ -46,7 +46,7 @@ export const Cache = {
                 }
 
                 if (!hasCache) {
-                    return this.register(cacheUrl);
+                    return this.register(cacheUrl.value);
                 }
 
                 if ((Date.now() - cacheUpdate.value) < FIVE_MINUTES) {

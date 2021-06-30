@@ -114,6 +114,8 @@ describe('Cache', () => {
 
                 expect(manifestFetched).to.be.equal('manifest.json');
                 expect(cacheOpen).to.be.false;
+
+                result.caches._clearHooks();
             });
         });
 
@@ -150,11 +152,30 @@ describe('Cache', () => {
                 expect(swConfig).to.not.deep.include({ key: 'staticFileBuildId', value: lastBuildDate }, 'staticFileBuildId should not change');
                 expect(swConfig).to.not.deep.include({ key: 'cacheUpdate', value: lastUpdate }, 'has to udpate cacheUpdate timestamp');
                 expect(swConfig).to.deep.include({ key: 'cacheName', value: 'test-cache-v2' }, 'has to udpate cacheName if it changed');
+
+                result.caches._clearHooks();
             });
         });
 
+        it('should recreate cache if the cache storage got deleted by the browser', () => {
+            vm.getContext().caches.delete('test-cache-v2');
+            vm.getContext().Date._offset += 750000;
+
+            vm.updateContext({
+                fetch: fetchShim({
+                    'manifest.json': '{ "name": "test-cache-v2", "buildId": 12314325, "staticFiles": ["test.js", "file.html", "./contents/data.json"] }'
+                }),
+            });
+
+            const result = vm.runModule('../testTasks/ServiceWorker/Cache/update');
+
+            return result.init
+                .then(() => vm.getContext().caches.has('test-cache-v2'))
+                .then(hasCache => expect(hasCache, 'cache storage should have been recreated').to.be.true);
+        });
+
         it('should log errors to the console, abort and carry on');
-        it('not initialize if no cache has been registered and reject');
+        it('should not initialize and reject if no cache has been registered');
     });
 
     describe('cleanUp', () => {
