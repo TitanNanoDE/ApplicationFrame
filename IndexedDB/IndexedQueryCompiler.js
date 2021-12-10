@@ -340,7 +340,7 @@ const IndexedQueryCompiler = {
                 });
             });
 
-            return Promise.all(queries).then(() => ({ count: results.length || resultCount, results }));
+            return Promise.all(queries).then(() => ({ count: resultCount, results }));
         });
     }
 };
