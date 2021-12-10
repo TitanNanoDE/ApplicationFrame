@@ -19,6 +19,11 @@ export const IndexedQuery = {
  * the query compiler for indexedDB requests.
  */
 const IndexedQueryCompiler = {
+    CursorMode: {
+        KeyOnly: 'key_only',
+        Full: 'full',
+    },
+
     /**
      * @private
      * @type {IndexedQuery}
@@ -89,6 +94,7 @@ const IndexedQueryCompiler = {
     where(indexName) {
         this._currentQuery = Make(IndexedQuery)();
         this._currentQuery.name = indexName;
+        this._allQueries.push(this._currentQuery);
 
         return this;
     },
@@ -180,7 +186,6 @@ const IndexedQueryCompiler = {
      * @return {IndexedQueryCompiler}
      */
     or(indexName) {
-        this._allQueries.push(this._currentQuery);
         this.where(indexName);
 
         return this;
@@ -211,28 +216,52 @@ const IndexedQueryCompiler = {
      * @return {Promise.<Array>}
      */
     get(...limit) {
-        if (limit.length === 1) {
-            limit.unshift(0);
+        limit = this._normalizeLimit(limit);
+
+        return this._execute(this.CursorMode.Full, ...limit)
+            .then(({ results }) => results);
+    },
+
+    /**
+     * assembles the count of results the composed query would return
+     *
+     * @param  {...number} limit one or two arguments which represent the start and end of the result range
+     *
+     * @return {Promise.<Array>}
+     */
+    count(...limit) {
+        limit = this._normalizeLimit(limit);
+
+        return this._execute(this.CursorMode.KeyOnly, ...limit)
+            .then(({ count }) => count);
+    },
+
+    _normalizeLimit(limit) {
+        if (limit.length > 1) {
+            return limit;
         }
 
-        this._allQueries.push(this._currentQuery);
-        this._currentQuery = null;
+        limit.unshift(0);
 
-        return this._execute(...limit);
+        return limit;
     },
 
     /**
      * @private
      *
+     * @param  {string} cursorMode
      * @param  {number} start start index
      * @param  {number} end   end index
      *
      * @return {Promise.<Array>}
      */
-    _execute(start, end) {
+    _execute(cursorMode, start, end) {
+        const cursorLoader = cursorMode === this.CursorMode.Full ? 'openCursor' : 'openKeyCursor';
+
         return this._db.then(db => {
             const matches = [];
             const results = [];
+            let resultCount = 0;
 
             const queries = this._allQueries.map(query => {
                 return new Promise((done, error) => {
@@ -251,7 +280,7 @@ const IndexedQueryCompiler = {
                         }
                     }
 
-                    const request = store.index(query.name).openCursor(range, this.sortOrder);
+                    const request = store.index(query.name)[cursorLoader](range, this.sortOrder);
 
                     request.onsuccess = ({ target: { result: cursor } }) => {
                         if (!cursor) {
@@ -295,8 +324,12 @@ const IndexedQueryCompiler = {
                                     return done();
                                 }
 
-                                results.push(cursor.value);
                                 matches.push(JSON.stringify(cursor.primaryKey));
+                                resultCount += 1;
+
+                                if (cursor.value) {
+                                    results.push(cursor.value);
+                                }
                             }
                         }
 
@@ -307,7 +340,7 @@ const IndexedQueryCompiler = {
                 });
             });
 
-            return Promise.all(queries).then(() => results);
+            return Promise.all(queries).then(() => ({ count: resultCount, results }));
         });
     }
 };

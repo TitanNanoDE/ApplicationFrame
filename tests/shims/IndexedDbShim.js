@@ -167,18 +167,32 @@ const getKeypathValue = function(host, object) {
 };
 
 const getIndexInterface = (host) => ({
-    openCursor(range /*, sortOrder */) {
 
-        const continueCursor = function() {
+    openCursor(range /*, sortOrder */) {
+        const continueCursor = function(list, result) {
             const item = list.pop();
-            const currentResult = item ? { primaryKey: getKeypathValue(host, item), value: item, continue: continueCursor } : null;
+            const currentResult = item ? { primaryKey: getKeypathValue(host, item), value: item, continue: continueCursor.bind(null, list, result) } : null;
 
             async(() => result.onsuccess({ target: { result: currentResult } }));
         };
 
+        return this._buildCursor(continueCursor, range);
+    },
+
+    openKeyCursor(range /*, sortOrder */) {
+        const continueCursor = function(list, result) {
+            const item = list.pop();
+            const currentResult = item ? { primaryKey: getKeypathValue(host, item), continue: continueCursor.bind(null, list, result) } : null;
+
+            async(() => result.onsuccess({ target: { result: currentResult } }));
+        };
+
+        return this._buildCursor(continueCursor, range);
+    },
+
+    _buildCursor(continueCursor, range /*, sortOrder */) {
         const list = host.store.items.filter(item => {
             const keyPathValue = getKeypathValue(host, item);
-
 
             if (range.lower) {
                 if (range.lowerOpen && keyPathValue <= range.lower) {
@@ -203,13 +217,12 @@ const getIndexInterface = (host) => ({
             return true;
         });
 
-        continueCursor();
-
         const result = {
             onsuccess: null,
             onerror: null,
         };
 
+        continueCursor(list, result);
 
         return result;
     }

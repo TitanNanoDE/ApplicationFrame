@@ -249,6 +249,33 @@ describe('IndexedDB', () => {
             });
         });
     });
+
+    describe('count results', () => {
+        it('should return the number of matching entries', () => {
+            const { testResult } = vm.apply((IndexedDB) => {
+                const db = Object.create(IndexedDB).constructor('count-test-db-1');
+
+                db.define(1)
+                    .store({ name: 'store-1', keyPath: 'id' })
+                    .index('id', ['id']);
+
+                global.testResult = Promise.all([
+                    db.write('store-1', { id: 4232, test: 'abc' }),
+                    db.write('store-1', { id: 6434, x: 3, y: 54 }),
+                    db.write('store-1', { id: 3333, a: 1, b: 2, c: 3 }),
+                    db.write('store-1', { id: 9563, label: 'label'}),
+                ]).then(() => {
+                    return db.read('store-1').where('id').from(4000).count();
+                });
+            }, ['IndexedDB']);
+
+            expect(testResult).to.be.a('promise');
+
+            return testResult.then(result =>{
+                expect(result).to.be.a('number').which.is.equal(3);
+            });
+        });
+    });
 });
 
 describe('IndexedDefinition', () => {
