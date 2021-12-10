@@ -1,5 +1,6 @@
-import EventTarget from './EventTarget';
+import 'url-polyfill';
 
+import EventTarget from './EventTarget';
 
 /**
  * removes angulars hashKey property from an object
@@ -37,7 +38,7 @@ const NetworkRequest = {
      * @private
      * @type {object}
      */
-    _body: {},
+    _body: null,
 
     /**
      * @private
@@ -169,9 +170,9 @@ const NetworkRequest = {
         xhrMap.set(this, xhr);
 
         if (this.method === 'GET' && this._body) {
-            this.url += `?${  Object.keys(this._body).map((key) => {
-                return `${key}=${this._body[key]}`;
-            }).join('&')}`;
+            const params = new URLSearchParams(this._body);
+
+            this.url += `?${params}`;
         }
 
         xhr.open(this.method, this.url, true);
@@ -206,7 +207,7 @@ const NetworkRequest = {
         xhr.upload.addEventListener('progress', (e) => this.emit('progress.send', e));
 
         if (this.type === 'json') {
-            let body = this._body;
+            let body = this._body || null;
 
             xhr.setRequestHeader('Content-Type', 'application/json');
 
