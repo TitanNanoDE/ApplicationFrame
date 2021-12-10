@@ -233,7 +233,7 @@ const IndexedQueryCompiler = {
         limit = this._normalizeLimit(limit);
 
         return this._execute(this.CursorMode.KeyOnly, ...limit)
-            .then(({ results }) => results);
+            .then(({ count }) => count);
     },
 
     _normalizeLimit(limit) {
