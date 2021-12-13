@@ -10,7 +10,6 @@ import CurrentThreadStore from './CurrentThreadStore';
 const IS_WORKER = (!!self.importScripts && !self.document);
 const { create } = Object;
 
-const pBroadcastTargets = Symbol('CurrentThread.broadcastTargets');
 const pConfig = Symbol('CurrentThread.config');
 const pParent = Symbol('CurrentThread.parent');
 const pSetupInterfaces = Symbol('CurrentThread.setupInterfaces()');
@@ -24,9 +23,11 @@ const Callbacks = {
     __proto__: ThreadCallbacks,
 };
 
+export const pBroadcastTargets = Symbol('CurrentThread.broadcastTargets');
+
 export const CurrentThread = {
 
-    /** @type {Map.<string, Object>} */
+    /** @type {Map.<string, object>} */
     [pCallbacks]: null,
 
     [pParent]: null,

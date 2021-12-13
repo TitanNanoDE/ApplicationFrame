@@ -1,3 +1,4 @@
+import CurrentThread from './CurrentThread';
 
 /** @type {CurrentThread} **/
 let value = null;

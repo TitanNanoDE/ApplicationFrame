@@ -8,7 +8,7 @@ import {
 import validateTrait from '../../core/validateTrait';
 import CurrentThreadStore from './CurrentThreadStore';
 import Observable from '../../core/Observable';
-import { pBroadcastTargets } from './CurrentThread';
+import { pBroadcastTargets, CurrentThread } from './CurrentThread';
 
 export const pWorker = Symbol('Thread.worker');
 export const pPostMessage = Symbol('Thread.postMessage()');
@@ -65,7 +65,7 @@ export const Thread = {
     /** @type {Worker} **/
     [pWorker]: null,
 
-    /** @type {Map.<String, { resolve: Function, reject: Function }>} **/
+    /** @type {Map.<string, {resolve: Function, reject: Function}>} **/
     [pTransactions]: null,
 
     [pCreateInterface]() {
@@ -140,7 +140,7 @@ export const Thread = {
      * @param  {object[]} args
      * @param  {object[]} transfers defines which arguments should be transfered instead of copied
      *
-     * @return {Promise.<object} the return value of the function
+     * @return {Promise.<object>} the return value of the function
      */
     call(name, args, transfers = []) {
         return new Promise((resolve, reject) => {
