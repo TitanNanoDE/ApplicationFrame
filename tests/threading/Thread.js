@@ -233,4 +233,35 @@ module.exports = function() {
             () => (clearTimeout(timeout), expect.fail('event handler should not fail'))
         ).catch(done);
     });
+
+    it('should ignore function return events for unknown transactions', () => {
+        const { testResult } = vm.apply(() => {
+            const worker = new Worker('./test-thread.js');
+
+            Object.create(Thread).constructor(worker);
+
+            global.testResult = worker.onmessage({ data: { type: 'THREAD_MESSAGE_RETURN_VALUE', data: { transaction: 123 } } });
+        });
+
+        expect(testResult).to.be.undefined;
+    });
+
+    it('should post a callback event when invoking a callback', () => {
+        const callbackId = 12343;
+
+        const { testResult } = vm.apply(() => {
+            const callbackId = 12343;
+            const worker = new Worker('./test-thread.js');
+
+            const thread = Object.create(Thread).constructor(worker);
+
+            worker.postMessage = function(message) {
+                global.testResult = message;
+            };
+
+            thread.invokeCallback(callbackId, [1, 'test', true]);
+        });
+
+        expect(testResult).to.be.deep.equal({ type: 'THREAD_MESSAGE_CALLBACK', callbackId, args: [1, 'test', true] });
+    });
 };
