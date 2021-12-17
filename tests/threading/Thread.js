@@ -27,12 +27,19 @@ module.exports = function() {
         MessagePort: function() { // eslint-disable-line object-shorthand
             this.postMessage = function() {};
 
-            this.onmessage = {};
+            this.onmessage = function() {};
         },
 
         setTimeout(...args) {
             return setTimeout(...args);
-        }
+        },
+
+        MessageChannel: function() { // eslint-disable-line object-shorthand
+            const global = vm.getContext();
+
+            this.port1 = new global.MessagePort();
+            this.port2 = new global.MessagePort();
+        },
     });
 
     vm.runModule('../../testable/threading/lib/Thread.js');
@@ -263,5 +270,32 @@ module.exports = function() {
         });
 
         expect(testResult).to.be.deep.equal({ type: 'THREAD_MESSAGE_CALLBACK', callbackId, args: [1, 'test', true] });
+    });
+
+    it('should react to the bootstrapping event and handle it', () => {
+        const { scheduleTask } = require('../../testable/core/tasks.js');
+
+        const { testResult } = vm.apply((CurrentThreadStore, CurrentThread, pBroadcastTargets) => {
+            const worker = new Worker('./test-thread.js');
+            const thread = Object.create(Thread).constructor(worker);
+
+            global.testResult = { message: null, ready: false };
+
+            worker.postMessage = function(message) {
+                global.testResult.message = message;
+            };
+
+            CurrentThreadStore.set({ [pBroadcastTargets]: [], __proto__: CurrentThread });
+
+            thread.on(Thread.Events.ready, () => global.testResult.ready = true);
+            worker.onmessage({ data: { type: 'THREAD_MESSAGE_BOOTSTRAPING' } });
+        }, ['_CurrentThreadStore.default', '_CurrentThread.default', '_CurrentThread.pBroadcastTargets']);
+
+        return scheduleTask(() => {
+            expect(testResult).to.have.property('ready').which.is.true;
+            expect(testResult).to.have.property('message')
+                .which.has.property('type')
+                .which.is.equal('THREAD_MESSAGE_PARENT_INJECT');
+        });
     });
 };

@@ -1,4 +1,4 @@
 export const MessagePortTrait = {
     postMessage: 'function',
-    onmessage: 'object'
+    onmessage: 'function'
 };

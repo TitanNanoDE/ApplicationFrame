@@ -1,10 +1,10 @@
 import {
     MESSAGE_TYPE_CALL, MESSAGE_TYPE_CALLBACK, MESSAGE_TYPE_EVENT,
-    MESSAGE_TYPE_RETURN_VALUE, MESSAGE_TYPE_PARENT_INJECT
+    MESSAGE_TYPE_RETURN_VALUE, MESSAGE_TYPE_PARENT_INJECT, MESSAGE_TYPE_BOOTSTRAPING,
 } from './messages';
 
 import uuid from 'uuid';
-import { Thread, pWorker, pPostMessage, Callbacks as ThreadCallbacks } from './Thread';
+import { Thread } from './Thread';
 import CurrentThreadStore from './CurrentThreadStore';
 
 const IS_WORKER = (!!self.importScripts && !self.document);
@@ -14,22 +14,24 @@ const pConfig = Symbol('CurrentThread.config');
 const pParent = Symbol('CurrentThread.parent');
 const pSetupInterfaces = Symbol('CurrentThread.setupInterfaces()');
 const pCallbacks = Symbol('CurrentThread.setupInterfaces()');
+const pPostMessage = Symbol('CurrentThread.postMessage()');
+const pWorker = Symbol('CurrentThread.worker');
 
-const Callbacks = {
+export const Callbacks = {
     onCallHandler: Symbol('CurrentThread.onCallHandler'),
     onCallbackHandler: Symbol('CurrentThread.onCallbackHandler'),
     onParentInjectHandler: Symbol('CurrentThread.onParentInjectHandler'),
-
-    __proto__: ThreadCallbacks,
+    onProcessMessage: Symbol('CurrentThread.onProcessMessage'),
 };
 
 export const pBroadcastTargets = Symbol('CurrentThread.broadcastTargets');
 
 export const CurrentThread = {
 
-    /** @type {Map.<string, object>} */
+    /** @type {Map.<string, object>} **/
     [pCallbacks]: null,
 
+    [pWorker]: null,
     [pParent]: null,
     [pConfig]: null,
     [pBroadcastTargets]: null,
@@ -38,10 +40,10 @@ export const CurrentThread = {
 
     interfaces: [],
 
-    /** @type {Thread} */
+    /** @type {Thread} **/
     mainThread: null,
 
-    /** @type {Thread} */
+    /** @type {Thread} **/
     get parent() {
         if (!this[pParent]) {
             throw new Error('Thread has not been properly bootstrapped!');
@@ -72,7 +74,7 @@ export const CurrentThread = {
         if (type === MESSAGE_TYPE_PARENT_INJECT) {
             const { parent } = event.data;
 
-            return this[Callbacks.onCallbackHandler](parent);
+            return this[Callbacks.onParentInjectHandler](parent);
         }
     },
 
@@ -99,7 +101,7 @@ export const CurrentThread = {
         this[pCallbacks].get(id).apply(null, args);
     },
 
-    [Callbacks.onCallbackHandler](parent) {
+    [Callbacks.onParentInjectHandler](parent) {
         this[pParent] = Thread.from(parent);
 
         if (this[pConfig].init) {
@@ -153,7 +155,7 @@ export const CurrentThread = {
         this[pConfig] = args[0] || {};
 
         CurrentThreadStore.set(this);
-        this.emit(Thread.Events.bootstrapping);
+        this[pPostMessage]({ type: MESSAGE_TYPE_BOOTSTRAPING });
     },
 
     publish(identifier) {

@@ -3,12 +3,12 @@ import deepCopy from '../../util/deepCopy';
 import { MessagePortTrait } from '../traits';
 import {
     MESSAGE_TYPE_CALL, MESSAGE_TYPE_CALLBACK, MESSAGE_TYPE_EVENT,
-    MESSAGE_TYPE_RETURN_VALUE, MESSAGE_TYPE_PARENT_INJECT
+    MESSAGE_TYPE_RETURN_VALUE, MESSAGE_TYPE_PARENT_INJECT, MESSAGE_TYPE_BOOTSTRAPING,
 } from './messages';
 import validateTrait from '../../core/validateTrait';
 import CurrentThreadStore from './CurrentThreadStore';
 import Observable from '../../core/Observable';
-import { pBroadcastTargets, CurrentThread } from './CurrentThread';
+import { pBroadcastTargets, CurrentThread, Callbacks as CurrentThreadCallbacks } from './CurrentThread';
 
 export const pWorker = Symbol('Thread.worker');
 export const pPostMessage = Symbol('Thread.postMessage()');
@@ -35,8 +35,7 @@ const getPropertyValue = function(source, property, target) {
 const constructThread = function(worker, instance) {
     instance[pWorker] = worker;
     instance[pTransactions] = new Map();
-    instance.observe(instance);
-    instance.ready = new Promise(resolve => instance.on(Observer.onReady, resolve));
+    instance.ready = new Promise(resolve => instance.on(Events.ready, resolve));
 
     instance[pWorker].onmessage = instance[Callbacks.onProcessMessage].bind(instance);
     instance[pWorker].onerror = console.error.bind(console);
@@ -45,17 +44,16 @@ const constructThread = function(worker, instance) {
 };
 
 export const Events = {
-    bootstrapping: Symbol.for('Thread.Events.bootstrapping'),
     ready: Symbol.for('Thread.Events.ready'),
 };
 
 export const Observer = {
-    onBootstrapping: Events.bootstrapping,
     onReady: Events.ready,
 };
 
 export const Callbacks = {
     onProcessMessage: Symbol('Thread.Callbacks.onProcessMessage'),
+    onBootstrapping: Symbol('Thread.Callbacks.onBootstrapping'),
 };
 
 export const Thread = {
@@ -112,6 +110,12 @@ export const Thread = {
             return resolver.resolve(data.return);
         }
 
+        if (type === MESSAGE_TYPE_BOOTSTRAPING) {
+            this[Callbacks.onBootstrapping]();
+
+            return;
+        }
+
         if (type !== MESSAGE_TYPE_EVENT) {
             return;
         }
@@ -119,13 +123,13 @@ export const Thread = {
         this.emit(name, data);
     },
 
-    [Observer.onBootstrapping]() {
-        /** @type {CurrentThread} */
+    [Callbacks.onBootstrapping]() {
+        /** @type {CurrentThread} **/
         const parentThread = CurrentThreadStore.get();
         const channel = new MessageChannel();
 
-        channel.port1.onmessage = parentThread[Callbacks.onProcessMessage].bind(parentThread);
-        channel.port1.onerror = parentThread[Callbacks.onProcessMessage].bind(parentThread);
+        channel.port1.onmessage = parentThread[CurrentThreadCallbacks.onProcessMessage].bind(parentThread);
+        channel.port1.onerror = parentThread[CurrentThreadCallbacks.onProcessMessage].bind(parentThread);
 
         parentThread[pBroadcastTargets].push(channel);
 

@@ -1,6 +1,11 @@
 /* eslint-env mocha */
 
 describe('Threading', () => {
-    require('./Thread')();
-    require('./CurrentThread')();
+    describe('Thread', () => {
+        require('./Thread')();
+    });
+
+    describe('CurrentThread', () => {
+        require('./CurrentThread')();
+    });
 });
