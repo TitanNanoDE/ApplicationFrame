@@ -29,6 +29,7 @@ const task_default = function() {
         'web/**/*.js',
         'ServiceWorker/**/*.js',
         'traits/**/*.js',
+        'threading/**/*.js',
     ], { base: './', })
         .pipe(sourcemaps.init())
         .pipe(babel(babelConfig))
